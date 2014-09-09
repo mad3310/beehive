@@ -1,0 +1,5 @@
+adminUser=root
+adminPassword=cm9vdA==
+clusterName=docker_cluster
+clusterUUID=4b99fa78-37b2-11e4-920f-000f13460a61
+dataNodeListOnCluster=
