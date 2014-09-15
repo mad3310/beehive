@@ -4,7 +4,7 @@ import stat
 import base64
 import shutil
 
-from api.common.configFileOpers import ConfigFileOpers
+from common.configFileOpers import ConfigFileOpers
 from base import APIHandler
 from tornado.options import options
 
