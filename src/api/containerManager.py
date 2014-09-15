@@ -13,7 +13,7 @@ import logging.config
 
 
 from tornado.options import options
-from api.common.appdefine import appDefine
+from common.appdefine import appDefine
 
 
 class Application(tornado.web.Application):
@@ -38,4 +38,4 @@ if __name__ == "__main__":
     try:
         main()
     except:
-        logging.error( '%s' % traceback.print_exc() )
+        logging.error( '%s' % str( traceback.print_exc()))
