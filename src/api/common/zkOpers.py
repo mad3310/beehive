@@ -81,18 +81,18 @@ class ZkOpers(object):
     def write_container_cluster_info(self, containerClusterProps):
         containerClusterName = containerClusterProps['containerClusterName']
         clusterUUID = self.getClusterUUID()
-        path = self.rootPath + "/" + clusterUUID + "/container/cluster" + containerClusterName
+        path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + containerClusterName
         self.zk.ensure_path(path)
         self.zk.set(path, str(containerClusterProps))#version need to write
         
-    def writer_container_node_info(self, containerProps):
+    def write_container_node_info(self, containerProps):
         containerClusterName = containerProps['containerClusterName']
         containerNodeIp = containerProps['containerNodeIP']
         clusterUUID = self.getClusterUUID()
-        path = self.rootPath + "/" + clusterUUID + "/container/cluster" + containerClusterName + "/" + containerNodeIp
+        path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + containerClusterName + "/" + containerNodeIp
         self.zk.ensure_path(path)
         self.zk.set(path, str(containerProps))#version need to write
-            
+    
     def write_started_node(self, data_node_ip):
         clusterUUID = self.getClusterUUID()
         path = self.rootPath + "/" + clusterUUID + "/monitor_status/node/started/" + data_node_ip
