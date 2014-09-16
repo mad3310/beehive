@@ -69,8 +69,7 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
         
         create_container_arg_list = self.__get_container_params(containerCount, containerClusterName)
         
-        #create_container_node_ip_list = self.__choose_host()
-        create_container_node_ip_list = ['10.200.91.142', '10.200.91.143', '10.200.91.144', '192.168.84.137']
+        create_container_node_ip_list = self.__choose_host()
         
         container_finished_flag_dict = self.__dispatch_create_container_task(create_container_node_ip_list, create_container_arg_list, 
                                                                              adminUser, adminPasswd)
@@ -114,7 +113,6 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
 
         create_container_arg_list = []
         containerIPList = self.retrieve_ip_resource(containerCount)
-        #containerIPList = ['10.200.85.125','10.200.85.126','10.200.85.127','10.200.85.128']
         
         for i in range(int(containerCount)):
             create_container_arg_dict, env = {}, {}
@@ -142,6 +140,7 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
             
             create_container_arg_dict.setdefault('env', env)
             create_container_arg_list.append(create_container_arg_dict)
+            
         return create_container_arg_list
     
     def __choose_host(self):
