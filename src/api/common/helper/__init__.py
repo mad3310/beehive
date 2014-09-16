@@ -2,7 +2,7 @@ import base64
 import logging
 
 from tornado.options import options
-from api.common.configFileOpers import ConfigFileOpers
+from common.configFileOpers import ConfigFileOpers
 from tornado.httpclient import HTTPClient
 from tornado.httpclient import HTTPError
 

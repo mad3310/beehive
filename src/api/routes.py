@@ -15,6 +15,6 @@ handlers = [
     (r"/serverCluster/resources", GetServersInfoHandler),
     (r"/server", ServerHandler),
     (r"/containerCluster", ContainerClusterHandler),
-    (r"/containerCluster/status/{containerClusterName}", CheckContainerStatusHandler),
+    (r"/containerCluster/status/(.*)", CheckContainerStatusHandler),
     (r"/inner/container", ContainerHandler)
 ]
