@@ -13,6 +13,7 @@ from tornado.options import options
 from handlers.base import APIHandler
 from tornado.httpclient import HTTPRequest
 from common.helper import _request_fetch
+from common.ipOpers import IpOpers
 
 @require_basic_auth
 class ServerClusterHandler(APIHandler):
@@ -84,5 +85,4 @@ class GetServersInfoHandler(APIHandler):
             resource_dict.setdefault(data_node_ip, retrun_dict['response'])
         
         self.finish(resource_dict)
-
         

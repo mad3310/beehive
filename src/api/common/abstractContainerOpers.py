@@ -1,6 +1,6 @@
 #-*- coding: utf-8 -*-
 from abc import abstractmethod
-from common.zkOpers import ZkOpers
+from zkOpers import ZkOpers
 
 '''
 Created on 2013-7-21
