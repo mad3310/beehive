@@ -15,6 +15,8 @@ handlers = [
     (r"/serverCluster/resources", GetServersInfoHandler),
     (r"/server", ServerHandler),
     (r"/containerCluster", ContainerClusterHandler),
+    (r"/containerCluster/ips", AddIpsIntoIpPoolHandler),
     (r"/containerCluster/status/(.*)", CheckContainerStatusHandler),
+    (r"/inner/MclusterManager/status/(.*)", StartMclusterManagerHandler),
     (r"/inner/container", ContainerHandler)
 ]
