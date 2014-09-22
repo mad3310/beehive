@@ -4,6 +4,8 @@ from abstractContainerOpers import Abstract_Container_Opers
 
 import pexpect
 import commands
+import os
+import time
 
 class MclusterManager(Abstract_Container_Opers):
         
@@ -14,8 +16,6 @@ class MclusterManager(Abstract_Container_Opers):
         pass
 
     def start(self, containerName = None):
-        if containerName is None:
-            return False
         containerID = commands.getoutput("docker ps |grep -w %s|awk '{print $1}'" % (containerName))
         child = pexpect.spawn(r"docker attach %s" % (containerID))
         child.expect(["bash", pexpect.EOF, pexpect.TIMEOUT], timeout=5)
@@ -34,10 +34,32 @@ class MclusterManager(Abstract_Container_Opers):
             stat = False
         child.close(force=True)
         return stat
+
+    def update_mcluster_manager(self, containerName = None):
+        containerID = commands.getoutput("docker ps |grep -w %s|awk '{print $1}'" % (containerName))
+        fullID = commands.getoutput("docker inspect %s|awk '/Id/{print $2}'" % (containerID))
+        fullID = fullID.replace('"', '').replace(',', '')
+        target_file = "/srv/docker/devicemapper/mnt/%s/rootfs/tmp/mcluster-manager-0.0.1-21.el6.noarch.rpm"  % (fullID)
+        if not os.path.exists(target_file):
+            os.system("cp /tmp/mcluster-manager-0.0.1-21.el6.noarch.rpm %s" % (target_file))
+        child = pexpect.spawn(r"docker attach %s" % (containerID))
+        child.expect(["bash", pexpect.EOF, pexpect.TIMEOUT], timeout=5)
+        child.sendline("rpm -qa mcluster-manager")
+        index = child.expect(["21", pexpect.EOF, pexpect.TIMEOUT], timeout=5)
+        if index != 0:
+            child.sendline("service mcluster-manager stop")
+            child.expect(["OK", pexpect.EOF, pexpect.TIMEOUT], timeout=5)
+            child.sendline("rpm -U /tmp/mcluster-manager-0.0.1-21.el6.noarch.rpm")
+            child.expect(["bash", pexpect.EOF, pexpect.TIMEOUT], timeout=10)
+            child.sendline("service mcluster-manager start")
+            child.expect(["OK", pexpect.EOF, pexpect.TIMEOUT], timeout=5)
+        child.close(force=True)
             
     def mcluster_manager_status(self, containerName = None):
         if containerName is None:
             return False
+        self.update_mcluster_manager(containerName)
+        time.sleep(1)
         if self.get_stat(containerName):
             return True
         self.start(containerName)
