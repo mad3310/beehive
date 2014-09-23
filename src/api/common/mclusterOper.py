@@ -44,15 +44,25 @@ class MclusterManager(Abstract_Container_Opers):
             os.system("cp /tmp/mcluster-manager-0.0.1-21.el6.noarch.rpm %s" % (target_file))
         child = pexpect.spawn(r"docker attach %s" % (containerID))
         child.expect(["bash", pexpect.EOF, pexpect.TIMEOUT], timeout=5)
-        child.sendline("rpm -qa mcluster-manager")
-        index = child.expect(["21", pexpect.EOF, pexpect.TIMEOUT], timeout=5)
-        if index != 0:
-            child.sendline("service mcluster-manager stop")
-            child.expect(["OK", pexpect.EOF, pexpect.TIMEOUT], timeout=5)
-            child.sendline("rpm -U /tmp/mcluster-manager-0.0.1-21.el6.noarch.rpm")
-            child.expect(["bash", pexpect.EOF, pexpect.TIMEOUT], timeout=10)
-            child.sendline("service mcluster-manager start")
-            child.expect(["OK", pexpect.EOF, pexpect.TIMEOUT], timeout=5)
+        version = pexpect.run("rpm -qa mcluster-manager").strip()
+        if version:
+            ver, sub = version[0].split("-")
+            if ver == '0.0.1' and int(sub) < 21:
+                child.sendline("service mcluster-manager stop")
+                child.expect(["OK", pexpect.EOF, pexpect.TIMEOUT], timeout=5)
+                child.sendline("rpm -U /tmp/mcluster-manager-0.0.1-21.el6.noarch.rpm")
+                child.expect(["bash", pexpect.EOF, pexpect.TIMEOUT], timeout=10)
+                child.sendline("service mcluster-manager start")
+                child.expect(["OK", pexpect.EOF, pexpect.TIMEOUT], timeout=5)
+#         child.sendline("rpm -qa mcluster-manager")
+#         index = child.expect(["21", pexpect.EOF, pexpect.TIMEOUT], timeout=5)
+#         if index != 0:
+#             child.sendline("service mcluster-manager stop")
+#             child.expect(["OK", pexpect.EOF, pexpect.TIMEOUT], timeout=5)
+#             child.sendline("rpm -U /tmp/mcluster-manager-0.0.1-21.el6.noarch.rpm")
+#             child.expect(["bash", pexpect.EOF, pexpect.TIMEOUT], timeout=10)
+#             child.sendline("service mcluster-manager start")
+#             child.expect(["OK", pexpect.EOF, pexpect.TIMEOUT], timeout=5)
         child.close(force=True)
             
     def mcluster_manager_status(self, containerName = None):
