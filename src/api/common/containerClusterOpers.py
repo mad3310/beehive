@@ -3,7 +3,7 @@ Created on Sep 8, 2014
 
 @author: root
 '''
-import sys
+import sys 
 import logging
 import time
 import urllib
@@ -11,11 +11,14 @@ import json
 import traceback
 import copy
 
+
 from tornado.httpclient import HTTPRequest
 from tornado.options import options
 from common.abstractAsyncThread import Abstract_Async_Thread
 from common.abstractContainerOpers import Abstract_Container_Opers
 from common.helper import _request_fetch, _retrieve_userName_passwd
+from common.utils.exceptions import MyError
+
 
 class ContainerCluster_Opers(Abstract_Container_Opers):
     
@@ -55,11 +58,33 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         check_rst_dict.setdefault('containers', message_list)
         check_rst_dict.setdefault('message', 'check all containers OK!')
         return check_rst_dict
+    
+    def config(self, conf_dict={}):
         
+        logging.info('config args: %s' % conf_dict)
+        _type = conf_dict.pop('type')
+        if _type == 'normal':
+            conf_record = self.zkOper.retrieve_mcluster_info_from_config()
+            re_conf_dict = self.__rewrite_conf_info(conf_dict, conf_record)
+            self.zkOper.writeClusterNormalConf(re_conf_dict)
+        elif _type == 'vip':
+            conf_record = self.zkOper.retrieve_mclustervip_info_from_config()
+            re_conf_dict = self.__rewrite_conf_info(conf_dict, conf_record)
+            self.zkOper.writeClusterVipConf(re_conf_dict)
+
+    def __rewrite_conf_info(self, conf_dict, conf_record):
+        for key, value in conf_dict.items():
+            if key in conf_record:
+                conf_record[key] = value
+            else:
+                conf_record.setdefault(key, value)
+        return conf_record
+               
     def destory(self):
         pass
 
-class ContainerCluster_Create_Action(Abstract_Async_Thread):    
+
+class ContainerCluster_Create_Action(Abstract_Async_Thread): 
     dict = {}
     
     def __init__(self, dict):
@@ -90,32 +115,23 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
         logging.info('choose host iplist: %s' % str(create_container_node_ip_list) )
         
         container_finished_flag_dict = self.__dispatch_create_container_task(create_container_node_ip_list, create_container_arg_list, 
-                                                                             adminUser, adminPasswd)
+                                                                             containerCount, adminUser, adminPasswd)
         logging.info('create container result: %s' % str(container_finished_flag_dict))
         
-        check_result = self.__check_result(containerCount, container_finished_flag_dict)
-        if check_result:
-            self._send_email("container", " container create operation finished on server cluster")
+        check_result = self.__check_result(create_container_node_ip_list, container_finished_flag_dict)
+        logging.info('check_result: %s' % check_result)
+        if not check_result:
+            raise MyError('not all container succeed created')
         
         flag = self._check_mlcuster_manager_stat(create_container_node_ip_list, create_container_arg_list, 10)
         
         if flag:
             container_cluster_info = self.zkOper.retrieve_container_cluster_info(containerClusterName)
-            container_cluster_info.setdefault('start_flag', 'done')
-            self.zkOper.write_container_cluster_info(container_cluster_info)     
+            container_cluster_info.setdefault('start_flag', 'succeed')
+            self.zkOper.write_container_cluster_info(container_cluster_info)
+            self._send_email("container", " container create operation finished on server cluster")
     
-    
-    def _check_mlcuster_manager_stat(self, create_container_node_ip_list, create_container_arg_list, num):
-        
-        while num:
-            result = self.__start_mcluster_manager( create_container_node_ip_list, create_container_arg_list)
-            if result:
-                logging.info('successful!!!')
-                return True
-            num -= 1
-        
-            
-    def retrieve_ip_resource(self, createContainerCount):
+    def __retrieve_ip_resource(self, createContainerCount):
         containerIPList = None
         isLock,lock = self.zkOper.lock_assign_ip()
         try:
@@ -132,51 +148,74 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
         containerClusterProps.setdefault('containerClusterName', containerClusterName)
         self.zkOper.write_container_cluster_info(containerClusterProps)
      
-    def issue_create_container_request(self, host_ip,  args_dict, adminUser, adminPasswd):
+    def issue_create_container_request(self, host_ip,  args_dict, admin_user, admin_passwd):
         url_post = "/inner/container" 
         requesturi = "http://%s:%s%s" % (host_ip, options.port, url_post)
         logging.info('requesturi:%s' % requesturi)
         logging.info('args_dict:%s' % args_dict)
         args_dict.setdefault('host_ip', host_ip)
-        
         request = HTTPRequest(url=requesturi, method='POST', body=urllib.urlencode(args_dict), \
-                              auth_username = adminUser, auth_password = adminPasswd)
-        
-        _request_fetch(request)
-        return True
+                              auth_username = admin_user, auth_password = admin_passwd)
+        fetch_ret = _request_fetch(request)
+        logging.info('POST result :%s' % str(fetch_ret))
+        try:
+            ret = eval(fetch_ret).get('response').get('message')
+            if ret == 'Success Create Container':
+                return True
+        except:
+            logging.error(str(traceback.format_exc()))
+            return False
     
     def __get_container_params(self, containerCount, containerClusterName):
 
         create_container_arg_list = []
-        containerIPList = self.retrieve_ip_resource(containerCount)
+        containerIPList = self.__retrieve_ip_resource(containerCount)
         
+        volumes, binds = self.__getNormalVolumesArgs(containerClusterName)
         for i in range(int(containerCount)):
             create_container_arg_dict, env = {}, {}
             create_container_arg_dict.setdefault('containerClusterName', containerClusterName)
             create_container_arg_dict['container_ip'] = containerIPList[i]
-            create_container_arg_dict['container_name'] = 'd_mcl_%s_node_%s' % (containerClusterName, str(i+1))
-            #create_container_arg_dict.setdefault('volumes', ['/srv/mcluster', '/data/mcluster_data'])
-            create_container_arg_dict.setdefault('volumes', ['/data/mcluster_data'])
-            
+            container_name = 'd_mcl_%s_node_%s' % (containerClusterName, str(i+1))
+            create_container_arg_dict['container_name'] = container_name
+                        
             if i == int(containerCount-1):
                 create_container_arg_dict['container_type'] = 'mclustervip'
             else:
                 create_container_arg_dict['container_type'] = 'mclusternode'
+                create_container_arg_dict.setdefault('volumes', volumes)
+                create_container_arg_dict.setdefault('binds', binds)
                 for j, containerIp in enumerate(containerIPList):
                     num = j+1
                     env.setdefault('N%s_IP' % str(num), containerIp)
-                    env.setdefault('N%d_HOSTNAME' % num, 'letv_mcluster_docker_db_node_%d' % num)
+                    env.setdefault('N%d_HOSTNAME' % num, 'd_mcl_%s_node_%s' % (containerClusterName, str(num+1)))
                     env.setdefault('ZKID', i+1)
             
             gateway = self.__get_gateway_from_ip(containerIp)
             env.setdefault('NETMASK', '255.255.255.0')
             env.setdefault('GATEWAY', gateway)
-            env.setdefault('HOSTNAME', 'letv_mcluster_docker_db_node_%s' % str(i+1))
+            env.setdefault('HOSTNAME', 'd_mcl_%s_node_%s' % (containerClusterName, str(i+1)))
             env.setdefault('IP', containerIPList[i])
             
             create_container_arg_dict.setdefault('env', env)
             create_container_arg_list.append(create_container_arg_dict)
         return create_container_arg_list
+    
+    def __getNormalVolumesArgs(self, containerClusterName):
+        volumes, binds = [], {}
+        mcluster_conf_info = self.zkOper.retrieve_mcluster_info_from_config()
+        logging.info('mcluster_conf_info: %s' % str(mcluster_conf_info))
+        mount_dir = eval( mcluster_conf_info.get('mountDir') )
+        for k,v in mount_dir.items():
+            volumes.append(k)
+            if '/srv/docker/vfs/dir' in v:
+                _path = '/srv/docker/vfs/dir/%s' % containerClusterName
+                if not os.path.exists(_path):
+                    os.mkdir(_path)
+                binds.setdefault(v, {'bind': _path})
+            else:
+                binds.setdefault(v, {'bind': k})
+        return volumes, binds
     
     def __choose_host(self):
         
@@ -185,44 +224,40 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
         if len(data_node_info_list) < 4:
             create_container_node_ip_list = data_node_info_list
             create_container_node_ip_list.append(data_node_info_list[-1])
-        
         elif len(data_node_info_list) == 4:
             create_container_node_ip_list = data_node_info_list
-        
         else:
             url_post = "/server"
             resource_dict = {}
             for data_node_ip in data_node_info_list:
                 requesturi = "http://%s:%s%s" % (data_node_ip, options.port, url_post)
                 request = HTTPRequest(url=requesturi, method='GET')
-                return_result = _request_fetch(request)
-                retrun_dict = json.loads(return_result)
-                resource_dict.setdefault(data_node_ip, retrun_dict['response'])
-                
+                rst = _request_fetch(request)
+                return_dict = json.loads(rst)
+                resource_dict.setdefault(data_node_ip, return_dict['response'])
             logging.info("Before sort, all server the resource info, the resource value is %s" % str(resource_dict))
-                
             create_container_node_ip_list = self._sort_server_resource(resource_dict)
-            
             logging.info("After sort, the resource list is %s" % str(create_container_node_ip_list))
-        
         return create_container_node_ip_list
         
-    def __dispatch_create_container_task(self, create_container_node_ip_list,  create_container_arg_list, adminUser, adminPasswd):
+    def __dispatch_create_container_task(self, create_container_node_ip_list,  create_container_arg_list, 
+                                         container_count, admin_user, admin_passwd):
         container_finished_flag_dict = {}
-        for i in range(4):
+        for i in range(container_count):
             args_dict = create_container_arg_list[i]
             host_ip = create_container_node_ip_list[i]
-            create_finished = self.issue_create_container_request(host_ip,  args_dict, adminUser, adminPasswd)
+            create_finished = self.issue_create_container_request(host_ip,  args_dict, admin_user, admin_passwd)
             container_finished_flag_dict.setdefault(host_ip, create_finished)
         return container_finished_flag_dict
             
-    def __check_result(self, containerCount, container_finished_flag_dict):
+    def __check_result(self, create_container_node_ip_list, container_finished_flag_dict):
+        host_ip_list = list(set(create_container_node_ip_list))
+        containerCount = len(host_ip_list)
         container_create_finished_count = 0
         for data_node_ip, create_finished in container_finished_flag_dict.iteritems():
             if create_finished:
                 container_create_finished_count += 1
         return container_create_finished_count == containerCount
-    
     
     def __get_gateway_from_ip(self, ip):
         ip_item_list = ip.split('.')
@@ -233,38 +268,42 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
     def _sort_server_resource(self, dict):
         resource_list = []
         create_node_ip_list = []
-        
         for (data_node_ip, resource_sub_dict) in dict.items():
             memoryCount = resource_sub_dict.get('memoryCount')
-            
             diskCount = resource_sub_dict.get('diskCount')
-            
-            resourceCount = memoryCount * 600 + diskCount *0.4
-            
+            resourceCount = memoryCount * 0.6 + diskCount *0.4
             resource_list.append(resourceCount)
-            
         resource_list.sort()
-        
         for resourceCount in resource_list:
             for (data_node_ip, resource_sub_dict) in dict.items():
                 memoryCount = resource_sub_dict.get('memoryCount')
                 diskCount = resource_sub_dict.get('diskCount')
-                resourceCount_cal_tmp = memoryCount * 600 + diskCount *0.4
+                resourceCount_cal_tmp = memoryCount * 0.6 + diskCount *0.4
                 if resourceCount_cal_tmp == resourceCount:
                     create_node_ip_list.insert(0,data_node_ip)
                     del dict[data_node_ip]
                     break
-                    
         return create_node_ip_list
 
-    def __start_mcluster_manager(self, create_container_node_ip_list, create_container_arg_list):
-        stat = True
-        for index,host_ip in enumerate(create_container_node_ip_list):
-            containerName = create_container_arg_list[index].get('container_name')
-            ret = self.__get(containerName, host_ip)
-            if not ret:
-                stat = False
-        return stat
+    def _check_mlcuster_manager_stat(self, create_container_node_ip_list, create_container_arg_list, num):
+        logging.info('wait 7 seconds...')
+        time.sleep(7)
+        while num:
+            stat = True
+            succ = []
+            for index,host_ip in enumerate(create_container_node_ip_list):
+                containerName = create_container_arg_list[index].get('container_name')
+                ret = self.__get(containerName, host_ip)
+                if ret:
+                    succ.append(host_ip)
+                else:
+                    stat = False
+            if stat:
+                logging.info('successful!!!')
+                return True
+            for item in succ:
+                create_container_node_ip_list.remove(item)
+            num -= 1
     
     def __get(self, containerName, container_node):
         args_dict = {}
@@ -272,30 +311,15 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
         url_post = "/inner/MclusterManager/status/%s" % containerName
         requesturi = "http://%s:%s%s" % (container_node, options.port, url_post)
         logging.info('requesturi: %s' % requesturi)
-        
-        request = HTTPRequest(url=requesturi, method='GET')
-        fetch_ret = _request_fetch(request)
-        logging.info('fetch_ret:%s' % str(fetch_ret))
-        fetch_ret = json.loads(fetch_ret)
-        logging.info('fetch_ret2:%s' % str(fetch_ret))
-        logging.info('get type :%s' % str(type(fetch_ret) ) )
-        ret = fetch_ret.get('response').get('message')
-        logging.info('fetch_ret.get response :%s' % type(fetch_ret.get('response')))
-        logging.info('get reslut: %s, type: %s' % ( str(ret), type(ret) ))
-        
-        return ret
-    
-    def __check_create_status(self, container_ip):
-        
-        create_finished = False
-        
-        while not create_finished:
-            
-            created_nodes = self.zkOper.retrieve_started_nodes()
-            
-            for i in range(len(created_nodes)):
-                started_node = created_nodes[i]
-                if started_node == container_ip:
-                    create_finished = True
-            time.sleep(1)
-        return create_finished
+        try:
+            request = HTTPRequest(url=requesturi, method='GET', connect_timeout=40.0, request_timeout=40.0)
+            fetch_ret = _request_fetch(request)
+            logging.info('fetch_ret:%s' % str(fetch_ret))
+            fetch_ret = json.loads(fetch_ret)
+            logging.info('get type :%s' % str(type(fetch_ret) ) )
+            ret = fetch_ret.get('response').get('message')
+            logging.info('fetch_ret.get response :%s' % type(fetch_ret.get('response')))
+            logging.info('get reslut: %s, type: %s' % ( str(ret), type(ret) ))
+            return ret
+        except:
+            return False

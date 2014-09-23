@@ -19,23 +19,24 @@ class Container_Opers(Abstract_Container_Opers):
     
     def issue_create_action(self, arg_dict):
         
-        container_node_info = self._get_container_node_info(arg_dict)
-        logging.info('send to liuhao: %s' % str(container_node_info))
+        container_node_info = self._get_container_info(arg_dict)
+        logging.info('get container info: %s' % str(container_node_info))
         
         create_result = self.create_container(arg_dict)
         
         if create_result:
             logging.info('create container successful, write info!')
             self.zkOper.write_container_node_info(container_node_info)
-        
+            return
+        failed_container_name = arg_dict.get('container_name')
+        return failed_container_name
         
     def create_container(self, arg_dict={}):
         
-        logging.info('create_container arg: %s' % str(arg_dict) )
+        logging.info('create_container args: %s' % str(arg_dict) )
         container_ip = arg_dict.get('container_ip')
         container_name = arg_dict.get('container_name')
         container_type = arg_dict.get('container_type')
-        _volumes = arg_dict.get('volumes')
         env = eval(arg_dict.get('env'))
         
         logging.info('container_ip: %s' % str(container_ip))
@@ -44,23 +45,29 @@ class Container_Opers(Abstract_Container_Opers):
         logging.info('env: %s' % str(env) )
         
         if container_type == 'mclusternode':
-            image_name = 'letv/mcluster:0.0.8'
-            _ports = [(3306, 'tcp'), (4567, 'tcp'), (4568, 'tcp'), (4569, 'tcp'), (2181, 'tcp'), (2888, 'tcp'), (3888, 'tcp')]
-            _binds={ '/data/mcluster_data/d-mcl-clvimysql3309':{'bind':'/data/mcluster_data'}}
-            
-        else:
-            image_name = 'letv/mcluster_vip_gbalancer:0.0.9'
-            _binds = None
-            _ports = None
+            mcluster_info = self.zkOper.retrieve_mcluster_info_from_config()
+            version = mcluster_info.get('image_version')
+            name = mcluster_info.get('image_name')
+            image_name = '%s:%s' % (name, version)
+            _ports = eval(mcluster_info.get('ports'))
+            _mem_limit = mcluster_info.get('mem_limit')
+            _volumes = arg_dict.get('volumes')
+            _binds = eval( arg_dict.get('binds'))
+        
+        elif container_type == 'mclustervip':
+            mclustervip_info = self.zkOper.retrieve_mclustervip_info_from_config()
+            version = mclustervip_info.get('image_version')
+            name = mclustervip_info.get('image_name')
+            image_name = '%s:%s' % (name, version)
+            _mem_limit = mclustervip_info.get('mem_limit')
+            _binds, _ports, _volumes = None, None, None
         
         try:
             c = docker.Client('unix://var/run/docker.sock')
             container_id = c.create_container(image=image_name, hostname=container_name, user='root',
                                               name=container_name, environment=env, tty=True, ports=_ports, stdin_open=True,
-                                              mem_limit='1g', volumes=_volumes, volumes_from=None)
-            
+                                              mem_limit=_mem_limit, volumes=_volumes, volumes_from=None)
             c.start(container_name, privileged=True, network_mode='bridge', binds=_binds)
-            logging.info( 'c.container: %s' % str( c.containers(latest=True)))
         except:
             logging.error('the exception of creating container:%s' % str(traceback.format_exc()))
             return False
@@ -71,7 +78,7 @@ class Container_Opers(Abstract_Container_Opers):
             return False
         return True
     
-    def _get_container_node_info(self, arg_dict={}):
+    def _get_container_info(self, arg_dict={}):
         env = eval(arg_dict.get('env'))
         container_node_info= {}
         container_node_info.setdefault('containerClusterName', arg_dict.get('containerClusterName'))
@@ -84,7 +91,6 @@ class Container_Opers(Abstract_Container_Opers):
         container_node_info.setdefault('zookeeperId', env.get('ZKID'))
         container_node_info.setdefault('netMask', env.get('NETMASK'))
         container_node_info.setdefault('gateAddr', env.get('GATEWAY'))
-
         return container_node_info
     
     def _check_container_status(self, c):
@@ -95,4 +101,4 @@ class Container_Opers(Abstract_Container_Opers):
         return False
     
     def destory(self):
-        pass  
+        pass

@@ -34,7 +34,27 @@ class ZkOpers(object):
             return True
         return False
     
-    def getDataNodeNumber(self,clusterUUID):
+    def existDataNode(self, clusterUUID, dataNodeIp):
+        path = self.rootPath + "/" + clusterUUID + "/dataNode/" + dataNodeIp
+        self.zk.ensure_path(path)
+        resultValue = self._retrieveSpecialPathProp(path)
+        if resultValue:
+            return True
+        return False        
+    
+    def writeClusterNormalConf(self, info):
+        clusterUUID = self.getClusterUUID()
+        path = self.rootPath + '/' + clusterUUID + '/config/normal'
+        self.zk.ensure_path(path)
+        self.zk.set(path, str(info))
+
+    def writeClusterVipConf(self, info):
+        clusterUUID = self.getClusterUUID()
+        path = self.rootPath + '/' + clusterUUID + '/config/vip'
+        self.zk.ensure_path(path)
+        self.zk.set(path, str(info))
+        
+    def getDataNodeNumber(self, clusterUUID):
         path = self.rootPath + "/" + clusterUUID
         dataNodeNumber = self.zk.get_children(path)
         return dataNodeNumber
@@ -51,7 +71,6 @@ class ZkOpers(object):
         self.zk.ensure_path(path)
         self.zk.set(path, str(clusterProps))#vesion need to write
         
-            
     def writeDataNodeInfo(self,clusterUUID,dataNodeProps):
         dataNodeIp = dataNodeProps['dataNodeIp']
         path = self.rootPath + "/" + clusterUUID + "/dataNode/" + dataNodeIp
@@ -172,6 +191,16 @@ class ZkOpers(object):
         clusterUUID = self.getClusterUUID()
         path = self.rootPath + '/' +clusterUUID + '/ipPool/' + ip
         self.zk.ensure_path(path)
+
+    def retrieve_mcluster_info_from_config(self):
+        clusterUUID = self.getClusterUUID()
+        path = self.rootPath + "/" + clusterUUID + '/config/normal'
+        return self._retrieveSpecialPathProp(path)
+    
+    def retrieve_mclustervip_info_from_config(self):
+        clusterUUID = self.getClusterUUID()
+        path = self.rootPath + "/" + clusterUUID + '/config/vip'
+        return self._retrieveSpecialPathProp(path)
         
     def retrieve_ip(self, ipCount):
         clusterUUID = self.getClusterUUID()
@@ -213,7 +242,6 @@ class ZkOpers(object):
         if lock is not None:
             lock.release()
     
-    
     def _return_children_to_list(self, path):
         logging.debug("check children:" + path)
         self.zk.ensure_path(path)
@@ -239,6 +267,5 @@ class ZkOpers(object):
         resultValue = {}
         if data != None and data != '':
             resultValue = eval(data)
-            
         return resultValue
         

@@ -9,7 +9,6 @@ from base import APIHandler
 from tornado.options import options
 
 
-
 # admin conf
 # eg. curl -d "zkAddress=10.204.8.211" "http://localhost:8888/admin/conf"
 class AdminConf(APIHandler):
