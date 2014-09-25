@@ -20,6 +20,7 @@ class ContainerHandler(APIHandler):
         create_rst = self.containerOpers.issue_create_action(args)
         
         if create_rst:
+            logging.error('container %s create failed' % create_rst)
             raise HTTPAPIError(status_code=417, error_detail="container created failed!",\
                                 notification = "direct", \
                                 log_message= "container created failed!",\

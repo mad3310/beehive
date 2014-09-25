@@ -93,27 +93,3 @@ def _doHttp(uri, method, body, headers = {}):
     finally:
         if conn:
             _tryExcept(conn.close)
-
-def doPost(url, body):
-    data = urllib.urlencode(body)
-    rst = urllib.urlopen(url, data)
-    return rst.read()
-
-if __name__ == '__main__':
-    #env = {'ZKID':'1', 'IP':'10.160.145.106', 'HOSTNAME':'docker-m-n-2', 'NETMASK':'255.255.0.0',
-           #'GATEWAY':'10.160.0.1', 'N1_IP':'10.160.145.105', 'N1_HOSTNAME':'docker-m-n-1', 'N2_IP':'10.160.145.106',
-           #'N2_HOSTNAME':'docker-m-n-2', 'N3_IP':'10.160.145.107', 'N3_HOSTNAME':'docker-m-n-3'}
-    
-    #body = {'hasIP' : True,
-         #'container_1_args' : {'hostIP':'192.168.1.106', 'ipAddr':'10.160.145.105', 'containerName':'test-m-1', 'zookeeperId':'1', 'geteAddr':'10.160.0.1', 'netMark':'255.255.0.0'},
-         #'container_2_args':{'hostIP':'192.168.1.106', 'ipAddr':'10.160.145.106', 'containerName':'test-m-2', 'zookeeperId':'2', 'geteAddr':'10.160.0.1', 'netMark':'255.255.0.0'},
-         #'container_3_args':{'hostIP':'192.168.1.106', 'ipAddr':'10.160.145.107', 'containerName':'test-m-3', 'zookeeperId':'3', 'geteAddr':'10.160.0.1', 'netMark':'255.255.0.0'}
-         #}
-    #print doPost('http://192.168.1.106:8080/dealVIP', body)
-    
-    body = {'containerName': 'test-m-3', 'zookeeperId': '3', 'n3_ip': '10.160.145.107', 
-     'ipAddr': '10.160.145.107', 'netMark': '255.255.0.0', 'n2_ip': '10.160.145.106', 
-     'geteAddr': '10.160.0.1', 'hostIP': '192.168.1.106', 'n3_hostname': 'test-m-3', 
-     'n1_ip': '10.160.145.105', 'n1_hostname': 'test-m-1', 'n2_hostname': 'test-m-2'}
-    url = 'http://192.168.1.106:8080/mclusterContainer'
-    print doPost(url, body)
