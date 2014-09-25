@@ -3,6 +3,10 @@
 
 import httplib, urllib
 import socket, time
+import logging
+
+from common.helper import _request_fetch
+from tornado.httpclient import HTTPRequest
 
 def _isExcept(e, eType = Exception):
     return isinstance(e, eType)
@@ -94,26 +98,25 @@ def _doHttp(uri, method, body, headers = {}):
         if conn:
             _tryExcept(conn.close)
 
-def doPost(url, body):
-    data = urllib.urlencode(body)
-    rst = urllib.urlopen(url, data)
-    return rst.read()
+def http_post(url, body={}, _connect_timeout=40.0, _request_timeout=40.0, auth_username=None, auth_password=None):
+    try:
+        request = HTTPRequest(url=url, method='POST', body=urllib.urlencode(body), connect_timeout=_connect_timeout, \
+                              request_timeout=_request_timeout, auth_username = auth_username, auth_password = auth_password)
+        fetch_ret = _request_fetch(request)
+        logging.info('POST result :%s' % str(fetch_ret))
+        return fetch_ret
+    except Exception, e:
+        logging.error(str(e))
+        return e
 
-if __name__ == '__main__':
-    #env = {'ZKID':'1', 'IP':'10.160.145.106', 'HOSTNAME':'docker-m-n-2', 'NETMASK':'255.255.0.0',
-           #'GATEWAY':'10.160.0.1', 'N1_IP':'10.160.145.105', 'N1_HOSTNAME':'docker-m-n-1', 'N2_IP':'10.160.145.106',
-           #'N2_HOSTNAME':'docker-m-n-2', 'N3_IP':'10.160.145.107', 'N3_HOSTNAME':'docker-m-n-3'}
-    
-    #body = {'hasIP' : True,
-         #'container_1_args' : {'hostIP':'192.168.1.106', 'ipAddr':'10.160.145.105', 'containerName':'test-m-1', 'zookeeperId':'1', 'geteAddr':'10.160.0.1', 'netMark':'255.255.0.0'},
-         #'container_2_args':{'hostIP':'192.168.1.106', 'ipAddr':'10.160.145.106', 'containerName':'test-m-2', 'zookeeperId':'2', 'geteAddr':'10.160.0.1', 'netMark':'255.255.0.0'},
-         #'container_3_args':{'hostIP':'192.168.1.106', 'ipAddr':'10.160.145.107', 'containerName':'test-m-3', 'zookeeperId':'3', 'geteAddr':'10.160.0.1', 'netMark':'255.255.0.0'}
-         #}
-    #print doPost('http://192.168.1.106:8080/dealVIP', body)
-    
-    body = {'containerName': 'test-m-3', 'zookeeperId': '3', 'n3_ip': '10.160.145.107', 
-     'ipAddr': '10.160.145.107', 'netMark': '255.255.0.0', 'n2_ip': '10.160.145.106', 
-     'geteAddr': '10.160.0.1', 'hostIP': '192.168.1.106', 'n3_hostname': 'test-m-3', 
-     'n1_ip': '10.160.145.105', 'n1_hostname': 'test-m-1', 'n2_hostname': 'test-m-2'}
-    url = 'http://192.168.1.106:8080/mclusterContainer'
-    print doPost(url, body)
+def http_get(url, _connect_timeout=30.0, _request_timeout=30.0, auth_username=None, auth_password=None):   
+    try:
+        request = HTTPRequest(url=url, method='GET', connect_timeout=_connect_timeout, request_timeout=_request_timeout,\
+                              auth_username = auth_username, auth_password = auth_password)
+        fetch_ret = _request_fetch(request)
+        return_dict = json.loads(fetch_ret)
+        logging.info('POST result :%s' % str(return_dict))
+        return return_dict
+    except Exception, e:
+        logging.error(str(e))
+        return e

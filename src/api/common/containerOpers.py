@@ -8,7 +8,7 @@ import traceback
 import docker
 import os
 
-from common.abstractContainerOpers import Abstract_Container_Opers
+from abstractContainerOpers import Abstract_Container_Opers
 
 class Container_Opers(Abstract_Container_Opers):
     
@@ -19,22 +19,24 @@ class Container_Opers(Abstract_Container_Opers):
     
     def issue_create_action(self, arg_dict):
         
-        container_node_info = self._get_container_node_info(arg_dict)
-        logging.info('send to liuhao: %s' % str(container_node_info))
+        container_node_info = self._get_container_info(arg_dict)
+        logging.info('get container info: %s' % str(container_node_info))
         
         create_result = self.create_container(arg_dict)
         
         if create_result:
             logging.info('create container successful, write info!')
             self.zkOper.write_container_node_info(container_node_info)
-        
+            return
+        failed_container_name = arg_dict.get('container_name')
+        return failed_container_name
         
     def create_container(self, arg_dict={}):
         
+        logging.info('create_container args: %s' % str(arg_dict) )
         container_ip = arg_dict.get('container_ip')
         container_name = arg_dict.get('container_name')
         container_type = arg_dict.get('container_type')
-        _volumes = arg_dict.get('volumes')
         env = eval(arg_dict.get('env'))
         
         logging.info('container_ip: %s' % str(container_ip))
@@ -43,30 +45,30 @@ class Container_Opers(Abstract_Container_Opers):
         logging.info('env: %s' % str(env) )
         
         if container_type == 'mclusternode':
-            image_name = 'letv/mcluster:0.0.3'
-        else:
-            image_name = 'letv/vip:0.0.3'
+            mcluster_info = self.zkOper.retrieve_mcluster_info_from_config()
+            version = mcluster_info.get('image_version')
+            name = mcluster_info.get('image_name')
+            image_name = '%s:%s' % (name, version)
+            _ports = eval(mcluster_info.get('ports'))
+            _mem_limit = mcluster_info.get('mem_limit')
+            _volumes = arg_dict.get('volumes')
+            binds = eval( arg_dict.get('binds'))
+            _binds = self.__rewrite_bind_arg(container_name, binds)
         
-        _ports = [(3306, 'tcp'), (4567, 'tcp'), (4568, 'tcp'), (4569, 'tcp'), (2181, 'tcp'), (2888, 'tcp'), (3888, 'tcp')]
-        volume_path = '/srv/docker/vfs/dir/%s' % container_name
+        elif container_type == 'mclustervip':
+            mclustervip_info = self.zkOper.retrieve_mclustervip_info_from_config()
+            version = mclustervip_info.get('image_version')
+            name = mclustervip_info.get('image_name')
+            image_name = '%s:%s' % (name, version)
+            _mem_limit = mclustervip_info.get('mem_limit')
+            _binds, _ports, _volumes = None, None, None
         
-#         if not os.path.exists(volume_path):
-#             os.mkdir(volume_path)
-            
         try:
             c = docker.Client('unix://var/run/docker.sock')
             container_id = c.create_container(image=image_name, hostname=container_name, user='root',
                                               name=container_name, environment=env, tty=True, ports=_ports, stdin_open=True,
-                                              mem_limit='1g', volumes=_volumes, volumes_from=None)
-            
-            c.start(container_name, privileged=True, network_mode='bridge', 
-                    binds={ '/data/mcluster_data/d-mcl-clvimysql3309':{'bind':'/data/mcluster_data'},
-                            #volume_path:{'bind':'/srv/mcluster'}
-                            } ,
-                    port_bindings={3306: '', 4567: '', 4568: '', 4569: '', 2181: '', 2888: '', 3888: ''}
-                    )
-            
-            logging.info( 'c.container: %s' % str( c.containers(latest=True)))
+                                              mem_limit=_mem_limit, volumes=_volumes, volumes_from=None)
+            c.start(container_name, privileged=True, network_mode='bridge', binds=_binds)
         except:
             logging.error('the exception of creating container:%s' % str(traceback.format_exc()))
             return False
@@ -77,11 +79,12 @@ class Container_Opers(Abstract_Container_Opers):
             return False
         return True
     
-    def _get_container_node_info(self, arg_dict={}):
+    def _get_container_info(self, arg_dict={}):
         env = eval(arg_dict.get('env'))
         container_node_info= {}
         container_node_info.setdefault('containerClusterName', arg_dict.get('containerClusterName'))
         container_node_info.setdefault('containerNodeIP', arg_dict.get('container_ip'))
+        container_node_info.setdefault('hostIp', arg_dict.get('host_ip'))
         container_node_info.setdefault('ipAddr', arg_dict.get('container_ip'))
         container_node_info.setdefault('containerName', arg_dict.get('container_name'))
         container_node_info.setdefault('mountDir', arg_dict.get('volumes'))
@@ -89,7 +92,6 @@ class Container_Opers(Abstract_Container_Opers):
         container_node_info.setdefault('zookeeperId', env.get('ZKID'))
         container_node_info.setdefault('netMask', env.get('NETMASK'))
         container_node_info.setdefault('gateAddr', env.get('GATEWAY'))
-    
         return container_node_info
     
     def _check_container_status(self, c):
@@ -99,11 +101,38 @@ class Container_Opers(Abstract_Container_Opers):
             return True
         return False
     
-    def destory(self):
-        pass
+    def __rewrite_bind_arg(self, container_name, bind_arg):
+        re_bind_arg = {}
+        for k,v in bind_arg.items():
+            if '/srv/docker/vfs/dir' in k:
+                _path = '/srv/docker/vfs/dir/%s' % container_name
+                if not os.path.exists(_path):
+                    os.mkdir(_path)
+                re_bind_arg.setdefault(_path, v)
+            else:
+                re_bind_arg.setdefault(k, v)
+        return re_bind_arg        
     
+    def stop(self, container_name):
+        try:
+            c = docker.Client('unix://var/run/docker.sock')
+            c.stop(container_name, 20)
+            return True
+        except:
+            logging.error(str(traceback.format_exc()))
+            return False
     
-    
-    
-    
-    
+    def destory(self, args):
+        try:
+            container_name = args.get('container_name')
+            c = docker.Client('unix://var/run/docker.sock')
+            c.kill(container_name)
+            c.remove_container(container_name, force=True)
+            return True
+        except:
+            logging.error(str(traceback.format_exc()))
+            return False
+        
+        
+        
+        

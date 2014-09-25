@@ -42,6 +42,11 @@ class HTTPAPIError(HTTPError):
             if v:
                 err[name] = v
 
+class MyError(Exception):
+    def __init__(self, value):
+        self.value = value
+    def __str__(self):
+        return repr(self.value)
 
 _error_types = {400: "param_error",
                 401: "invalid_auth",
