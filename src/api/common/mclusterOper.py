@@ -6,6 +6,7 @@ import pexpect
 import commands
 import os
 import time
+import logging
 
 class MclusterManager(Abstract_Container_Opers):
         
@@ -44,10 +45,13 @@ class MclusterManager(Abstract_Container_Opers):
             os.system("cp /tmp/mcluster-manager-0.0.1-21.el6.noarch.rpm %s" % (target_file))
         child = pexpect.spawn(r"docker attach %s" % (containerID))
         child.expect(["bash", pexpect.EOF, pexpect.TIMEOUT], timeout=5)
-        version = pexpect.run("rpm -qa mcluster-manager").strip()
+        child.sendline("rpm -qa mcluster-manager")
+        child.expect(["0.0.1.*.el6", pexpect.EOF, pexpect.TIMEOUT], timeout=5)
+        version = child.after.replace('.el6','')
         if version:
-            ver, sub = version[0].split("-")
-            if ver == '0.0.1' and int(sub) < 21:
+            logging.info('version: %s' % str(version) )
+            ver, sub = version.split("-")
+            if ver == '0.0.1' and int(sub) < 33:
                 child.sendline("service mcluster-manager stop")
                 child.expect(["OK", pexpect.EOF, pexpect.TIMEOUT], timeout=5)
                 child.sendline("rpm -U /tmp/mcluster-manager-0.0.1-21.el6.noarch.rpm")

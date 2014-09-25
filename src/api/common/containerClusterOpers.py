@@ -3,21 +3,16 @@ Created on Sep 8, 2014
 
 @author: root
 '''
-import sys 
-import logging
-import time
-import urllib
-import json
-import traceback
-import copy
-
+import sys, time, json, copy, random
+import logging, urllib, traceback
 
 from tornado.httpclient import HTTPRequest
 from tornado.options import options
-from common.abstractAsyncThread import Abstract_Async_Thread
-from common.abstractContainerOpers import Abstract_Container_Opers
-from common.helper import _request_fetch, _retrieve_userName_passwd
-from common.utils.exceptions import MyError
+from abstractAsyncThread import Abstract_Async_Thread
+from abstractContainerOpers import Abstract_Container_Opers
+from helper import _request_fetch, _retrieve_userName_passwd
+from utils.exceptions import MyError
+from utils.autoutil import *
 
 
 class ContainerCluster_Opers(Abstract_Container_Opers):
@@ -29,6 +24,11 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         logging.info('create msg: %s' % dict)
         containerCluster_create_action = ContainerCluster_Create_Action(dict)
         containerCluster_create_action.start()
+
+    def destory(self, dict):
+        logging.info('destory msg: %s' % dict)
+        containerCluster_destory_action = ContainerCluster_destory_Action(dict)
+        containerCluster_destory_action.start()
     
     def check(self, container_cluster_name):
         
@@ -53,7 +53,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
             containerName = container_node_value.get('containerName')
             hostIp = container_node_value.get('hostIp')
             message_list.append(container_node_value)
-            
+        
         check_rst_dict.update(succ_rst)
         check_rst_dict.setdefault('containers', message_list)
         check_rst_dict.setdefault('message', 'check all containers OK!')
@@ -79,17 +79,60 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
             else:
                 conf_record.setdefault(key, value)
         return conf_record
-               
-    def destory(self):
-        pass
 
 
-class ContainerCluster_Create_Action(Abstract_Async_Thread): 
-    dict = {}
+class ContainerCluster_destory_Action(Abstract_Async_Thread):
+    _dict = {}
     
-    def __init__(self, dict):
+    def __init__(self, _dict):
+        super(ContainerCluster_destory_Action, self).__init__()
+        self.dict = _dict
+        
+    def run(self):
+        try:
+            logging.info('begin destory')
+            self._issue_destory_action(self.dict)
+        except:
+            print ('code exception!')
+            logging.info(traceback.format_exc())
+            self.threading_exception_queue.put(sys.exc_info())
+    
+    def _issue_destory_action(self, args):
+        try:
+            containerClusterName = args.get('containerClusterName')
+            destory_params = self.__get_destory_params(containerClusterName)
+            adminUser, adminPasswd = _retrieve_userName_passwd()
+            self.__dispatch_destory_container_task(destory_params, adminUser, adminPasswd)
+        except:
+            logging.error(str(traceback.format_exc()))
+    
+    def __dispatch_destory_container_task(self, destory_params, admin_user, admin_passwd):
+        logging.info('destory_params: %s' % str(destory_params))
+        for host_ip, container_name in destory_params.items():
+            args = {}
+            args.setdefault('container_name', container_name)
+            request_uri = 'http://%s:%s/container/remove' % (host_ip, options.port)
+            logging.info('destory post-----  url: %s, \n body: %s' % ( request_uri, str(args) ) )
+            ret = http_post(request_uri, args, auth_username = admin_user, auth_password = admin_passwd)
+            logging.info('destory result: %s' % str(ret))
+    
+    def __get_destory_params(self, containerClusterName):
+        destory_params = {}
+        container_ip_list = self.zkOper.retrieve_container_list(containerClusterName)
+        for contaier_ip in container_ip_list:
+            container_info = self.zkOper.retrieve_container_node_value(containerClusterName, contaier_ip)
+            container_name = container_info.get('containerName')
+            host_ip = container_info.get('hostIp')
+            destory_params.setdefault(host_ip, container_name)
+        return destory_params
+
+    
+class ContainerCluster_Create_Action(Abstract_Async_Thread): 
+    _dict = {}
+    
+    def __init__(self, _dict):
         super(ContainerCluster_Create_Action, self).__init__()
-        self.dict = dict
+        self.dict = _dict
         
     def run(self):
         try:
@@ -109,28 +152,27 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
         self.create_container_cluser_info(containerCount, containerClusterName)
         adminUser, adminPasswd = _retrieve_userName_passwd()
         
-        create_container_arg_list = self.__get_container_params(containerCount, containerClusterName)
+        create_container_arg_list = self.__get_container_params(containerCount, containerClusterName, adminUser, adminPasswd)
         
         create_container_node_ip_list = self.__choose_host()
         logging.info('choose host iplist: %s' % str(create_container_node_ip_list) )
         
         container_finished_flag_dict = self.__dispatch_create_container_task(create_container_node_ip_list, create_container_arg_list, 
-                                                                             containerCount, adminUser, adminPasswd)
+                                                                                              containerCount, adminUser, adminPasswd)
         logging.info('create container result: %s' % str(container_finished_flag_dict))
-        
+                
         check_result = self.__check_result(create_container_node_ip_list, container_finished_flag_dict)
         logging.info('check_result: %s' % check_result)
         if not check_result:
             raise MyError('not all container succeed created')
         
-        flag = self._check_mlcuster_manager_stat(create_container_node_ip_list, create_container_arg_list, 10)
-        
+        flag = self._check_mlcuster_manager_stat(create_container_node_ip_list, create_container_arg_list, 6)
         if flag:
             container_cluster_info = self.zkOper.retrieve_container_cluster_info(containerClusterName)
             container_cluster_info.setdefault('start_flag', 'succeed')
             self.zkOper.write_container_cluster_info(container_cluster_info)
             self._send_email("container", " container create operation finished on server cluster")
-    
+          
     def __retrieve_ip_resource(self, createContainerCount):
         containerIPList = None
         isLock,lock = self.zkOper.lock_assign_ip()
@@ -154,11 +196,11 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
         logging.info('requesturi:%s' % requesturi)
         logging.info('args_dict:%s' % args_dict)
         args_dict.setdefault('host_ip', host_ip)
-        request = HTTPRequest(url=requesturi, method='POST', body=urllib.urlencode(args_dict), \
-                              auth_username = admin_user, auth_password = admin_passwd)
-        fetch_ret = _request_fetch(request)
-        logging.info('POST result :%s' % str(fetch_ret))
         try:
+            request = HTTPRequest(url=requesturi, method='POST', body=urllib.urlencode(args_dict), connect_timeout=40.0,\
+                                  request_timeout=40.0, auth_username = admin_user, auth_password = admin_passwd)
+            fetch_ret = _request_fetch(request)
+            logging.info('POST result :%s' % str(fetch_ret))
             ret = eval(fetch_ret).get('response').get('message')
             if ret == 'Success Create Container':
                 return True
@@ -166,12 +208,20 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
             logging.error(str(traceback.format_exc()))
             return False
     
-    def __get_container_params(self, containerCount, containerClusterName):
+    def __get_container_params(self, containerCount, containerClusterName, adminUser, adminPasswd):
 
         create_container_arg_list = []
-        containerIPList = self.__retrieve_ip_resource(containerCount)
+        try:
+            containerIPList = self.__retrieve_ip_resource(containerCount)
+        except:
+            logging.info('no ip in ip pool, add auto!')
+            data_node_list = self.zkOper.retrieve_data_node_list()
+            host_ip = random.choice(data_node_list)
+            url = 'http://%s:%s/containerCluster/ips' % (host_ip, options.port)
+            get_ret = http_get(url, auth_username=adminUser, auth_password=adminPasswd)
+           
         
-        volumes, binds = self.__getNormalVolumesArgs(containerClusterName)
+        volumes, binds = self.__get_normal_volumes_args(containerClusterName)
         for i in range(int(containerCount)):
             create_container_arg_dict, env = {}, {}
             create_container_arg_dict.setdefault('containerClusterName', containerClusterName)
@@ -201,20 +251,14 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
             create_container_arg_list.append(create_container_arg_dict)
         return create_container_arg_list
     
-    def __getNormalVolumesArgs(self, containerClusterName):
+    def __get_normal_volumes_args(self, containerClusterName):
         volumes, binds = [], {}
         mcluster_conf_info = self.zkOper.retrieve_mcluster_info_from_config()
         logging.info('mcluster_conf_info: %s' % str(mcluster_conf_info))
         mount_dir = eval( mcluster_conf_info.get('mountDir') )
         for k,v in mount_dir.items():
             volumes.append(k)
-            if '/srv/docker/vfs/dir' in v:
-                _path = '/srv/docker/vfs/dir/%s' % containerClusterName
-                if not os.path.exists(_path):
-                    os.mkdir(_path)
-                binds.setdefault(v, {'bind': _path})
-            else:
-                binds.setdefault(v, {'bind': k})
+            binds.setdefault(v, {'bind': k})
         return volumes, binds
     
     def __choose_host(self):
@@ -242,10 +286,13 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
         
     def __dispatch_create_container_task(self, create_container_node_ip_list,  create_container_arg_list, 
                                          container_count, admin_user, admin_passwd):
+        logging.info('create_container_arg_list :%s' % str(create_container_arg_list))
         container_finished_flag_dict = {}
         for i in range(container_count):
             args_dict = create_container_arg_list[i]
             host_ip = create_container_node_ip_list[i]
+            container_name = args_dict.get('container_name')
+            container_ip = args_dict.get('container_ip')
             create_finished = self.issue_create_container_request(host_ip,  args_dict, admin_user, admin_passwd)
             container_finished_flag_dict.setdefault(host_ip, create_finished)
         return container_finished_flag_dict
@@ -286,24 +333,34 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
         return create_node_ip_list
 
     def _check_mlcuster_manager_stat(self, create_container_node_ip_list, create_container_arg_list, num):
-        logging.info('wait 7 seconds...')
-        time.sleep(7)
+        container_name_list = self.__get_containerName_list(create_container_arg_list)
+        logging.info('wait 5 seconds...')
+        time.sleep(5)
         while num:
             stat = True
-            succ = []
+            succ = {}
             for index,host_ip in enumerate(create_container_node_ip_list):
-                containerName = create_container_arg_list[index].get('container_name')
-                ret = self.__get(containerName, host_ip)
+                container_name = container_name_list[index]
+                ret = self.__get(container_name, host_ip)
                 if ret:
-                    succ.append(host_ip)
+                    succ.setdefault(host_ip, container_name)
                 else:
                     stat = False
             if stat:
                 logging.info('successful!!!')
                 return True
-            for item in succ:
-                create_container_node_ip_list.remove(item)
+            
+            for hostip, containername in succ.items():
+                container_name_list.remove(containername)
+                create_container_node_ip_list.remove(hostip)
             num -= 1
+    
+    def __get_containerName_list(self, create_container_arg_list):
+        container_name_list = []
+        for create_container_arg in create_container_arg_list:
+            container_name = create_container_arg.get('container_name')
+            container_name_list.append(container_name)
+        return container_name_list
     
     def __get(self, containerName, container_node):
         args_dict = {}

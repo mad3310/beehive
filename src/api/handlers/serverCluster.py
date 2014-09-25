@@ -55,7 +55,6 @@ class ServerClusterHandler(APIHandler):
         dict.setdefault("message", "creating server cluster successful!")
         self.finish(dict)
         
-        
     def get(self):
         clusterUUID = self.zkOper.getClusterUUID()
         data, stat = self.zkOper.retrieveClusterProp(clusterUUID)

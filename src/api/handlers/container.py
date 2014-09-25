@@ -17,10 +17,10 @@ class ContainerHandler(APIHandler):
         args = self.get_all_arguments()
         logging.info('all_arguments: %s' % str(args))
 
-        create_rst = self.containerOpers.issue_create_action(args)
+        create_failed_rst = self.containerOpers.issue_create_action(args)
         
-        if create_rst:
-            logging.error('container %s create failed' % create_rst)
+        if create_failed_rst:
+            logging.error('container %s create failed' % create_failed_rst)
             raise HTTPAPIError(status_code=417, error_detail="container created failed!",\
                                 notification = "direct", \
                                 log_message= "container created failed!",\
@@ -28,5 +28,27 @@ class ContainerHandler(APIHandler):
         
         dict = {}
         dict.setdefault("message", "Success Create Container")
+        
+        self.finish(dict)
+
+
+@require_basic_auth
+class RemoveContainerHandler(APIHandler):
+    
+    containerOpers = Container_Opers()
+    
+    def post(self):
+        args = self.get_all_arguments()
+        logging.info('all_arguments: %s' % str(args))
+        
+        remove_rst = self.containerOpers.destory(args)
+        if not remove_rst:
+            raise HTTPAPIError(status_code=417, error_detail="container remove failed!",\
+                                notification = "direct", \
+                                log_message= "container remove failed!",\
+                                response =  "container remove failed!")
+        
+        dict = {}
+        dict.setdefault("message", "remove container has been done but need some time, please wait a little and check the result!")
         
         self.finish(dict)

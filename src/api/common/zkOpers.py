@@ -70,7 +70,7 @@ class ZkOpers(object):
         path = self.rootPath + "/" + clusterUUID
         self.zk.ensure_path(path)
         self.zk.set(path, str(clusterProps))#vesion need to write
-        
+             
     def writeDataNodeInfo(self,clusterUUID,dataNodeProps):
         dataNodeIp = dataNodeProps['dataNodeIp']
         path = self.rootPath + "/" + clusterUUID + "/dataNode/" + dataNodeIp
@@ -108,9 +108,9 @@ class ZkOpers(object):
         return resultValue.get('containerCount')
 
     def retrieve_container_cluster_info(self, containerClusterName):
-
         clusterUUID = self.getClusterUUID()
         path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + containerClusterName
+        logging.info('containerClusterName :%s' % containerClusterName)
         return self._retrieveSpecialPathProp(path)
 
     def retrieve_container_list(self, containerClusterName):
@@ -268,4 +268,10 @@ class ZkOpers(object):
         if data != None and data != '':
             resultValue = eval(data)
         return resultValue
-        
+
+if __name__  == '__main__':
+    container_cluster_name = 'apple'
+    container_cluster_record = {'a':1}
+    zk = ZkOpers('192.168.84.132', '2181')
+    print 444
+    zk.retrieve_container_cluster_info('kakaxi')     

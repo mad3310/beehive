@@ -3,6 +3,10 @@
 
 import httplib, urllib
 import socket, time
+import logging
+
+from common.helper import _request_fetch
+from tornado.httpclient import HTTPRequest
 
 def _isExcept(e, eType = Exception):
     return isinstance(e, eType)
@@ -93,3 +97,26 @@ def _doHttp(uri, method, body, headers = {}):
     finally:
         if conn:
             _tryExcept(conn.close)
+
+def http_post(url, body={}, _connect_timeout=40.0, _request_timeout=40.0, auth_username=None, auth_password=None):
+    try:
+        request = HTTPRequest(url=url, method='POST', body=urllib.urlencode(body), connect_timeout=_connect_timeout, \
+                              request_timeout=_request_timeout, auth_username = auth_username, auth_password = auth_password)
+        fetch_ret = _request_fetch(request)
+        logging.info('POST result :%s' % str(fetch_ret))
+        return fetch_ret
+    except Exception, e:
+        logging.error(str(e))
+        return e
+
+def http_get(url, _connect_timeout=30.0, _request_timeout=30.0, auth_username=None, auth_password=None):   
+    try:
+        request = HTTPRequest(url=url, method='GET', connect_timeout=_connect_timeout, request_timeout=_request_timeout,\
+                              auth_username = auth_username, auth_password = auth_password)
+        fetch_ret = _request_fetch(request)
+        return_dict = json.loads(fetch_ret)
+        logging.info('POST result :%s' % str(return_dict))
+        return return_dict
+    except Exception, e:
+        logging.error(str(e))
+        return e

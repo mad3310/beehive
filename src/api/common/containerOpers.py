@@ -8,7 +8,7 @@ import traceback
 import docker
 import os
 
-from common.abstractContainerOpers import Abstract_Container_Opers
+from abstractContainerOpers import Abstract_Container_Opers
 
 class Container_Opers(Abstract_Container_Opers):
     
@@ -52,7 +52,8 @@ class Container_Opers(Abstract_Container_Opers):
             _ports = eval(mcluster_info.get('ports'))
             _mem_limit = mcluster_info.get('mem_limit')
             _volumes = arg_dict.get('volumes')
-            _binds = eval( arg_dict.get('binds'))
+            binds = eval( arg_dict.get('binds'))
+            _binds = self.__rewrite_bind_arg(container_name, binds)
         
         elif container_type == 'mclustervip':
             mclustervip_info = self.zkOper.retrieve_mclustervip_info_from_config()
@@ -100,5 +101,38 @@ class Container_Opers(Abstract_Container_Opers):
             return True
         return False
     
-    def destory(self):
-        pass
+    def __rewrite_bind_arg(self, container_name, bind_arg):
+        re_bind_arg = {}
+        for k,v in bind_arg.items():
+            if '/srv/docker/vfs/dir' in k:
+                _path = '/srv/docker/vfs/dir/%s' % container_name
+                if not os.path.exists(_path):
+                    os.mkdir(_path)
+                re_bind_arg.setdefault(_path, v)
+            else:
+                re_bind_arg.setdefault(k, v)
+        return re_bind_arg        
+    
+    def stop(self, container_name):
+        try:
+            c = docker.Client('unix://var/run/docker.sock')
+            c.stop(container_name, 20)
+            return True
+        except:
+            logging.error(str(traceback.format_exc()))
+            return False
+    
+    def destory(self, args):
+        try:
+            container_name = args.get('container_name')
+            c = docker.Client('unix://var/run/docker.sock')
+            c.kill(container_name)
+            c.remove_container(container_name, force=True)
+            return True
+        except:
+            logging.error(str(traceback.format_exc()))
+            return False
+        
+        
+        
+        

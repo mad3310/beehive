@@ -37,7 +37,7 @@ class ContainerClusterHandler(APIHandler):
                                 response =  "current operation is using by other people, please wait a moment to try again!")
         
         dict = {}
-        dict.setdefault("message", "due to create container cluster need a large of times, please wait to finished and email to you, when cluster have started!")
+        dict.setdefault("message", "due to create container cluster need a little more times, please wait to finished and email to you, when cluster have started!")
         self.finish(dict)
 
         
@@ -53,7 +53,7 @@ class CheckContainerStatusHandler(APIHandler):
         try:
             check_result =  self.containerClusterOpers.check(containerClusterName)
         except kazoo.exceptions.LockTimeout:
-            raise HTTPAPIError(status_code=579, error_detail="lock by other thread on assign ip processing",\
+            raise HTTPAPIError(status_code=578, error_detail="lock by other thread on assign ip processing",\
                                 notification = "direct", \
                                 log_message= "lock by other thread on assign ip processing",\
                                 response =  "current operation is using by other people, please wait a moment to try again!")
@@ -114,5 +114,22 @@ class ClusterConfigHandler(APIHandler):
         dict.setdefault("message", "write config infomation successfully!")
         self.finish(dict)
     
+ 
+@require_basic_auth
+class RemoveContainerClusterHandler(APIHandler):
     
+    containerClusterOpers = ContainerCluster_Opers()
     
+    @asynchronous
+    def post(self):
+        args = self.get_all_arguments()
+        try:
+            self.containerClusterOpers.destory(args)
+        except:
+            logging.error(str(traceback.format_exc()))
+            raise HTTPAPIError(status_code=417, error_detail="containerCluster removed failed!",\
+                                response =  "check if the containerCluster removed!")
+    
+        dict = {}
+        dict.setdefault("message", "remove container has been done but need some time, please wait a little and check the result!")
+        self.finish(dict)
