@@ -214,11 +214,13 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
         try:
             containerIPList = self.__retrieve_ip_resource(containerCount)
         except:
-            logging.info('no ip in ip pool, add auto!')
-            data_node_list = self.zkOper.retrieve_data_node_list()
-            host_ip = random.choice(data_node_list)
-            url = 'http://%s:%s/containerCluster/ips' % (host_ip, options.port)
-            get_ret = http_get(url, auth_username=adminUser, auth_password=adminPasswd)
+            raise MyError('No ip in Ip pool, please add!')
+
+#             logging.info('no ip in ip pool, add auto!')
+#             data_node_list = self.zkOper.retrieve_data_node_list()
+#             host_ip = random.choice(data_node_list)
+#             url = 'http://%s:%s/containerCluster/ips' % (host_ip, options.port)
+#             get_ret = http_get(url, auth_username=adminUser, auth_password=adminPasswd)
            
         
         volumes, binds = self.__get_normal_volumes_args(containerClusterName)
