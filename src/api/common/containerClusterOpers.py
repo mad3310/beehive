@@ -14,6 +14,7 @@ from helper import _request_fetch, _retrieve_userName_passwd
 from utils.exceptions import MyError
 from utils.autoutil import *
 
+
 class ContainerCluster_Opers(Abstract_Container_Opers):
     
     def __init__(self):
@@ -154,9 +155,9 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
         create_container_arg_list = self.__get_container_params(containerCount, containerClusterName, adminUser, adminPasswd)
         
         create_container_node_ip_list = self.__choose_host()
-
+        
         logging.info('choose host iplist: %s' % str(create_container_node_ip_list) )
-
+        
         
         container_finished_flag_dict = self.__dispatch_create_container_task(create_container_node_ip_list, create_container_arg_list, 
                                                                                               containerCount, adminUser, adminPasswd)
@@ -212,7 +213,7 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
     def __get_container_params(self, containerCount, containerClusterName, adminUser, adminPasswd):
 
         create_container_arg_list = []
-
+        
         try:
             containerIPList = self.__retrieve_ip_resource(containerCount)
         except:
@@ -223,7 +224,8 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
 #             host_ip = random.choice(data_node_list)
 #             url = 'http://%s:%s/containerCluster/ips' % (host_ip, options.port)
 #             get_ret = http_get(url, auth_username=adminUser, auth_password=adminPasswd)
-
+           
+        
         
         volumes, binds = self.__get_normal_volumes_args(containerClusterName)
         for i in range(int(containerCount)):
