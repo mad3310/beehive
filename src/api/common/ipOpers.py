@@ -9,6 +9,7 @@ Created on Sep 17, 2014
 
 import os
 from abstractContainerOpers import Abstract_Container_Opers
+from utils.exceptions import MyError
 
 class IpOpers(Abstract_Container_Opers):
     '''
@@ -18,14 +19,25 @@ class IpOpers(Abstract_Container_Opers):
     def write_into_ipPool(self, args_dict):
         ip_segment = args_dict.get('ipSegment')
         ip_count = int(args_dict.get('ipCount'))
+        choosed_ip = self._get_needed_ips(ip_segment, ip_count)
+        for ip in choosed_ip:
+            self.zkOper.write_ip_into_ipPool(ip)
+    
+    def _get_needed_ips(self, ip_segment, ip_count):
+        choosed_ip = []
         ip_list = self.zkOper.get_ips_from_ipPool()
         all_ips = self._get_all_ips(ip_segment)
         ips = list( set(all_ips) - set(ip_list) )
-        if len(ips) <= ip_count:
-            ip_count = len(ips)
-        for i in range(ip_count):
-            ip = ips[i]
-            self.zkOper.write_ip_into_ipPool(ip)
+        num = 0
+        if len(ips) < ip_count:
+            raise MyError('the ips of this segment is less the the number you need, please apply less ips')
+        for ip in ips:
+            if self._ping_ip_usable(ip):
+                choosed_ip.append(ip)
+                num += 1
+            if num == ip_count:
+                break
+        return choosed_ip
     
     def _get_all_ips(self, ip_segment):
         all_ips = []
@@ -33,11 +45,9 @@ class IpOpers(Abstract_Container_Opers):
         for i in range(2, 254):
             ip_items[-1] = str(i)
             ip = '.'.join(ip_items)
-            if not self._ping_ip_usable(ip):
-                continue
             all_ips.append(ip)
-        return all_ips
-    
+        return all_ips       
+        
     def _ping_ip_usable(self, ip):
         cmd = 'ping -w 1 %s' % str(ip)
         ping_ret = os.system(cmd)
