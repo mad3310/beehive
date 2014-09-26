@@ -110,7 +110,6 @@ class ZkOpers(object):
     def retrieve_container_cluster_info(self, containerClusterName):
         clusterUUID = self.getClusterUUID()
         path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + containerClusterName
-        logging.info('containerClusterName :%s' % containerClusterName)
         return self._retrieveSpecialPathProp(path)
 
     def retrieve_container_list(self, containerClusterName):

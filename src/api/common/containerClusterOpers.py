@@ -102,28 +102,41 @@ class ContainerCluster_destory_Action(Abstract_Async_Thread):
             containerClusterName = args.get('containerClusterName')
             destory_params = self.__get_destory_params(containerClusterName)
             adminUser, adminPasswd = _retrieve_userName_passwd()
-            self.__dispatch_destory_container_task(destory_params, adminUser, adminPasswd)
+            self.__dispatch_destory_container_tasks(destory_params, adminUser, adminPasswd)
         except:
             logging.error(str(traceback.format_exc()))
     
-    def __dispatch_destory_container_task(self, destory_params, admin_user, admin_passwd):
+    def __dispatch_destory_container_tasks(self, destory_params, admin_user, admin_passwd):
         logging.info('destory_params: %s' % str(destory_params))
         for host_ip, container_name in destory_params.items():
-            args = {}
-            args.setdefault('container_name', container_name)
-            request_uri = 'http://%s:%s/container/remove' % (host_ip, options.port)
-            logging.info('destory post-----  url: %s, \n body: %s' % ( request_uri, str(args) ) )
-            ret = http_post(request_uri, args, auth_username = admin_user, auth_password = admin_passwd)
-            logging.info('destory result: %s' % str(ret))
+            if isinstance(container_name, str):
+                self.__post(host_ip, container_name, admin_user, admin_passwd)
+            elif isinstance(container_name, list):
+                logging.info('container_name_list : %s' % str(container_name))
+                for _name in container_name:
+                    self.__post(host_ip, _name, admin_user, admin_passwd)
+                    
+    def __post(self, host_ip, container_name, admin_user, admin_passwd):
+        args = {}
+        args.setdefault('container_name', container_name)
+        request_uri = 'http://%s:%s/container/remove' % (host_ip, options.port)
+        logging.info('destory post-----  url: %s, \n body: %s' % ( request_uri, str (args) ) )
+        ret = http_post(request_uri, args, auth_username = admin_user, auth_password = admin_passwd)
+        logging.info('destory result: %s' % str(ret))                   
     
     def __get_destory_params(self, containerClusterName):
-        destory_params = {}
+        destory_params, container_name_list = {}, []
         container_ip_list = self.zkOper.retrieve_container_list(containerClusterName)
         for contaier_ip in container_ip_list:
             container_info = self.zkOper.retrieve_container_node_value(containerClusterName, contaier_ip)
             container_name = container_info.get('containerName')
             host_ip = container_info.get('hostIp')
-            destory_params.setdefault(host_ip, container_name)
+            if host_ip in destory_params:
+                container_name_list.append(container_name)
+                container_name_list.append(destory_params[host_ip])
+                destory_params[host_ip] = container_name_list
+            else:
+                destory_params.setdefault(host_ip, container_name)
         return destory_params
 
     
