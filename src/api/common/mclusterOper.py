@@ -76,5 +76,5 @@ class MclusterManager(Abstract_Container_Opers):
         time.sleep(1)
         if self.get_stat(containerName):
             return True
-        #self.start(containerName)
+        self.start(containerName)
         return False
