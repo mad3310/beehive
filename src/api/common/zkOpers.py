@@ -267,10 +267,9 @@ class ZkOpers(object):
         if data != None and data != '':
             resultValue = eval(data)
         return resultValue
-
-if __name__  == '__main__':
-    container_cluster_name = 'apple'
-    container_cluster_record = {'a':1}
-    zk = ZkOpers('192.168.84.132', '2181')
-    print 444
-    zk.retrieve_container_cluster_info('kakaxi')     
+    
+    def delete_container_cluster(self, containerClusterName):
+        clusterUUID = self.getClusterUUID()
+        path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + containerClusterName
+        zk.ensure_path(path)
+        zk.delete(path, recursive=True)
