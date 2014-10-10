@@ -91,7 +91,7 @@ def http_get(url, _connect_timeout=30.0, _request_timeout=30.0, auth_username=No
                               auth_username = auth_username, auth_password = auth_password)
         fetch_ret = _request_fetch(request)
         return_dict = json.loads(fetch_ret)
-        logging.info('POST result :%s' % str(return_dict))
+        logging.info('GET result :%s' % str(return_dict))
         return return_dict
     except Exception, e:
         logging.error(str(e))

@@ -93,7 +93,6 @@ class ContainerCluster_destory_Action(Abstract_Async_Thread):
             logging.info('begin destory')
             self._issue_destory_action(self.dict)
         except:
-            print ('code exception!')
             logging.info(traceback.format_exc())
             self.threading_exception_queue.put(sys.exc_info())
     
@@ -174,13 +173,13 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
         self.create_container_cluser_info(containerCount, containerClusterName)
         adminUser, adminPasswd = _retrieve_userName_passwd()
         
-        create_container_arg_list = self.__get_container_params(containerCount, containerClusterName, adminUser, adminPasswd)
+        create_container_arg_list = self._get_container_params(containerCount, containerClusterName, adminUser, adminPasswd)
         
         create_container_node_ip_list = self.__choose_host()
         logging.info('choose host iplist: %s' % str(create_container_node_ip_list) )
         
         container_finished_flag_dict = self.__dispatch_create_container_task(create_container_node_ip_list, create_container_arg_list, 
-                                                                                              containerCount, adminUser, adminPasswd)
+                                                                             containerCount, adminUser, adminPasswd)
         logging.info('create container result: %s' % str(container_finished_flag_dict))
                 
         check_result = self.__check_result(create_container_node_ip_list, container_finished_flag_dict)
@@ -230,7 +229,7 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
             logging.error(str(traceback.format_exc()))
             return False
    
-    def __get_container_params(self, containerCount, containerClusterName, adminUser, adminPasswd):
+    def _get_container_params(self, containerCount, containerClusterName, adminUser, adminPasswd):
 
         create_container_arg_list = []
         try:
@@ -273,14 +272,17 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
             create_container_arg_list.append(create_container_arg)
         return create_container_arg_list
     
-    def __get_normal_volumes_args(self, containerClusterName):
-        volumes, binds = [], {}
+    def __get_normal_volumes_args(self):
+        volumes, binds = {}, {}
         mcluster_conf_info = self.zkOper.retrieve_mcluster_info_from_config()
         logging.info('mcluster_conf_info: %s' % str(mcluster_conf_info))
         mount_dir = eval( mcluster_conf_info.get('mountDir') )
         for k,v in mount_dir.items():
-            volumes.append(k)
-            binds.setdefault(v, {'bind': k})
+            volumes.setdefault(k, v)
+            if '/srv/mcluster' in k:
+                binds = {}
+            else:
+                binds.setdefault(v, {'bind': k})
         return volumes, binds
     
     def __choose_host(self):
@@ -384,7 +386,7 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
             container_name_list.append(container_name)
         return container_name_list
     
-    def _get(self, containerName, container_node):
+    def __get(self, containerName, container_node):
         args_dict = {}
         
         url_post = "/inner/MclusterManager/status/%s" % containerName

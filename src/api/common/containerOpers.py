@@ -34,12 +34,10 @@ class Container_Opers(Abstract_Container_Opers):
     def create_container(self, arg_dict={}):
         
         logging.info('create_container args: %s' % str(arg_dict) )
-        container_ip = arg_dict.get('container_ip')
         container_name = arg_dict.get('container_name')
         container_type = arg_dict.get('container_type')
-        env = eval(arg_dict.get('env'))
+        env = dict(arg_dict.get('env'))
         
-        logging.info('container_ip: %s' % str(container_ip))
         logging.info('container_name: %s' % container_name)
         logging.info('container_type: %s' % container_type)
         logging.info('env: %s' % str(env) )
@@ -51,9 +49,9 @@ class Container_Opers(Abstract_Container_Opers):
             image_name = '%s:%s' % (name, version)
             _ports = eval(mcluster_info.get('ports'))
             _mem_limit = mcluster_info.get('mem_limit')
-            _volumes = arg_dict.get('volumes')
-            binds = eval( arg_dict.get('binds'))
-            _binds = self.__rewrite_bind_arg(container_name, binds)
+            _volumes = dict(arg_dict.get('volumes'))
+            _binds = dict( arg_dict.get('binds'))
+            #_binds = self.__rewrite_bind_arg(container_name, binds)
         
         elif container_type == 'mclustervip':
             mclustervip_info = self.zkOper.retrieve_mclustervip_info_from_config()
@@ -63,11 +61,15 @@ class Container_Opers(Abstract_Container_Opers):
             _mem_limit = mclustervip_info.get('mem_limit')
             _binds, _ports, _volumes = None, None, None
         
+        logging.info('_volumes:%s' % str(_volumes))
+        logging.info('_binds:%s' % str(_binds))
+        logging.info('_ports:%s' % str(_ports))
+        self._log_docker_run_command(env, _mem_limit, _volumes, container_name, image_name)
         try:
             c = docker.Client('unix://var/run/docker.sock')
             container_id = c.create_container(image=image_name, hostname=container_name, user='root',
                                               name=container_name, environment=env, tty=True, ports=_ports, stdin_open=True,
-                                              mem_limit=_mem_limit, volumes=_volumes, volumes_from=None)
+                                              mem_limit=_mem_limit, volumes=_volumes)
             c.start(container_name, privileged=True, network_mode='bridge', binds=_binds)
         except:
             logging.error('the exception of creating container:%s' % str(traceback.format_exc()))
@@ -79,7 +81,7 @@ class Container_Opers(Abstract_Container_Opers):
             return False
         return True
     
-    def _get_container_info(self, arg_dict={}):
+    def _get_container_info(self, arg_dict):
         env = eval(arg_dict.get('env'))
         container_node_info= {}
         container_node_info.setdefault('containerClusterName', arg_dict.get('containerClusterName'))
@@ -94,6 +96,30 @@ class Container_Opers(Abstract_Container_Opers):
         container_node_info.setdefault('gateAddr', env.get('GATEWAY'))
         return container_node_info
     
+    def _log_docker_run_command(self, env, _mem_limit, _volumes, container_name, image_name):
+        
+        cmd = ''
+        cmd += 'docker run -i -t --rm --privileged -n --memory="%s" -h %s'  % (_mem_limit, container_name)
+        for host_addr, container_addr in _volumes.items():
+            if container_addr:
+                cmd += ' -v %s:%s \n' % (host_addr, container_addr)
+            else:
+                cmd += ' -v %s \n' % host_addr
+        
+        cmd += '--env "ZKID=%s" \n' % env.get('ZKID')
+        cmd += '--env "IP=%s" \n' % env.get('IP')
+        cmd += '--env "HOSTNAME=%s" \n' % env.get('HOSTNAME')
+        cmd += '--env "NETMASK=%s" \n' % env.get('NETMASK')
+        cmd += '--env "GATEWAY=%s" \n' % env.get('GATEWAY')
+        cmd += '--env "N1_IP=%s" \n' % env.get('N1_IP')
+        cmd += '--env "N1_HOSTNAME=%s" \n'% env.get('N1_HOSTNAME') 
+        cmd += '--env "N2_IP=%s" \n' % env.get('N2_IP')
+        cmd += '--env "N2_HOSTNAME=%s" \n' % env.get('N2_HOSTNAME')
+        cmd += '--env "N3_IP=%s" \n' % env.get('N3_IP')
+        cmd += '--env "N3_HOSTNAME=%s" \n' % env.get('N3_HOSTNAME')
+        cmd += '--name %s %s' % (container_name, image_name)
+        logging.info(cmd)
+        
     def _check_container_status(self, c):
         latest_result = c.containers(latest=True)
         status = latest_result[0].get('Status')
@@ -111,7 +137,7 @@ class Container_Opers(Abstract_Container_Opers):
                 re_bind_arg.setdefault(_path, v)
             else:
                 re_bind_arg.setdefault(k, v)
-        return re_bind_arg        
+        return re_bind_arg
     
     def stop(self, container_name):
         try:
@@ -131,8 +157,5 @@ class Container_Opers(Abstract_Container_Opers):
             return True
         except:
             logging.error(str(traceback.format_exc()))
-            return False
-        
-        
-        
+            return False        
         
