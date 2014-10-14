@@ -18,8 +18,8 @@ handlers = [
     (r"/containerCluster/conf", ClusterConfigHandler),
     (r"/containerCluster/ips", AddIpsIntoIpPoolHandler),
     (r"/containerCluster/status/(.*)", CheckContainerStatusHandler),
-    (r"/containerCluster/remove", RemoveContainerClusterHandler),
+    #(r"/containerCluster/remove", RemoveContainerClusterHandler),
     (r"/inner/MclusterManager/status/(.*)", StartMclusterManagerHandler),
     (r"/inner/container", ContainerHandler),
-    (r"/container/remove", RemoveContainerHandler)
+    #(r"/container/remove", RemoveContainerHandler)
 ]

@@ -93,7 +93,6 @@ class ContainerCluster_destory_Action(Abstract_Async_Thread):
             logging.info('begin destory')
             self._issue_destory_action(self.dict)
         except:
-            print ('code exception!')
             logging.info(traceback.format_exc())
             self.threading_exception_queue.put(sys.exc_info())
     
@@ -102,10 +101,19 @@ class ContainerCluster_destory_Action(Abstract_Async_Thread):
             containerClusterName = args.get('containerClusterName')
             destory_params = self.__get_destory_params(containerClusterName)
             adminUser, adminPasswd = _retrieve_userName_passwd()
-            self.__dispatch_destory_container_tasks(destory_params, adminUser, adminPasswd)
+            cleaned_ips = self.__dispatch_destory_container_tasks(destory_params, adminUser, adminPasswd)
+            self.__clean_zookeeper(containerClusterName)
+            self.reback_ips(cleaned_ips)
         except:
             logging.error(str(traceback.format_exc()))
+   
+    def __clean_zookeeper(self, containerClusterName):
+        self.zkOper.delete_container_cluster(containerClusterName)
     
+    def reback_ips(self, cleaned_ips):
+        for ip in cleaned_ips:
+            self.zkOper.write_ip_into_ipPool(ip)
+   
     def __dispatch_destory_container_tasks(self, destory_params, admin_user, admin_passwd):
         logging.info('destory_params: %s' % str(destory_params))
         for host_ip, container_name in destory_params.items():
@@ -115,7 +123,7 @@ class ContainerCluster_destory_Action(Abstract_Async_Thread):
                 logging.info('container_name_list : %s' % str(container_name))
                 for _name in container_name:
                     self.__post(host_ip, _name, admin_user, admin_passwd)
-                    
+          
     def __post(self, host_ip, container_name, admin_user, admin_passwd):
         args = {}
         args.setdefault('container_name', container_name)
@@ -139,7 +147,7 @@ class ContainerCluster_destory_Action(Abstract_Async_Thread):
                 destory_params.setdefault(host_ip, container_name)
         return destory_params
 
-    
+
 class ContainerCluster_Create_Action(Abstract_Async_Thread): 
     _dict = {}
     
@@ -165,7 +173,7 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
         self.create_container_cluser_info(containerCount, containerClusterName)
         adminUser, adminPasswd = _retrieve_userName_passwd()
         
-        create_container_arg_list = self.__get_container_params(containerCount, containerClusterName, adminUser, adminPasswd)
+        create_container_arg_list = self._get_container_params(containerCount, containerClusterName, adminUser, adminPasswd)
         
         create_container_node_ip_list = self.__choose_host()
         
@@ -173,7 +181,7 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
         
         
         container_finished_flag_dict = self.__dispatch_create_container_task(create_container_node_ip_list, create_container_arg_list, 
-                                                                                              containerCount, adminUser, adminPasswd)
+                                                                             containerCount, adminUser, adminPasswd)
         logging.info('create container result: %s' % str(container_finished_flag_dict))
                 
         check_result = self.__check_result(create_container_node_ip_list, container_finished_flag_dict)
@@ -187,7 +195,7 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
             container_cluster_info.setdefault('start_flag', 'succeed')
             self.zkOper.write_container_cluster_info(container_cluster_info)
             self._send_email("container", " container create operation finished on server cluster")
-          
+        
     def __retrieve_ip_resource(self, createContainerCount):
         containerIPList = None
         isLock,lock = self.zkOper.lock_assign_ip()
@@ -222,8 +230,8 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
         except:
             logging.error(str(traceback.format_exc()))
             return False
-    
-    def __get_container_params(self, containerCount, containerClusterName, adminUser, adminPasswd):
+   
+    def _get_container_params(self, containerCount, containerClusterName, adminUser, adminPasswd):
 
         create_container_arg_list = []
         
@@ -236,28 +244,24 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
 #             data_node_list = self.zkOper.retrieve_data_node_list()
 #             host_ip = random.choice(data_node_list)
 #             url = 'http://%s:%s/containerCluster/ips' % (host_ip, options.port)
-#             get_ret = http_get(url, auth_username=adminUser, auth_password=adminPasswd)
-           
-        
-        
-        volumes, binds = self.__get_normal_volumes_args(containerClusterName)
+        volumes, binds = self.__get_normal_volumes_args()
+
         for i in range(int(containerCount)):
-            create_container_arg_dict, env = {}, {}
-            create_container_arg_dict.setdefault('containerClusterName', containerClusterName)
-            create_container_arg_dict['container_ip'] = containerIPList[i]
+            create_container_arg, env = {}, {}
+            create_container_arg.setdefault('containerClusterName', containerClusterName)
+            create_container_arg['container_ip'] = containerIPList[i]
             container_name = 'd_mcl_%s_node_%s' % (containerClusterName, str(i+1))
-            create_container_arg_dict['container_name'] = container_name
+            create_container_arg['container_name'] = container_name
                         
             if i == int(containerCount-1):
-                create_container_arg_dict['container_type'] = 'mclustervip'
+                create_container_arg['container_type'] = 'mclustervip'
             else:
-                create_container_arg_dict['container_type'] = 'mclusternode'
-                create_container_arg_dict.setdefault('volumes', volumes)
-                create_container_arg_dict.setdefault('binds', binds)
-                for j, containerIp in enumerate(containerIPList):
-                    num = j+1
-                    env.setdefault('N%s_IP' % str(num), containerIp)
-                    env.setdefault('N%d_HOSTNAME' % num, 'd_mcl_%s_node_%s' % (containerClusterName, str(num+1)))
+                create_container_arg['container_type'] = 'mclusternode'
+                create_container_arg.setdefault('volumes', volumes)
+                create_container_arg.setdefault('binds', binds)
+                for j, containerIp in enumerate(containerIPList[:3]):
+                    env.setdefault('N%s_IP' % str(j+1), containerIp)
+                    env.setdefault('N%s_HOSTNAME' % str(j+1), 'd_mcl_%s_node_%s' % (containerClusterName, str(j+1)))
                     env.setdefault('ZKID', i+1)
             
             gateway = self.__get_gateway_from_ip(containerIp)
@@ -266,19 +270,21 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
             env.setdefault('HOSTNAME', 'd_mcl_%s_node_%s' % (containerClusterName, str(i+1)))
             env.setdefault('IP', containerIPList[i])
             
-            create_container_arg_dict.setdefault('env', env)
-            create_container_arg_list.append(create_container_arg_dict)
-            
+            create_container_arg.setdefault('env', env)
+            create_container_arg_list.append(create_container_arg)
         return create_container_arg_list
     
-    def __get_normal_volumes_args(self, containerClusterName):
-        volumes, binds = [], {}
+    def __get_normal_volumes_args(self):
+        volumes, binds = {}, {}
         mcluster_conf_info = self.zkOper.retrieve_mcluster_info_from_config()
         logging.info('mcluster_conf_info: %s' % str(mcluster_conf_info))
         mount_dir = eval( mcluster_conf_info.get('mountDir') )
         for k,v in mount_dir.items():
-            volumes.append(k)
-            binds.setdefault(v, {'bind': k})
+            volumes.setdefault(k, v)
+            if '/srv/mcluster' in k:
+                binds = {}
+            else:
+                binds.setdefault(v, {'bind': k})
         return volumes, binds
     
     def __choose_host(self):
@@ -351,7 +357,7 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
                     del dict[data_node_ip]
                     break
         return create_node_ip_list
-
+    
     def _check_mlcuster_manager_stat(self, create_container_node_ip_list, create_container_arg_list, num):
         container_name_list = self.__get_containerName_list(create_container_arg_list)
         logging.info('wait 5 seconds...')
@@ -369,7 +375,7 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
             if stat:
                 logging.info('successful!!!')
                 return True
-            
+             
             for hostip, containername in succ.items():
                 container_name_list.remove(containername)
                 create_container_node_ip_list.remove(hostip)

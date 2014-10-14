@@ -55,5 +55,6 @@ _error_types = {400: "param_error",
                 405: "method_not_allowed",
                 417: "user_visible_error",
                 500: "server_error",
-                578: "conncurrency_error"
+                578: "conncurrency_error",
+                579: "resource_error"
                 }
