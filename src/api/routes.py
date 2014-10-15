@@ -21,5 +21,8 @@ handlers = [
     #(r"/containerCluster/remove", RemoveContainerClusterHandler),
     (r"/inner/MclusterManager/status/(.*)", StartMclusterManagerHandler),
     (r"/inner/container", ContainerHandler),
-    #(r"/container/remove", RemoveContainerHandler)
+    #(r"/container/remove", RemoveContainerHandler),
+    (r"/container/start", StartContainerHandler),
+    (r"/container/stop", StopContainerHandler),
+    (r"/container/status/(.*)", CheckContainerStatusHandler),
 ]

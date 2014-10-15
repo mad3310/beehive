@@ -30,8 +30,13 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         containerCluster_destory_action = ContainerCluster_destory_Action(dict)
         containerCluster_destory_action.start()
     
-    def check(self, container_cluster_name):
+    def start(self, dict):
+        pass
         
+    def stop(self, dict):
+        pass
+    
+    def check(self, container_cluster_name):
         failed_rst = {'code':"000001"}
         succ_rst = {'code':"000000"}
         check_rst_dict, message_list  = {}, []
@@ -248,7 +253,7 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
             create_container_arg, env = {}, {}
             create_container_arg.setdefault('containerClusterName', containerClusterName)
             create_container_arg['container_ip'] = containerIPList[i]
-            container_name = 'd_mcl_%s_node_%s' % (containerClusterName, str(i+1))
+            container_name = 'd-mcl-%s-n-%s' % (containerClusterName, str(i+1))
             create_container_arg['container_name'] = container_name
                         
             if i == int(containerCount-1):
@@ -259,13 +264,13 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
                 create_container_arg.setdefault('binds', binds)
                 for j, containerIp in enumerate(containerIPList[:3]):
                     env.setdefault('N%s_IP' % str(j+1), containerIp)
-                    env.setdefault('N%s_HOSTNAME' % str(j+1), 'd_mcl_%s_node_%s' % (containerClusterName, str(j+1)))
+                    env.setdefault('N%s_HOSTNAME' % str(j+1), 'd-mcl-%s-n-%s' % (containerClusterName, str(j+1)))
                     env.setdefault('ZKID', i+1)
             
             gateway = self.__get_gateway_from_ip(containerIp)
             env.setdefault('NETMASK', '255.255.255.0')
             env.setdefault('GATEWAY', gateway)
-            env.setdefault('HOSTNAME', 'd_mcl_%s_node_%s' % (containerClusterName, str(i+1)))
+            env.setdefault('HOSTNAME', 'd-mcl-%s-n-%s' % (containerClusterName, str(i+1)))
             env.setdefault('IP', containerIPList[i])
             
             create_container_arg.setdefault('env', env)
@@ -299,9 +304,7 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
             resource_dict = {}
             for data_node_ip in data_node_info_list:
                 requesturi = "http://%s:%s%s" % (data_node_ip, options.port, url_post)
-                request = HTTPRequest(url=requesturi, method='GET')
-                rst = _request_fetch(request)
-                return_dict = json.loads(rst)
+                return_dict = http_get(requesturi)
                 resource_dict.setdefault(data_node_ip, return_dict['response'])
             logging.info("Before sort, all server the resource info, the resource value is %s" % str(resource_dict))
             create_container_node_ip_list = self._sort_server_resource(resource_dict)
