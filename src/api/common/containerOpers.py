@@ -142,31 +142,16 @@ class Container_Opers(Abstract_Container_Opers):
         return re_bind_arg
     
     def stop(self, container_name):
-        
         container_stop_action = Container_stop_action(container_name)
         container_stop_action.start()
     
     def start(self, container_name):
-        logging.info('get work')
         container_start_action = Container_start_action(container_name)
         container_start_action.start()
     
-    def destory(self, container_name):
-        try:
-            result = 0
-            c = docker.Client('unix://var/run/docker.sock')
-            c.kill(container_name)
-            c.remove_container(container_name, force=True)
-            flag = get_container_stat(container_name)
-            if flag == 0:
-                result = 'start container %s failed' % container_name
-            elif flag == 2:
-                result = 'container %s not exists!' % container_name
-        except:
-            result = str(traceback.format_exc())
-            logging.error(result)
-        finally:
-            return result
+    def destroy(self, container_name):
+        container_destroy_action = Container_destroy_action(container_name)
+        container_destroy_action.start()
 
     def check(self, container_name):
         result = {}
@@ -203,11 +188,13 @@ class Container_start_action(Abstract_Async_Thread):
         c.start(self.container_name)
         flag = get_container_stat(self.container_name)
         if flag == 1:
+            status = 'failed'
             message = 'start container %s failed' % self.container_name
         else:
+            status = 'started'
             message = ''
-        start_rst['status'] = 'started'
-        start_rst['message'] = message
+        start_rst.setdefault('status', status)
+        start_rst.setdefault('message', message)
         logging.info('write start result')
         self.zkOper.write_container_status(self.container_name, start_rst)
         
@@ -237,11 +224,49 @@ class Container_stop_action(Abstract_Async_Thread):
         c.stop(self.container_name, 30)
         flag = get_container_stat(self.container_name)
         if flag == 0:
-            message = 'start container %s failed' % self.container_name
+            status = 'failed'
+            message = 'stop container %s failed' % self.container_name
         else:
+            status = 'stopped'
             message = ''
-        stop_rst['status'] = 'stopped'
-        stop_rst['message'] = message
+        stop_rst.setdefault('status', status)
+        stop_rst.setdefault('message', message)
         logging.info('write stop result')
         self.zkOper.write_container_status(self.container_name, stop_rst)
 
+
+class Container_destroy_action(Abstract_Async_Thread):
+    
+    def __init__(self, container_name):
+        super(Container_destroy_action, self).__init__()
+        self.container_name = container_name
+        
+    def run(self):
+        try:
+            logging.info('begin destroy')
+            self._issue_destroy_action()
+        except:
+            logging.error(traceback.format_exc())
+            self.threading_exception_queue.put(sys.exc_info())
+
+    def _issue_destroy_action(self):
+
+        destroy_rst, destroy_flag = {}, {}
+        logging.info('write destroy flag')
+        destroy_flag = {'status':'destroying', 'message':''}
+        self.zkOper.write_container_status(self.container_name, destroy_flag)
+        
+        c = docker.Client('unix://var/run/docker.sock')
+        logging.info('destroy container: %s' % self.container_name)
+        c.kill(self.container_name)
+        c.remove_container(self.container_name, force=True)
+        exists = check_container_exists(self.container_name)
+        if exists:
+            message = 'destroy container %s failed' % self.container_name
+            destroy_rst.setdefault('status', 'failed')
+            destroy_rst.setdefault('message', message)
+            logging.info('destroy container %s failed' % self.container_name)
+            self.zkOper.write_container_status(self.container_name, destroy_rst)
+        else:
+            
+            self.zkOper.delete_container_cluster(self.container_name)

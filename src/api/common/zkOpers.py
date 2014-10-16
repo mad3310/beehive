@@ -273,7 +273,7 @@ class ZkOpers(object):
         clusterUUID = self.getClusterUUID()
         path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + containerClusterName
         self.zk.ensure_path(path)
-        zk.delete(path, recursive=True)
+        self.zk.delete(path, recursive=True)
     
     def write_container_status(self, container_name, record):
         containerClusterName = self.get_containerClusterName_from_containerName(container_name)
@@ -312,3 +312,4 @@ class ZkOpers(object):
             containerName = container_info.get('containerName')
             if container_name == containerName:
                 return container_ip
+        
