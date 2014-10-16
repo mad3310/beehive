@@ -10,6 +10,8 @@ from kazoo.client import KazooClient
 
 import logging
 import threading
+import traceback
+import re
 
 class ZkOpers(object):
     
@@ -64,7 +66,6 @@ class ZkOpers(object):
         dataNodeName = self.zk.get_children(self.rootPath)
         logging.debug(dataNodeName)
         return dataNodeName[0]
-        
         
     def writeClusterInfo(self,clusterUUID,clusterProps):
         path = self.rootPath + "/" + clusterUUID
@@ -271,5 +272,47 @@ class ZkOpers(object):
     def delete_container_cluster(self, containerClusterName):
         clusterUUID = self.getClusterUUID()
         path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + containerClusterName
-        zk.ensure_path(path)
-        zk.delete(path, recursive=True)
+        self.zk.ensure_path(path)
+        self.zk.delete(path, recursive=True)
+    
+    def write_container_status(self, container_name, record):
+        containerClusterName = self.get_containerClusterName_from_containerName(container_name)
+        container_ip = self.get_containerIp(containerClusterName, container_name)
+        clusterUUID = self.getClusterUUID()
+        path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + containerClusterName + "/" + container_ip +"/status"
+        logging.info(path)
+        self.zk.ensure_path(path)
+        self.zk.set(path, str(record))
+    
+    def retrieve_container_status(self, container_name):
+        containerClusterName = self.get_containerClusterName_from_containerName(container_name)
+        container_ip = self.get_containerIp(containerClusterName, container_name)
+        clusterUUID = self.getClusterUUID()
+        path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + containerClusterName + "/" + container_ip +"/status"
+        return self._retrieveSpecialPathProp(path)
+        
+    def get_containerClusterName_from_containerName(self, container_name):
+        try:
+            if 'd-mcl' in container_name:
+                containerClusterName = re.findall('d-mcl-(.*)-n-\d', container_name)[0]
+                return containerClusterName
+            elif 'd_mcl' in container_name:
+                containerClusterName = re.findall('d_mcl_(.*)_node_\d', container_name)[0]
+                return containerClusterName        
+        except:
+            logging.error( str(traceback.format_exc()) )
+    
+    def get_containerIp(self, containerClusterName, container_name):
+        con_ip = ''
+        clusterUUID = self.getClusterUUID()
+        path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + containerClusterName
+        self.zk.ensure_path(path)
+        container_ip_list = self.retrieve_container_list(containerClusterName)
+        for container_ip in container_ip_list:
+            container_info = self.retrieve_container_node_value(containerClusterName, container_ip)
+            containerName = container_info.get('containerName')
+            if container_name == containerName:
+                con_ip = container_ip
+                break
+        return con_ip
+        

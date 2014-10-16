@@ -6,9 +6,11 @@ Created on Sep 8, 2014
 import logging
 import traceback
 import docker
-import os
+import os, sys
 
 from abstractContainerOpers import Abstract_Container_Opers
+from abstractAsyncThread import Abstract_Async_Thread
+from helper import *
 
 class Container_Opers(Abstract_Container_Opers):
     
@@ -75,7 +77,7 @@ class Container_Opers(Abstract_Container_Opers):
             logging.error('the exception of creating container:%s' % str(traceback.format_exc()))
             return False
         
-        result = self._check_container_status(c)
+        result = self._check_create_status(container_name)
         if not result:
             logging.error('the exception of creating container')
             return False
@@ -120,12 +122,12 @@ class Container_Opers(Abstract_Container_Opers):
         cmd += '--name %s %s' % (container_name, image_name)
         logging.info(cmd)
         
-    def _check_container_status(self, c):
-        latest_result = c.containers(latest=True)
-        status = latest_result[0].get('Status')
-        if 'Up' in status:
+    def _check_create_status(self, container_name):
+        flag = get_container_stat(container_name)
+        if flag == 0:
             return True
-        return False
+        else:
+            return False
     
     def __rewrite_bind_arg(self, container_name, bind_arg):
         re_bind_arg = {}
@@ -140,22 +142,131 @@ class Container_Opers(Abstract_Container_Opers):
         return re_bind_arg
     
     def stop(self, container_name):
-        try:
-            c = docker.Client('unix://var/run/docker.sock')
-            c.stop(container_name, 20)
-            return True
-        except:
-            logging.error(str(traceback.format_exc()))
-            return False
+        container_stop_action = Container_stop_action(container_name)
+        container_stop_action.start()
     
-    def destory(self, args):
-        try:
-            container_name = args.get('container_name')
-            c = docker.Client('unix://var/run/docker.sock')
-            c.kill(container_name)
-            c.remove_container(container_name, force=True)
-            return True
-        except:
-            logging.error(str(traceback.format_exc()))
-            return False        
+    def start(self, container_name):
+        container_start_action = Container_start_action(container_name)
+        container_start_action.start()
+    
+    def destroy(self, container_name):
+        container_destroy_action = Container_destroy_action(container_name)
+        container_destroy_action.start()
+
+    def check(self, container_name):
+        result = {}
+        container_operation_record = self.zkOper.retrieve_container_status(container_name)
+        status = container_operation_record.get('status')
+        message = container_operation_record.get('message')
+        result.setdefault('status', status)
+        result.setdefault('message', message)
+        return result
+
+
+class Container_start_action(Abstract_Async_Thread):
+    
+    def __init__(self, container_name):
+        super(Container_start_action, self).__init__()
+        self.container_name = container_name
         
+    def run(self):
+        try:
+            logging.info('begin start')
+            self._issue_start_action()
+        except:
+            logging.error(traceback.format_exc())
+            self.threading_exception_queue.put(sys.exc_info())
+
+    def _issue_start_action(self):
+        start_rst, start_flag = {}, {}
+        logging.info('write start flag')
+        start_flag = {'status':'starting', 'message':''}
+        self.zkOper.write_container_status(self.container_name, start_flag)
+        
+        c = docker.Client('unix://var/run/docker.sock')
+        logging.info('container_name: %s' % self.container_name)
+        c.start(self.container_name)
+        flag = get_container_stat(self.container_name)
+        if flag == 1:
+            status = 'failed'
+            message = 'start container %s failed' % self.container_name
+        else:
+            status = 'started'
+            message = ''
+        start_rst.setdefault('status', status)
+        start_rst.setdefault('message', message)
+        logging.info('write start result')
+        self.zkOper.write_container_status(self.container_name, start_rst)
+        
+        
+class Container_stop_action(Abstract_Async_Thread):
+    
+    def __init__(self, container_name):
+        super(Container_stop_action, self).__init__()
+        self.container_name = container_name
+        
+    def run(self):
+        try:
+            logging.info('begin stop')
+            self._issue_stop_action()
+        except:
+            logging.error(traceback.format_exc())
+            self.threading_exception_queue.put(sys.exc_info())
+
+    def _issue_stop_action(self):
+        stop_rst, stop_flag = {}, {}
+        logging.info('write stop flag')
+        stop_flag = {'status':'stopping', 'message':''}
+        self.zkOper.write_container_status(self.container_name, stop_flag)
+        
+        c = docker.Client('unix://var/run/docker.sock')
+        logging.info('stop container: %s' % self.container_name)
+        c.stop(self.container_name, 30)
+        flag = get_container_stat(self.container_name)
+        if flag == 0:
+            status = 'failed'
+            message = 'stop container %s failed' % self.container_name
+        else:
+            status = 'stopped'
+            message = ''
+        stop_rst.setdefault('status', status)
+        stop_rst.setdefault('message', message)
+        logging.info('write stop result')
+        self.zkOper.write_container_status(self.container_name, stop_rst)
+
+
+class Container_destroy_action(Abstract_Async_Thread):
+    
+    def __init__(self, container_name):
+        super(Container_destroy_action, self).__init__()
+        self.container_name = container_name
+        
+    def run(self):
+        try:
+            logging.info('begin destroy')
+            self._issue_destroy_action()
+        except:
+            logging.error(traceback.format_exc())
+            self.threading_exception_queue.put(sys.exc_info())
+
+    def _issue_destroy_action(self):
+
+        destroy_rst, destroy_flag = {}, {}
+        logging.info('write destroy flag')
+        destroy_flag = {'status':'destroying', 'message':''}
+        self.zkOper.write_container_status(self.container_name, destroy_flag)
+        
+        c = docker.Client('unix://var/run/docker.sock')
+        logging.info('destroy container: %s' % self.container_name)
+        c.kill(self.container_name)
+        c.remove_container(self.container_name, force=True)
+        exists = check_container_exists(self.container_name)
+        if exists:
+            message = 'destroy container %s failed' % self.container_name
+            destroy_rst.setdefault('status', 'failed')
+            destroy_rst.setdefault('message', message)
+            logging.info('destroy container %s failed' % self.container_name)
+            self.zkOper.write_container_status(self.container_name, destroy_rst)
+        else:
+            
+            self.zkOper.delete_container_cluster(self.container_name)

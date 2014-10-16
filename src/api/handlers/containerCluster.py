@@ -28,40 +28,26 @@ class ContainerClusterHandler(APIHandler):
     @asynchronous
     def post(self):
         args = self.get_all_arguments()
-        action = args.pop('action')
-        logging.info('action: %s' % action)
-        if action == 'create':
-            try:
-                res_reason = self.check_resource()
-                if res_reason:
-                    raise HTTPAPIError(status_code=579, error_detail=res_reason)
-                
-                self.containerClusterOpers.create(args)
-            except kazoo.exceptions.LockTimeout:
-                raise HTTPAPIError(status_code=578, error_detail="lock by other thread on assign ip processing",\
-                                    notification = "direct", \
-                                    log_message= "lock by other thread on assign ip processing",\
-                                    response =  "current operation is using by other people, please wait a moment to try again!")
-            dict = {} 
-            dict.setdefault("message", "due to create container cluster need a little more times, please wait to finished and email to you, when cluster have started!")
-            self.finish(dict)
+        try:
+            res_reason = self.check_resource()
+            if res_reason:
+                raise HTTPAPIError(status_code=579, error_detail=res_reason)
             
-        elif action == 'destory':
-            try:
-                self.containerClusterOpers.destory(args)
-            except:
-                logging.error(str(traceback.format_exc()))
-                raise HTTPAPIError(status_code=417, error_detail="containerCluster removed failed!",\
-                                    response =  "check if the containerCluster removed!")
-        
-            dict = {}
-            dict.setdefault("message", "remove container has been done but need some time, please wait a little and check the result!")
-            self.finish(dict)
+            self.containerClusterOpers.create(args)
+        except kazoo.exceptions.LockTimeout:
+            raise HTTPAPIError(status_code=578, error_detail="lock by other thread on assign ip processing",\
+                                notification = "direct", \
+                                log_message= "lock by other thread on assign ip processing",\
+                                response =  "current operation is using by other people, please wait a moment to try again!")
+        dict = {} 
+        dict.setdefault("message", "due to create container cluster need a little more times, please wait to finished and email to you, when cluster have started!")
+        self.finish(dict)
     
     def check_resource(self):
-        ip_list = self.zkOpers.get_ips_from_ipPool()
+        ip_list = self.zkOper.get_ips_from_ipPool()
         if len(ip_list) < 4:
             return 'ips are not enough!'
+
         
 @require_basic_auth
 class CheckContainerStatusHandler(APIHandler):
@@ -139,9 +125,9 @@ class ClusterConfigHandler(APIHandler):
 
 # @require_basic_auth
 # class RemoveContainerClusterHandler(APIHandler):
-#     
+#      
 #     containerClusterOpers = ContainerCluster_Opers()
-#     
+#      
 #     @asynchronous
 #     def post(self):
 #         args = self.get_all_arguments()
@@ -151,7 +137,7 @@ class ClusterConfigHandler(APIHandler):
 #             logging.error(str(traceback.format_exc()))
 #             raise HTTPAPIError(status_code=417, error_detail="containerCluster removed failed!",\
 #                                 response =  "check if the containerCluster removed!")
-#     
+#      
 #         dict = {}
 #         dict.setdefault("message", "remove container has been done but need some time, please wait a little and check the result!")
 #         self.finish(dict)

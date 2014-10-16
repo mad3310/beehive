@@ -2,62 +2,160 @@
 #-*- coding: utf-8 -*-
 
 import logging
+import traceback
 
 from base import APIHandler
-from common.containerOpers import Container_Opers
+from common.containerOpers import *
 from common.utils.exceptions import HTTPAPIError
 from common.tornado_basic_auth import require_basic_auth
+
 
 @require_basic_auth
 class ContainerHandler(APIHandler):
     
-    containerOpers = Container_Opers()
+    container_opers = Container_Opers()
     
     def post(self):
         args = self.get_all_arguments()
-        action = args.pop('action')
-        logging.info('action: %s' % action)
-        if action == 'create':
-            create_failed_rst = self.containerOpers.issue_create_action(args)
-            if create_failed_rst:
-                logging.error('container %s create failed' % create_failed_rst)
-                raise HTTPAPIError(status_code=417, error_detail="container created failed!",\
-                                    notification = "direct", \
-                                    log_message= "container created failed!",\
-                                    response =  "container created failed!")
-            dict = {}
-            dict.setdefault("message", "Success Create Container")
-            self.finish(dict)
+        create_failed_rst = self.container_opers.issue_create_action(args)
+        if create_failed_rst:
+            logging.error('container %s create failed' % create_failed_rst)
+            raise HTTPAPIError(status_code=417, error_detail="container created failed!",\
+                                notification = "direct", \
+                                log_message= "container created failed!",\
+                                response =  "container created failed!")
+        dict = {}
+        dict.setdefault("message", "Success Create Container")
+        self.finish(dict)
         
-        elif action == 'destory':
-            remove_rst = self.containerOpers.destory(args)
-            if not remove_rst:
-                raise HTTPAPIError(status_code=417, error_detail="container remove failed!",\
-                                    notification = "direct", \
-                                    log_message= "container remove failed!",\
-                                    response =  "container remove failed!")
-            dict = {}
-            dict.setdefault("message", "remove container has been done but need some time, please wait a little and check the result!")
-            self.finish(dict)         
-
+    def delete(self, container_name):
+        pass
+        
 
 # @require_basic_auth
 # class RemoveContainerHandler(APIHandler):
-#     
-#     containerOpers = Container_Opers()
-#     
+#      
+#     container_opers = Container_Opers()
+#      
 #     def post(self):
 #         args = self.get_all_arguments()
 #         logging.info('all_arguments: %s' % str(args))
-#         
-#         remove_rst = self.containerOpers.destory(args)
-#         if not remove_rst:
-#             raise HTTPAPIError(status_code=417, error_detail="container remove failed!",\
+#         container_name = args.get('container_name')
+#         remove_rst = self.container_opers.destory(container_name)
+#         if remove_rst:
+#             raise HTTPAPIError(status_code=417, error_detail=remove_rst,\
 #                                 notification = "direct", \
 #                                 log_message= "container remove failed!",\
 #                                 response =  "container remove failed!")
 #         
 #         dict = {}
 #         dict.setdefault("message", "remove container has been done but need some time, please wait a little and check the result!")
-#         
 #         self.finish(dict)
+
+@require_basic_auth
+class StartContainerHandler(APIHandler):
+     
+    container_opers = Container_Opers()
+    
+    def post(self):
+        args = self.get_all_arguments()
+        logging.info('all_arguments: %s' % str(args))
+        
+        container_name = args.get('container_name')
+        if not container_name:
+            raise HTTPAPIError(status_code=400, error_detail="no container_name argument!",\
+                                notification = "direct", \
+                                log_message= "no container_name argument!",\
+                                response =  "please check params!")
+        
+        exists = check_container_exists(container_name)
+        if not exists:
+            raise HTTPAPIError(status_code=400, error_detail="container %s not exist!" % container_name,\
+                                notification = "direct", \
+                                log_message= "container %s not exist!" % container_name,\
+                                response =  "please check!")
+        
+        stat_flag = get_container_stat(container_name)
+        if not stat_flag:
+            massage = {}
+            massage.setdefault("status", "started")
+            massage.setdefault("message", "no need this operation, the container has been started!")
+            self.finish(massage)
+            return
+        
+        try: 
+            self.container_opers.start(container_name)
+        except:
+            logging.error( str(traceback.format_exc()) )
+            raise HTTPAPIError(status_code=500, error_detail="container start raise exception!",\
+                                notification = "direct", \
+                                log_message= "container start raise exception",\
+                                response =  "container start raise exception, please check!!")
+        
+        massage = {}
+        massage.setdefault("message", "due to start a container need a little time, please wait and check the result~")
+        self.finish(massage)
+
+
+@require_basic_auth
+class StopContainerHandler(APIHandler):
+    
+    container_opers = Container_Opers()
+    
+    def post(self):
+        args = self.get_all_arguments()
+        logging.info('all_arguments: %s' % str(args))
+        container_name = args.get('container_name')
+        if not container_name:
+            raise HTTPAPIError(status_code=400, error_detail="no container_name argument!",\
+                                notification = "direct", \
+                                log_message= "no container_name argument!",\
+                                response =  "please check params!")
+        
+        exists = check_container_exists(container_name)
+        if not exists:
+            raise HTTPAPIError(status_code=400, error_detail="container %s not exist!" % container_name,\
+                                notification = "direct", \
+                                log_message= "container %s not exist!" % container_name,\
+                                response =  "please check!")
+        
+        stat_flag = get_container_stat(container_name)
+        if stat_flag == 1:
+            massage = {}
+            massage.setdefault("status", "stopped")
+            massage.setdefault("message", "no need this operation, the container has been stopped!")
+            self.finish(massage)
+            return
+        
+        try: 
+            self.container_opers.stop(container_name)
+        except:
+            logging.error( str(traceback.format_exc()) )
+            raise HTTPAPIError(status_code=500, error_detail="container stop raise exception!",\
+                                notification = "direct", \
+                                log_message= "container stop raise exception",\
+                                response =  "container stop raise exception, please check!!")
+        
+        massage = {}
+        massage.setdefault("message", "due to stop a container need a little time, please wait and check the result~")
+        self.finish(massage)
+
+
+@require_basic_auth
+class CheckContainerStatusHandler(APIHandler):
+    '''
+    classdocs
+    '''
+    container_opers = Container_Opers()
+    
+    def get(self, container_name):
+        try:
+            status = self.container_opers.check(container_name)
+        except:
+            logging.error(str( traceback.format_exc() ))
+            raise HTTPAPIError(status_code=578, error_detail="check method exception!",\
+                                notification = "direct", \
+                                log_message= "check method exception",\
+                                response =  "check method failed!")
+        
+        self.finish(status)
