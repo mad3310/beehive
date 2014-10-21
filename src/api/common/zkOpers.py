@@ -303,6 +303,7 @@ class ZkOpers(object):
             logging.error( str(traceback.format_exc()) )
     
     def get_containerIp(self, containerClusterName, container_name):
+        con_ip = ''
         clusterUUID = self.getClusterUUID()
         path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + containerClusterName
         self.zk.ensure_path(path)
@@ -311,5 +312,7 @@ class ZkOpers(object):
             container_info = self.retrieve_container_node_value(containerClusterName, container_ip)
             containerName = container_info.get('containerName')
             if container_name == containerName:
-                return container_ip
+                con_ip = container_ip
+                break
+        return con_ip
         

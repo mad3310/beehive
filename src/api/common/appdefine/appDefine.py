@@ -33,3 +33,5 @@ define("server_cluster_property",default=join(base_dir,"config","serverCluster.p
 define("alarm_serious", default="tel:sms:email", help="alarm level is serious")
 define("alarm_general", default="sms:email", help="alarm level is general")
 define("alarm_nothing", default="nothing", help="no alarm")
+define("iostat_shell",  default=join(base_dir, "shell","invoke_iostat.sh"), help = "iostat shell")
+define("pid_children", default=join(base_dir, "shell","list_children.sh"), help = "get children pid")

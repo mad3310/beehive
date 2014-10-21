@@ -6,6 +6,7 @@ from handlers.server import ServerHandler
 from handlers.containerCluster import *
 from handlers.container import *
 from handlers.admin import AdminConf, AdminUser, AdminReset
+from handlers.info_center import InfoCenter
 
 handlers = [
     (r"/admin/conf", AdminConf),
@@ -21,6 +22,9 @@ handlers = [
     #(r"/containerCluster/remove", RemoveContainerClusterHandler),
     (r"/inner/MclusterManager/status/(.*)", StartMclusterManagerHandler),
     (r"/inner/container", ContainerHandler),
+    #(r"/container/remove", RemoveContainerHandler)
+    (r"/server/info", InfoCenter),
+    (r"/container/info", InfoCenter),
     #(r"/container/remove", RemoveContainerHandler),
     (r"/container/start", StartContainerHandler),
     (r"/container/stop", StopContainerHandler),
