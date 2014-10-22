@@ -1,8 +1,0 @@
-#Mon Oct 20 16:39:36 CST 2014
-eclipse.preferences.version=1
-encoding//src/api/common/appdefine/appDefine.py=utf-8
-encoding//src/api/common/invokeCommand.py=utf-8
-encoding//src/api/common/zkOpers.py=utf-8
-encoding//src/api/containerManager.py=utf-8
-encoding//src/api/handlers/info_center.py=utf-8
-encoding//src/api/routes.py=utf-8
