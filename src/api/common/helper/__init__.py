@@ -182,35 +182,3 @@ def check_container_exists(container_name):
             flag = True
     return flag
 
-def get_container_stat(container_name):
-    """
-    0: started
-    1: stoped
-    2: deleted or not exist
-    """
-    
-    exists = check_container_exists(container_name)
-    if not exists:
-        return 2
-    c = docker.Client('unix://var/run/docker.sock')
-    container_info_list =  c.containers(all=True)
-    for container_info in container_info_list:
-        name = container_info.get('Names')[0]
-        name = name.replace('/', '')
-        if name == container_name:
-            stat = container_info.get('Status')
-            if 'Up' in stat:
-                return 0
-            elif 'Exited' in stat:
-                return 1
-
-def check_container_exists(container_name):
-    c = docker.Client('unix://var/run/docker.sock')
-    container_info_list = c.containers(all=True)
-    flag = False
-    for container_info in container_info_list:
-        name = container_info.get('Names')[0]
-        name = name.replace('/', '')
-        if name == container_name:
-            flag = True
-    return flag
