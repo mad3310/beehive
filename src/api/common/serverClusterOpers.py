@@ -52,9 +52,9 @@ class ServerCluster_Opers(object):
             
             if return_result:
                 logging.info('return_result : %s' % str(return_result) )
-                succ.append(server)
+                succ.append(callback_key)
             else:
-                fail.append(server)
+                fail.append(callback_key)
         
         http_client.close()
         logging.info('succ:%s' % str(succ))

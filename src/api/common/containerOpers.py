@@ -58,8 +58,8 @@ class Container_Opers(Abstract_Container_Opers):
             name = mcluster_info.get('image_name')
             image_name = '%s:%s' % (name, version)
             _ports = eval(mcluster_info.get('ports'))
-            #_mem_limit = int( mcluster_info.get('mem_limit') )
-            _mem_limit = mcluster_info.get('mem_limit')
+            _mem_limit = int( mcluster_info.get('mem_limit') )
+            #_mem_limit = mcluster_info.get('mem_limit')
             _volumes = eval(arg_dict.get('volumes'))
             _binds = eval( arg_dict.get('binds'))
             _binds = self.__rewrite_bind_arg(containerClusterName, _binds)
@@ -70,8 +70,8 @@ class Container_Opers(Abstract_Container_Opers):
             version = mclustervip_info.get('image_version')
             name = mclustervip_info.get('image_name')
             image_name = '%s:%s' % (name, version)
-            #_mem_limit = int( mclustervip_info.get('mem_limit') )
-            _mem_limit = mclustervip_info.get('mem_limit')
+            _mem_limit = int( mclustervip_info.get('mem_limit') )
+            #_mem_limit = mclustervip_info.get('mem_limit')
             _binds, _ports, _volumes = None, None, None
         
         logging.info('_volumes:%s' % str(_volumes))
