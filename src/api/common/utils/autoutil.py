@@ -6,6 +6,9 @@ import time
 import logging
 #import pythoncom
 import threading
+import json
+import socket
+import os, re
 
 from common.helper import _request_fetch
 from tornado.httpclient import HTTPRequest
@@ -74,6 +77,22 @@ def handleTimeout(func, timeout, *params, **paramMap):
         timeout -= time.time() - t
     return rst
 
+def getHostIp():
+    print socket.gethostname()
+    return socket.gethostbyname(socket.gethostname())
+
+def getVMIp():
+    ips = os.popen("/sbin/ifconfig | grep 'inet addr' | awk '{print $2}'").read()
+    ip = ips.split('\n')[1]
+    ip = re.findall('.*:(.*)', ip)[0]
+    return ip
+
+def ping_ip_able(ip):
+    cmd = 'ping -w 1 %s' % str(ip)
+    ping_ret = os.system(cmd)
+    if ping_ret == 0:
+        return True
+
 def http_post(url, body={}, _connect_timeout=40.0, _request_timeout=40.0, auth_username=None, auth_password=None):
     try:
         request = HTTPRequest(url=url, method='POST', body=urllib.urlencode(body), connect_timeout=_connect_timeout, \
@@ -96,3 +115,16 @@ def http_get(url, _connect_timeout=30.0, _request_timeout=30.0, auth_username=No
     except Exception, e:
         logging.error(str(e))
         return e
+    
+# def http_delete(url, body={}, _connect_timeout=30.0, _request_timeout=30.0, auth_username=None, auth_password=None):   
+#     try:
+#         request = HTTPRequest(url=url, method='DELETE', body=urllib.urlencode(body), connect_timeout=_connect_timeout, request_timeout=_request_timeout,\
+#                               auth_username = auth_username, auth_password = auth_password)
+#         fetch_ret = _request_fetch(request)
+#         logging.info('fetch_ret:%s' % str(fetch_ret) )
+#         #return_dict = json.loads(fetch_ret)
+#         #logging.info('GET result :%s' % str(return_dict))
+#         return return_dict
+#     except Exception, e:
+#         logging.error(str(e))
+#         return e

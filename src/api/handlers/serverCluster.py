@@ -1,9 +1,12 @@
+#!/usr/bin/env python
+#-*- coding: utf-8 -*-
+
 '''
 Created on Sep 8, 2014
 
 @author: root
 '''
-import uuid, json, logging
+import uuid, json, logging, traceback
 
 from common.configFileOpers import ConfigFileOpers
 from common.serverOpers import Server_Opers
@@ -14,6 +17,8 @@ from handlers.base import APIHandler
 from tornado.httpclient import HTTPRequest
 from common.helper import _request_fetch
 from common.ipOpers import IpOpers
+from common.serverClusterOpers import ServerCluster_Opers
+
 
 @require_basic_auth
 class ServerClusterHandler(APIHandler):
@@ -46,10 +51,10 @@ class ServerClusterHandler(APIHandler):
         existDataNode = self.zkOper.existDataNode(clusterUUID, dataNodeIp)
         
         if existDataNode:
-            raise HTTPAPIError(status_code=417, error_detail="DataNode has exist!",\
+            raise HTTPAPIError(status_code=417, error_detail="This machine has existed, no need to regedit!",\
                                 notification = "direct", \
-                                log_message= "DataNode has been regedited!",\
-                                response =  "This DataNode has been regedited!")
+                                log_message= "Machine has been regedited!",\
+                                response =  "This machine has been regedited!")
         
         dict = {}
         dict.setdefault("message", "creating server cluster successful!")
@@ -64,6 +69,7 @@ class ServerClusterHandler(APIHandler):
         dict.setdefault("message", "sync server cluster info to local successful!")
         self.finish(dict)
 
+
 @require_basic_auth
 class GetServersInfoHandler(APIHandler):
     '''
@@ -75,14 +81,38 @@ class GetServersInfoHandler(APIHandler):
     def get(self):
         
         data_nodes_ip_list = self.zkOper.retrieve_data_node_list()
-        url_post = "/server"
+        uri = "/server"
         resource_dict = {}
         for data_node_ip in data_nodes_ip_list:
-            requesturi = "http://%s:%s%s" % (data_node_ip, options.port, url_post)
+            requesturi = "http://%s:%s%s" % (data_node_ip, options.port, uri)
             request = HTTPRequest(url=requesturi, method='GET', connect_timeout=30.0, request_timeout=30.0)
             return_result = _request_fetch(request)
             retrun_dict = json.loads(return_result)
             resource_dict.setdefault(data_node_ip, retrun_dict['response'])
         
         self.finish(resource_dict)
+
+
+@require_basic_auth
+class UpdateServerClusterHandler(APIHandler):
+    """
+    update serverCluster 
+    """
+    
+    serverCluster_opers = ServerCluster_Opers()
+    
+    def get(self):
+        
+        try:
+            self.serverCluster_opers.update()
+        except:
+            logging.error( str(traceback.format_exc()) )
+            raise HTTPAPIError(status_code=500, error_detail="update server failed!",\
+                                notification = "direct", \
+                                log_message= 'update  server cluster failed' ,\
+                                response =  "please check and notice related person")
+        
+        dict = {}
+        dict.setdefault("message", "serverCluster update successful")
+        self.finish(dict)
         

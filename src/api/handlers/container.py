@@ -8,6 +8,7 @@ from base import APIHandler
 from common.containerOpers import *
 from common.utils.exceptions import HTTPAPIError
 from common.tornado_basic_auth import require_basic_auth
+from common.helper import check_container_exists, get_container_stat
 
 
 @require_basic_auth
@@ -28,29 +29,68 @@ class ContainerHandler(APIHandler):
         dict.setdefault("message", "Success Create Container")
         self.finish(dict)
         
-    def delete(self, container_name):
-        pass
-        
-
-# @require_basic_auth
-# class RemoveContainerHandler(APIHandler):
-#      
-#     container_opers = Container_Opers()
-#      
-#     def post(self):
-#         args = self.get_all_arguments()
-#         logging.info('all_arguments: %s' % str(args))
-#         container_name = args.get('container_name')
-#         remove_rst = self.container_opers.destory(container_name)
-#         if remove_rst:
-#             raise HTTPAPIError(status_code=417, error_detail=remove_rst,\
-#                                 notification = "direct", \
-#                                 log_message= "container remove failed!",\
-#                                 response =  "container remove failed!")
+#     def delete(self, container_name):
+# #         args = self.get_all_arguments()
+# #         container_name = args.get('containerName')
+#         logging.info('container_name: %s' % container_name)
+#         exists = check_container_exists(container_name)
+#         if not exists:
+#             massage = {}
+#             massage.setdefault("status", "not exist")
+#             massage.setdefault("message", "no need this operation, there is no such a container!")
+#             self.finish(massage)
+#             return
 #         
+#         try:
+#             logging.info( container_name )
+#             self.container_opers.destroy(container_name)
+#         except:
+#             logging.error( str(traceback.format_exc()) )
+#             raise HTTPAPIError(status_code=500, error_detail="container start raise exception!",\
+#                                 notification = "direct", \
+#                                 log_message= "container start raise exception",\
+#                                 response =  "container start raise exception, please check!!")
+#          
 #         dict = {}
 #         dict.setdefault("message", "remove container has been done but need some time, please wait a little and check the result!")
 #         self.finish(dict)
+
+@require_basic_auth
+class RemoveContainerHandler(APIHandler):
+        
+    container_opers = Container_Opers()
+        
+    def post(self):
+        args = self.get_all_arguments()
+        logging.info('all_arguments: %s' % str(args))
+        container_name = args.get('containerName')
+        if not container_name:
+            raise HTTPAPIError(status_code=400, error_detail="no container_name argument!",\
+                                notification = "direct", \
+                                log_message= "no container_name argument!",\
+                                response =  "please check params!")            
+        
+        exists = check_container_exists(container_name)
+        if not exists:
+            massage = {}
+            massage.setdefault("status", "not exist")
+            massage.setdefault("message", "no need this operation, there is no such a container!")
+            self.finish(massage)
+            return
+          
+        try:
+            logging.info( container_name )
+            self.container_opers.destroy(container_name)
+        except:
+            logging.error( str(traceback.format_exc()) )
+            raise HTTPAPIError(status_code=500, error_detail="container start raise exception!",\
+                                notification = "direct", \
+                                log_message= "container start raise exception",\
+                                response =  "container start raise exception, please check!!")
+          
+        dict = {}
+        dict.setdefault("message", "remove container has been done but need some time, please wait a little and check the result!")
+        self.finish(dict)
 
 @require_basic_auth
 class StartContainerHandler(APIHandler):
@@ -61,7 +101,7 @@ class StartContainerHandler(APIHandler):
         args = self.get_all_arguments()
         logging.info('all_arguments: %s' % str(args))
         
-        container_name = args.get('container_name')
+        container_name = args.get('containerName')
         if not container_name:
             raise HTTPAPIError(status_code=400, error_detail="no container_name argument!",\
                                 notification = "direct", \
@@ -105,7 +145,7 @@ class StopContainerHandler(APIHandler):
     def post(self):
         args = self.get_all_arguments()
         logging.info('all_arguments: %s' % str(args))
-        container_name = args.get('container_name')
+        container_name = args.get('containerName')
         if not container_name:
             raise HTTPAPIError(status_code=400, error_detail="no container_name argument!",\
                                 notification = "direct", \
@@ -149,6 +189,15 @@ class CheckContainerStatusHandler(APIHandler):
     container_opers = Container_Opers()
     
     def get(self, container_name):
+        
+        exists = check_container_exists(container_name)
+        if not exists:
+            massage = {}
+            massage.setdefault("status", "not exist")
+            massage.setdefault("message", "")
+            self.finish(massage)
+            return
+          
         try:
             status = self.container_opers.check(container_name)
         except:

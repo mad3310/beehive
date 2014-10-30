@@ -2,11 +2,12 @@ import base64
 import logging
 import docker
 import re, traceback
+import pexpect
 
 from tornado.options import options
-from common.configFileOpers import ConfigFileOpers
 from tornado.httpclient import HTTPClient
 from tornado.httpclient import HTTPError
+from common.configFileOpers import ConfigFileOpers
 
 confOpers = ConfigFileOpers()
 
@@ -62,7 +63,7 @@ def getDictFromText(sourceText, keyList):
             
     return resultValue
 
-def _init_container(containerName=None):
+def init_container(containerName=None):
     timeout = 5
     get_route_cmd = r"route -n|grep -w 'UG'"
     if containerName is None:
@@ -178,7 +179,8 @@ def check_container_exists(container_name):
     for container_info in container_info_list:
         name = container_info.get('Names')[0]
         name = name.replace('/', '')
+        logging.info('name:%s; container_name:%s' %(name, container_name))
         if name == container_name:
             flag = True
+            break
     return flag
-

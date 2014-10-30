@@ -2,8 +2,6 @@
 #-*- coding: utf-8 -*-
 
 import subprocess
-import logging
-from tornado.options import options
 
 class InvokeCommand():
     

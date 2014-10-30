@@ -10,11 +10,14 @@ Created on Sep 17, 2014
 import os
 from abstractContainerOpers import Abstract_Container_Opers
 from utils.exceptions import MyError
+from zkOpers import ZkOpers
 
-class IpOpers(Abstract_Container_Opers):
+class IpOpers(object):
     '''
     classdocs
     '''
+    
+    zkOper = ZkOpers('127.0.0.1', 2181)
     
     def write_into_ipPool(self, args_dict):
         ip_segment = args_dict.get('ipSegment')
@@ -53,7 +56,7 @@ class IpOpers(Abstract_Container_Opers):
         ping_ret = os.system(cmd)
         if ping_ret != 0:
             return True
-
+    
 if __name__ == '__main__':
     ipops = IpOpers()
     print ipops._ping_ip_usable('10.200.85.28')
