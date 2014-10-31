@@ -43,7 +43,7 @@ class UpdateServer(object):
         if stat_flag == 0:
             status = {'status': 'started', 'message': ''}
         else:
-            status = {'status': 'stoped', 'message': ''}
+           status = {'status': 'stopped', 'message': ''}
         self.zkOper.write_container_status(container_name, status)
 
     def update_del_note(self, container_name):
