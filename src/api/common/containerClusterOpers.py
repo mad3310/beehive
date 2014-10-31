@@ -303,6 +303,7 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
         
         verify_item = {'nodeCount':4, 'mem_limit':3}
         select_ip_list = []
+
         ret = self.check_resource(verify_item)
         error_msg = ret.get('error_msg')
         if error_msg:

@@ -25,6 +25,7 @@ class ServerCluster_Opers(object):
     
     @tornado.gen.engine
     def update(self):
+
         http_client = tornado.httpclient.AsyncHTTPClient()
           
         succ, fail = [], []
@@ -39,13 +40,14 @@ class ServerCluster_Opers(object):
          
         logging.info('key_sets:%s' % str(key_sets) )
         
+        error_record = ''
         for i in range(len(key_sets)):
             callback_key = key_sets.pop()
             response = yield Wait(callback_key)
             if response.error:
-                message = "remote access, the key:%s, error message:%s" % (callback_key, response.error)
+                message = "remote access, the key:%s,\n error message:\n %s" % (callback_key, str(response.error) )
                 error_record += message + "|"
-                logging.error(message)
+                logging.error(error_record)
             else:
                 return_result = response.body.strip()
             

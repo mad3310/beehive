@@ -77,6 +77,7 @@ class ContainerClusterHandler(APIHandler):
             dict.setdefault("message", "cluster has not existed, no need do this operation!")
             self.finish(dict)
             return
+
         try:
             self.containerClusterOpers.destory(containerClusterName)
         except:
