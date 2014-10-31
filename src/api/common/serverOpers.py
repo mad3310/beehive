@@ -43,7 +43,7 @@ class UpdateServer(object):
         if stat_flag == 0:
             status = {'status': 'started', 'message': ''}
         else:
-           status = {'status': 'stopped', 'message': ''}
+            status = {'status': 'stopped', 'message': ''}
         self.zkOper.write_container_status(container_name, status)
 
     def update_del_note(self, container_name):
@@ -141,3 +141,4 @@ class Server_Opers(Abstract_Container_Opers):
         logging.info('host_ip: %s' % host_ip)
         server = UpdateServer(host_ip)
         server.update()
+

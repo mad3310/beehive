@@ -106,6 +106,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
     def check_create_status(self, containerClusterName):
         failed_rst = {'code':"000001"}
         succ_rst = {'code':"000000"}
+        lack_rst = {'code':"000002"}
         check_rst_dict, message_list  = {}, []
         container_count = self.zkOper.retrieve_container_num(containerClusterName)
         container_node_list = self.zkOper.retrieve_container_list(containerClusterName)
@@ -114,7 +115,12 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         start_flag = container_cluster_info.get('start_flag')
         if not start_flag:
             return failed_rst
-            
+        
+        if  start_flag == 'lack_resource':
+            check_rst_dict.update(lack_rst)
+            check_rst_dict.setdefault('message', container_cluster_info.get('error_message'))
+            return check_rst_dict
+        
         if len(container_node_list) != container_count:
             return failed_rst
         
@@ -274,7 +280,7 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
             num += available_host_num
         
         if num < nodeCount:
-            error_msg += '; hosts needed are not enough!'
+            error_msg += 'server resource are not enough!'
         
         select_ip_list = self.get_host_ip_list(host_ip_list, nodeCount)
         logging.info('select_ip_list:%s' % str(select_ip_list))
@@ -309,14 +315,14 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
         if error_msg:
             container_cluster_info = {}
             container_cluster_info['containerClusterName'] = containerClusterName
-            container_cluster_info['start_flag'] = 'failed'
+            container_cluster_info['start_flag'] = 'lack_resource'
+            container_cluster_info['error_msg'] = error_msg
             self.zkOper.write_container_cluster_info(container_cluster_info)
             logging.info('check resource failed:%s' % str(error_msg) )
             return
         else:
             select_ip_list = ret.get('select_ip_list')
             logging.info('select_ip_list:%s' % str(select_ip_list))
-        
         
         containerCount = verify_item.get('nodeCount')
         self.create_container_cluser_info(containerCount, containerClusterName)
