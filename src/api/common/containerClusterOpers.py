@@ -118,7 +118,8 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         
         if  start_flag == 'lack_resource':
             check_rst_dict.update(lack_rst)
-            check_rst_dict.setdefault('message', container_cluster_info.get('error_message'))
+            check_rst_dict.setdefault('error_msg', container_cluster_info.get('error_msg'))
+            logging.info('return info:%s' % str(check_rst_dict))
             return check_rst_dict
         
         if len(container_node_list) != container_count:

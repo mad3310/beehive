@@ -111,15 +111,13 @@ class CheckCreateClusterStatusHandler(APIHandler):
     def get(self, containerClusterName):        
         try:
             check_result =  self.containerClusterOpers.check_create_status(containerClusterName)
-            if check_result.get('code') == '000002':
-                error_message = check_result.get('error_message')
-                raise HTTPAPIError(status_code=578, error_detail=error_message,\
-                                    notification = "direct", \
-                                    log_message= error_message,\
-                                    response =  error_message) 
         except:
             logging.error( str(traceback.format_exc()) )
-       
+        if check_result.get('code') == '000002':
+            error_message = check_result.get('error_msg')
+            raise HTTPAPIError(status_code=579, error_detail=error_message,\
+                                notification = "direct", \
+                                log_message= error_message)
         self.finish(check_result)
 
 

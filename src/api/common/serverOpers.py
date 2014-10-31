@@ -141,4 +141,3 @@ class Server_Opers(Abstract_Container_Opers):
         logging.info('host_ip: %s' % host_ip)
         server = UpdateServer(host_ip)
         server.update()
-
