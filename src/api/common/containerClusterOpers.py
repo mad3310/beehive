@@ -42,28 +42,31 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         containerCluster_destroy_action.start()
    
     def check(self, containerClusterName):
-        nodes_status, cluster_status = [], {}
-        normal, vip, nodes_stat = [], [], {}
-        container_ip_list = self.zkOper.retrieve_container_list(containerClusterName)
-        for container_ip in container_ip_list:
-            status = self.zkOper.retrieve_container_status_value(containerClusterName, container_ip)
-            con_info = self.zkOper.retrieve_container_node_value(containerClusterName, container_ip)
-            node_type = con_info.get('type')
-            if node_type == 'mclusternode':
-                normal.append(status.get('status'))
-                nodes_stat.setdefault('normal', normal)
-            elif node_type == 'mclustervip':
-                vip.append(status.get('status'))
-                nodes_stat.setdefault('vip', vip)
-        
-        ret = self._get_cluster_status(nodes_stat)
-        cluster_status.setdefault('status', ret)
-        
-        if ret == 'destroyed':
-            logging.info('delete containerCluster: %s' % containerClusterName)
-            self.zkOper.delete_container_cluster(containerClusterName)
-        
-        return cluster_status
+        try:
+            nodes_status, cluster_status = [], {}
+            normal, vip, nodes_stat = [], [], {}
+            container_ip_list = self.zkOper.retrieve_container_list(containerClusterName)
+            for container_ip in container_ip_list:
+                status = self.zkOper.retrieve_container_status_value(containerClusterName, container_ip)
+                con_info = self.zkOper.retrieve_container_node_value(containerClusterName, container_ip)
+                node_type = con_info.get('type')
+                if node_type == 'mclusternode':
+                    normal.append(status.get('status'))
+                    nodes_stat.setdefault('normal', normal)
+                elif node_type == 'mclustervip':
+                    vip.append(status.get('status'))
+                    nodes_stat.setdefault('vip', vip)
+            
+            ret = self._get_cluster_status(nodes_stat)
+            cluster_status.setdefault('status', ret)
+            
+            if ret == 'destroyed':
+                logging.info('delete containerCluster: %s' % containerClusterName)
+                self.zkOper.delete_container_cluster(containerClusterName)
+            
+            return cluster_status
+        except:
+            logging.error(str( traceback.format_exc()) )
     
     def _get_cluster_status(self, nodes_stat):
         
@@ -299,7 +302,7 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
         logging.info('containerClusterName : %s' % str(containerClusterName))
         
         verify_item = {'nodeCount':4, 'mem_limit':3}
-        
+        select_ip_list = []
         ret = self.check_resource(verify_item)
         error_msg = ret.get('error_msg')
         if error_msg:

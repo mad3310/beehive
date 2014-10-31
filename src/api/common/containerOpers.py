@@ -297,4 +297,5 @@ class Container_destroy_action(Abstract_Async_Thread):
         else:
             destroy_rst.setdefault('status', 'destroyed')
             destroy_rst.setdefault('message', '')
+
         self.zkOper.write_container_status(self.container_name, destroy_rst)

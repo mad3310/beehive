@@ -73,10 +73,10 @@ class ContainerClusterHandler(APIHandler):
         
         exists = self.zkOper.check_containerCluster_exists(containerClusterName)
         if not exists:
-            raise HTTPAPIError(status_code=400, error_detail="containerCluster %s not exist!" % containerClusterName,\
-                                notification = "direct", \
-                                log_message= "containerCluster %s not exist!" % containerClusterName,\
-                                response =  "please check!")
+            dict = {}
+            dict.setdefault("message", "cluster has not existed, no need do this operation!")
+            self.finish(dict)
+            return
         try:
             self.containerClusterOpers.destory(containerClusterName)
         except:

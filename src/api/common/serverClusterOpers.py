@@ -25,7 +25,6 @@ class ServerCluster_Opers(object):
     
     @tornado.gen.engine
     def update(self):
-        logging.info('run update')
         http_client = tornado.httpclient.AsyncHTTPClient()
           
         succ, fail = [], []
