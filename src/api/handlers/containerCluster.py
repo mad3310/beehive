@@ -113,6 +113,8 @@ class CheckCreateClusterStatusHandler(APIHandler):
             check_result =  self.containerClusterOpers.check_create_status(containerClusterName)
         except:
             logging.error( str(traceback.format_exc()) )
+        
+        logging.info('check_result : %s' % (str(check_result), type(check_result)) )
         if check_result.get('code') == '000002':
             error_message = check_result.get('error_msg')
             raise HTTPAPIError(status_code=579, error_detail=error_message,\

@@ -34,10 +34,11 @@ class ServerCluster_Opers(object):
          
         for server in server_list:
             requesturi = 'http://%s:%s/inner/server/update' % (server, options.port)
+            logging.info('server requesturi: %s' % str(requesturi))
             callback_key = server
             key_sets.add(callback_key)
             http_client.fetch(requesturi, callback=(yield Callback(callback_key)))
-         
+        
         logging.info('key_sets:%s' % str(key_sets) )
         
         error_record = ''

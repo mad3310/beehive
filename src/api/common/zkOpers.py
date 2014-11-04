@@ -330,13 +330,13 @@ class ZkOpers(object):
         try:
             if 'd-mcl' in container_name:
                 containerClusterName = re.findall('d-mcl-(.*)-n-\d', container_name)[0]
-                return containerClusterName
             elif 'd_mcl' in container_name:
                 containerClusterName = re.findall('d_mcl_(.*)_node_\d', container_name)[0]
-                return containerClusterName 
             elif 'vip' in container_name:
                 containerClusterName = re.findall('d-vip-(.*)', container_name)[0]
-                return containerClusterName           
+            elif 'doc-mcl' in container_name:
+                containerClusterName = re.findall('doc-mcl-(.*)-n-\d', container_name)[0]
+            return containerClusterName
         except:
             logging.error( str(traceback.format_exc()) )
     

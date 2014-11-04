@@ -48,7 +48,9 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
             container_ip_list = self.zkOper.retrieve_container_list(containerClusterName)
             for container_ip in container_ip_list:
                 status = self.zkOper.retrieve_container_status_value(containerClusterName, container_ip)
+                logging.info('get container status dict: %s' % str(status) )
                 con_info = self.zkOper.retrieve_container_node_value(containerClusterName, container_ip)
+                logging.info('get check cluster info: %s' % str(con_info) )
                 node_type = con_info.get('type')
                 if node_type == 'mclusternode':
                     normal.append(status.get('status'))

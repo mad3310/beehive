@@ -33,7 +33,7 @@ handlers = [
     (r"/inner/container", ContainerHandler),
     (r"/container/start", StartContainerHandler),
     (r"/container/stop", StopContainerHandler),
-    (r"/container/remove", RemoveContainerHandler),
+    #(r"/container/remove", RemoveContainerHandler),
     (r"/container/status/(.*)", CheckContainerStatusHandler),
     
 ]
