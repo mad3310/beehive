@@ -114,7 +114,7 @@ class CheckCreateClusterStatusHandler(APIHandler):
         except:
             logging.error( str(traceback.format_exc()) )
         
-        logging.info('check_result : %s' % (str(check_result), type(check_result)) )
+        logging.info('check_result : %s, type: %s' % (str(check_result), type(check_result)) )
         if check_result.get('code') == '000002':
             error_message = check_result.get('error_msg')
             raise HTTPAPIError(status_code=579, error_detail=error_message,\
