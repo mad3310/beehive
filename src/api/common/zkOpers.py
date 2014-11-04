@@ -370,5 +370,5 @@ class ZkOpers(object):
         clusterUUID = self.getClusterUUID()
         for ip in ip_list:
             path = self.rootPath + "/" + clusterUUID + "/ipPool" + "/" + ip
-            self.zk.ensure_path(path)    
-        
+            self.zk.ensure_path(path)
+            

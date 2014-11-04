@@ -621,7 +621,7 @@ class GetClustersChanges():
     
     def random_host_ip(self):
         host_ip_list = self.zkOper.retrieve_data_node_list()
-        host = getVMIp()
+        host = getHostIp()
         if host in host_ip_list:
             host_ip_list.remove(host)
         host_ip = random.choice(host_ip_list)

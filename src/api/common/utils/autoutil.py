@@ -78,8 +78,11 @@ def handleTimeout(func, timeout, *params, **paramMap):
     return rst
 
 def getHostIp():
-    print socket.gethostname()
-    return socket.gethostbyname(socket.gethostname())
+    out_ip = os.popen("ifconfig $(route -n|grep UG|awk '{print $NF}')|grep 'inet addr'|awk '{print $2}'").read()
+    ip = out_ip.split('\n')[0]
+    ip = re.findall('.*:(.*)', ip)[0]
+    logging.info("host ip: %s" % (ip))
+    return ip
 
 def getVMIp():
     ips = os.popen("/sbin/ifconfig | grep 'inet addr' | awk '{print $2}'").read()
