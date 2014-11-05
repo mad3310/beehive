@@ -18,6 +18,7 @@ from tornado.httpclient import HTTPRequest
 from common.helper import _request_fetch
 from common.ipOpers import IpOpers
 from common.serverClusterOpers import ServerCluster_Opers
+from common.utils.autoutil import http_get
 
 
 @require_basic_auth
@@ -85,9 +86,7 @@ class GetServersInfoHandler(APIHandler):
         resource_dict = {}
         for data_node_ip in data_nodes_ip_list:
             requesturi = "http://%s:%s%s" % (data_node_ip, options.port, uri)
-            request = HTTPRequest(url=requesturi, method='GET', connect_timeout=30.0, request_timeout=30.0)
-            return_result = _request_fetch(request)
-            retrun_dict = json.loads(return_result)
+            retrun_dict = http_get(requesturi)
             resource_dict.setdefault(data_node_ip, retrun_dict['response'])
         
         self.finish(resource_dict)

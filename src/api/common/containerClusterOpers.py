@@ -9,7 +9,6 @@ Created on Sep 8, 2014
 import sys, time, json, copy, random
 import logging, urllib, traceback
 
-from tornado.httpclient import HTTPRequest
 from tornado.options import options
 from abstractAsyncThread import Abstract_Async_Thread
 from abstractContainerOpers import Abstract_Container_Opers
@@ -387,9 +386,7 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
         logging.info('args_dict:%s' % args_dict)
         args_dict.setdefault('host_ip', host_ip)
         try:
-            request = HTTPRequest(url=requesturi, method='POST', body=urllib.urlencode(args_dict), connect_timeout=40.0,\
-                                  request_timeout=40.0, auth_username = admin_user, auth_password = admin_passwd)
-            fetch_ret = _request_fetch(request)
+            fetch_ret = http_post(requesturi, args_dict, auth_username=admin_user, auth_password=admin_passwd )
             logging.info('POST result :%s' % str(fetch_ret))
             ret = eval(fetch_ret).get('response').get('message')
             if ret == 'Success Create Container':
@@ -563,8 +560,7 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
         requesturi = "http://%s:%s%s" % (container_node, options.port, url_post)
         logging.info('requesturi: %s' % requesturi)
         try:
-            request = HTTPRequest(url=requesturi, method='GET', connect_timeout=40.0, request_timeout=40.0)
-            fetch_ret = _request_fetch(request)
+            fetch_ret = http_get(requesturi)
             logging.info('fetch_ret:%s' % str(fetch_ret))
             fetch_ret = json.loads(fetch_ret)
             logging.info('get type :%s' % str(type(fetch_ret) ) )

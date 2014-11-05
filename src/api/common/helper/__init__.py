@@ -77,6 +77,12 @@ def init_container(containerName=None):
             if re.match(r"^NETMASK=", env):
                 key, mask = re.split(r"=", env)
         real_route = ''
+        if not is_ip(ip):
+            logging.error("get IP error: %s" % ip)
+            return False
+        if not is_ip(mask):
+            logging.error("get MASK error: %s" % mask)
+            return False
         for i in range(0,4):
             if i != 3:
                 real_route = real_route + str(int(ip.split(r".")[i])&int(mask.split(r".")[i])) + r"."
@@ -91,7 +97,11 @@ def init_container(containerName=None):
         else:
             route_list = child.after.replace('bash','').split("\r\n")
         r_list = _get_route_dicts(route_list)
-        if r_list is False:
+        if isinstance(r_list, dict):
+            if r_list.has_key('false'):
+                logging.error(r_list['false'])
+            else:
+                logging.error('unknow error: %s' % (str(r_list)))
             return False
         if len(r_list) > 0:
             for route in r_list:
@@ -107,7 +117,11 @@ def init_container(containerName=None):
         else:
             route_list = child.after.replace("bash",'').split("\r\n")
         r_list = _get_route_dicts(route_list)
-        if r_list is False:
+        if isinstance(r_list, dict):
+            if r_list.has_key('false'):
+                logging.error(r_list['false'])
+            else:
+                logging.error('unknow error: %s' % (str(r_list)))
             return False
         if len(r_list) == 0:
             child.sendline(r"route add default gw %s" % (real_route))
@@ -121,18 +135,25 @@ def init_container(containerName=None):
         raise e
     return True
 
+def is_ip(ip=None):
+    if ip is None:
+        return False
+    pattern = r"\b(25[0-5]|2[0-4][0-9]|1[0-9]{0,2}|[1-9][0-9]|[1-9])\.(25[0-5]|2[0-4][0-9]|1[0-9]{0,2}|[1-9][0-9]|[0-9])\.(25[0-5]|2[0-4][0-9]|1[0-9]{0,2}|[1-9][0-9]|[0-9])\.(25[0-5]|2[0-4][0-9]|1[0-9]{0,2}|[1-9][0-9]|[0-9])\b"
+    if re.match(pattern, ip) is None:
+        return False
+    return True   
+
 def _get_route_dicts(route_list=None):
     if route_list is None:
-        return False
+        return { 'false': 'route_list is None' }
     r_list = []
     for line in route_list:
         if ( line == '' ): continue
         route_info = {}
         route_info['route_ip'] = line.split()[1]
         mask_num = _mask_to_num(line.split()[2])
-        if type(mask_num) is dict:
-            logging.error('netmask Illegal: %s' % (mask_num['false']))
-            return False
+        if isinstance(mask_num, dict):
+            return { 'false' : 'netmask Illegal: %s' % (mask_num['false']) }
         else:
             route_info['mask_num'] = mask_num
         route_info['dev'] = line.split()[7]
@@ -143,6 +164,8 @@ def _mask_to_num(netmask=None):
     if netmask is None:
         return { 'false': netmask }
     num = ''
+    if not is_ip(netmask):
+        return { 'false': netmask }
     for i in range(0,4):
         ip = int(netmask.split(r".")[i])
         if ip > 255 or ip < 0:
