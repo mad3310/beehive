@@ -141,7 +141,15 @@ def is_ip(ip=None):
     pattern = r"\b(25[0-5]|2[0-4][0-9]|1[0-9]{0,2}|[1-9][0-9]|[1-9])\.(25[0-5]|2[0-4][0-9]|1[0-9]{0,2}|[1-9][0-9]|[0-9])\.(25[0-5]|2[0-4][0-9]|1[0-9]{0,2}|[1-9][0-9]|[0-9])\.(25[0-5]|2[0-4][0-9]|1[0-9]{0,2}|[1-9][0-9]|[0-9])\b"
     if re.match(pattern, ip) is None:
         return False
-    return True   
+    return True
+
+def is_mask(mask=None):
+    if mask is None:
+        return False
+    pattern = r"\b(25[0-5]|2[0-4][0-9]|1[0-9]{0,2}|[1-9][0-9]|[0-9])\.(25[0-5]|2[0-4][0-9]|1[0-9]{0,2}|[1-9][0-9]|[0-9])\.(25[0-5]|2[0-4][0-9]|1[0-9]{0,2}|[1-9][0-9]|[0-9])\.(25[0-5]|2[0-4][0-9]|1[0-9]{0,2}|[1-9][0-9]|[0-9])\b"
+    if re.match(pattern, mask) is None:
+        return False
+    return True
 
 def _get_route_dicts(route_list=None):
     if route_list is None:
@@ -164,7 +172,7 @@ def _mask_to_num(netmask=None):
     if netmask is None:
         return { 'false': netmask }
     num = ''
-    if not is_ip(netmask):
+    if not is_mask(netmask):
         return { 'false': netmask }
     for i in range(0,4):
         ip = int(netmask.split(r".")[i])
