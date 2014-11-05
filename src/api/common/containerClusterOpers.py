@@ -530,17 +530,20 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
         while num:
             stat = True
             succ = {}
+            logging.info('check_container_node_ip_list :%s' % str(check_container_node_ip_list) )
             for index,host_ip in enumerate(check_container_node_ip_list):
                 container_name = container_name_list[index]
                 ret = self.__get(container_name, host_ip)
+                logging.info('check container %s,  result : %s' % (container_name, str(ret)))
                 if ret:
                     succ.setdefault(host_ip, container_name)
                 else:
                     stat = False
+            logging.info('stat: %s' % str(stat))
             if stat:
                 logging.info('successful!!!')
                 return True
-             
+            
             for hostip, containername in succ.items():
                 container_name_list.remove(containername)
                 check_container_node_ip_list.remove(hostip)
@@ -562,8 +565,6 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
         try:
             fetch_ret = http_get(requesturi)
             logging.info('fetch_ret:%s' % str(fetch_ret))
-            fetch_ret = json.loads(fetch_ret)
-            logging.info('get type :%s' % str(type(fetch_ret) ) )
             ret = fetch_ret.get('response').get('message')
             logging.info('fetch_ret.get response :%s' % type(fetch_ret.get('response')))
             logging.info('get reslut: %s, type: %s' % ( str(ret), type(ret) ))
