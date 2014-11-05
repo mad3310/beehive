@@ -80,7 +80,7 @@ def init_container(containerName=None):
         if not is_ip(ip):
             logging.error("get IP error: %s" % ip)
             return False
-        if not is_ip(mask):
+        if not is_mask(mask):
             logging.error("get MASK error: %s" % mask)
             return False
         for i in range(0,4):
