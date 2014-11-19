@@ -285,9 +285,13 @@ class Container_destroy_action(Abstract_Async_Thread):
         logging.info('write destroy flag')
         destroy_flag = {'status':'destroying', 'message':''}
         self.zkOper.write_container_status(self.container_name, destroy_flag)
-        
+        mount_dir = ''
+        mount_dir = self._get_normal_node_mount_dir()
         self.docker_opers.destroy(self.container_name)
-        #self._remove_data_store_dir()
+        logging.info('container_name :%s' % str(self.container_name) )
+        logging.info('mount_dir :%s' % str(mount_dir) )
+        if os.path.exists(mount_dir):
+            os.system('rm -rf %s' % mount_dir)
         exists = check_container_exists(self.container_name)
         if exists:
             message = 'destroy container %s failed' % self.container_name
@@ -299,3 +303,13 @@ class Container_destroy_action(Abstract_Async_Thread):
             destroy_rst.setdefault('message', '')
 
         self.zkOper.write_container_status(self.container_name, destroy_rst)
+    
+    def _get_normal_node_mount_dir(self):
+        mount_dir = ''
+        if 'vip' not in self.container_name: 
+            con_inspect = self.docker_opers.inspect_container(self.container_name)
+            logging.info('inspect:%s, type:%s' % (con_inspect, type(con_inspect)) )
+            mount_dir = con_inspect.get('Volumes').get('/srv/mcluster')
+            if not mount_dir:
+                mount_dir = ''
+        return mount_dir

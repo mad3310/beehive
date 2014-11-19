@@ -116,6 +116,7 @@ def init_container(containerName=None):
             route_list = []
         else:
             route_list = child.after.replace("bash",'').split("\r\n")
+        logging.info("route_list: %s" % str(route_list))
         r_list = _get_route_dicts(route_list)
         if isinstance(r_list, dict):
             if r_list.has_key('false'):

@@ -85,6 +85,24 @@ class ZkOpers(object):
         path = self.rootPath + "/" + clusterUUID + "/dataNode"
         data_node_ip_list = self._return_children_to_list(path)
         return data_node_ip_list
+
+    def retrieve_servers_white_list(self):
+        clusterUUID = self.getClusterUUID()
+        path = self.rootPath + "/" + clusterUUID + "/config/serversWhiteList"
+        self.zk.ensure_path(path)
+        data_node_ip_list = self._return_children_to_list(path)
+        return data_node_ip_list
+
+    def add_server_into_white_list(self, server_ip):
+        clusterUUID = self.getClusterUUID()
+        path = self.rootPath + "/" + clusterUUID + "/config/serversWhiteList/" + server_ip 
+        self.zk.ensure_path(path)
+
+    def del_server_from_white_list(self, server_ip):
+        clusterUUID = self.getClusterUUID()
+        path = self.rootPath + "/" + clusterUUID + "/config/serversWhiteList/" + server_ip
+        self.zk.ensure_path(path) 
+        self.zk.delete(path)
     
     def retrieve_data_node_info(self, ip_address):
         clusterUUID = self.getClusterUUID()
@@ -223,12 +241,13 @@ class ZkOpers(object):
         path = self.rootPath + "/" + clusterUUID + "/ipPool"
         rest_ip_list = self._return_children_to_list(path)
         assign_ip_list = []
-        for i in range(ipCount):
-            ip = rest_ip_list[i]
-            ippath = ''
+        for ip in rest_ip_list:
             ippath = path + "/" + ip
             self.zk.delete(ippath)
-            assign_ip_list.append(ip)
+            if not ping_ip_able(ip):
+                assign_ip_list.append(ip)
+            if len(assign_ip_list) == ipCount:
+                break
         return assign_ip_list
     
     def remove_useless_ips(self):
@@ -252,6 +271,20 @@ class ZkOpers(object):
                 ippath = path + "/" + ip
                 self.zk.delete(ippath)
     
+    def remove_useless_ips(self):
+        clusterUUID = self.getClusterUUID()
+        path = self.rootPath + "/" + clusterUUID + "/ipPool"
+        ipPool_ip_list = self._return_children_to_list(path)
+        
+        res_opers = Res_Opers()
+        host_con_ip_list = res_opers.get_containers_ip()
+        
+        ip_list = list( set(ipPool_ip_list) & set(host_con_ip_list) )
+        for ip in ip_list:
+            logging.info('delete ips from ipPools: %s for ip used' % str(ip) )
+            _path = path + "/" + ip
+            self.zk.delete(_path)
+
     def lock_assign_ip(self):
         lock_name = "ip_assign"
         return self._lock_base_action(lock_name)
@@ -328,6 +361,7 @@ class ZkOpers(object):
         
     def get_containerClusterName_from_containerName(self, container_name):
         try:
+            containerClusterName = ''
             if 'd-mcl' in container_name:
                 containerClusterName = re.findall('d-mcl-(.*)-n-\d', container_name)[0]
             elif 'd_mcl' in container_name:

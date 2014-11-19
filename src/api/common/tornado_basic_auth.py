@@ -44,7 +44,10 @@ def handle_401(handler):
     handler.set_status(401)
     handler.set_header('WWW-Authenticate', 'Basic realm=Restricted')
     handler._transforms = []
-    handler.finish()
+    chunk = {}
+    chunk['error_code'] = "Authorization failed"
+    chunk['errorDetail'] = "Authorization failed"
+    handler.finish(chunk)
     return False
     
 
@@ -52,7 +55,7 @@ def require_basic_auth(handler_class):
     def wrap_execute(handler_execute):
         def require_basic_auth(handler, kwargs):
             auth_header = handler.request.headers.get('Authorization')
-            if auth_header is None or not auth_header.startswith('Basic '):
+            if auth_header is None or not auth_header.startswith('Basic'):
                 return handle_401(handler)
             auth_decoded = base64.decodestring(auth_header[6:])
             basicAuthParam = {}

@@ -69,8 +69,8 @@ class MclusterManager(Abstract_Container_Opers):
         if containerName is None:
             return False
         #self.update_mcluster_manager(containerName)
+        self.start(containerName)
         time.sleep(1)
         if self.get_stat(containerName):
             return True
-        self.start(containerName)
         return False

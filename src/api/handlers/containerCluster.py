@@ -271,13 +271,11 @@ class ClusterConfigHandler(APIHandler):
     @asynchronous
     def post(self):
         args = self.get_all_arguments()
-        try:
-           self.containerClusterOpers.config(args)
-        except:
-            logging.error(str(traceback.format_exc()))
-            raise HTTPAPIError(status_code=500, error_detail="write config infomation exception!",\
-                                response =  "check if the zookeeper ensure the path!")
-    
+        error_msg = self.containerClusterOpers.config(args)
+        if error_msg:
+            raise HTTPAPIError(status_code=500, error_detail=error_msg,\
+                               response =  "please check if params correct")
+        
         dict = {}
         dict.setdefault("message", "write config infomation successfully!")
         self.finish(dict)
@@ -297,9 +295,9 @@ class ContainerClustersInfoHandler(APIHandler):
         
         if not clusters_zk_info:
             raise HTTPAPIError(status_code=-1, error_detail="There is not cluster in zookeeper",\
-                            notification = "direct", \
-                            log_message= "There is not cluster in zookeeper",\
-                            response =  "There is not cluster in zookeeper")
+                               notification = "direct", \
+                               log_message= "There is not cluster in zookeeper",\
+                               response =  "There is not cluster in zookeeper")
         
         self.finish(clusters_zk_info)
 

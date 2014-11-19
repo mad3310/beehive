@@ -6,8 +6,8 @@ Created on Sep 8, 2014
 
 @author: root
 '''
-import sys, time, json, copy, random
-import logging, urllib, traceback
+import sys, time, copy, random, re
+import logging, traceback
 
 from tornado.options import options
 from abstractAsyncThread import Abstract_Async_Thread
@@ -16,6 +16,7 @@ from helper import _request_fetch, _retrieve_userName_passwd
 from utils.exceptions import MyError
 from utils.autoutil import *
 from zkOpers import ZkOpers
+from resourceVerify import ResourceVerify
 
 
 class ContainerCluster_Opers(Abstract_Container_Opers):
@@ -114,44 +115,78 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         
         container_cluster_info = self.zkOper.retrieve_container_cluster_info(containerClusterName)
         start_flag = container_cluster_info.get('start_flag')
-        if not start_flag:
-            return failed_rst
-        
-        if  start_flag == 'lack_resource':
-            check_rst_dict.update(lack_rst)
-            check_rst_dict.setdefault('error_msg', container_cluster_info.get('error_msg'))
-            logging.info('return info:%s' % str(check_rst_dict))
-            return check_rst_dict
-        
+
         if len(container_node_list) != container_count:
             return failed_rst
-        
-        for container_node in container_node_list:
-            container_node_value = self.zkOper.retrieve_container_node_value(containerClusterName, container_node)
-            if not container_node_value:
-                return failed_rst
-            containerName = container_node_value.get('containerName')
-            hostIp = container_node_value.get('hostIp')
-            message_list.append(container_node_value)
-        
-        check_rst_dict.update(succ_rst)
-        check_rst_dict.setdefault('containers', message_list)
-        check_rst_dict.setdefault('message', 'check all containers OK!')
-        return check_rst_dict
+        if not start_flag:
+            return failed_rst
+        else:
+            if start_flag == 'succeed':
+                for container_node in container_node_list:
+                    container_node_value = self.zkOper.retrieve_container_node_value(containerClusterName, container_node)
+                    if not container_node_value:
+                        return failed_rst
+                    containerName = container_node_value.get('containerName')
+                    hostIp = container_node_value.get('hostIp')
+                    message_list.append(container_node_value)
+                check_rst_dict.update(succ_rst)
+                check_rst_dict.setdefault('containers', message_list)
+                check_rst_dict.setdefault('message', 'check all containers OK!')
+            
+            elif  start_flag == 'lack_resource':
+                check_rst_dict.update(lack_rst)
+                check_rst_dict.setdefault('error_msg', container_cluster_info.get('error_msg'))
+                logging.info('return info:%s' % str(check_rst_dict))
+            
+            elif start_flag == 'failed':
+                check_rst_dict.update(lack_rst)
+                check_rst_dict.setdefault('error_msg', 'check mcluster stat failed')            
+            
+            return check_rst_dict
     
     def config(self, conf_dict={}):
-        
-        logging.info('config args: %s' % conf_dict)
-        _type = conf_dict.pop('type')
-        if _type == 'normal':
-            conf_record = self.zkOper.retrieve_mcluster_info_from_config()
-            re_conf_dict = self.__rewrite_conf_info(conf_dict, conf_record)
-            self.zkOper.writeClusterNormalConf(re_conf_dict)
-        elif _type == 'vip':
-            conf_record = self.zkOper.retrieve_mclustervip_info_from_config()
-            re_conf_dict = self.__rewrite_conf_info(conf_dict, conf_record)
-            self.zkOper.writeClusterVipConf(re_conf_dict)
-
+        try:
+            error_msg = ''
+            logging.info('config args: %s' % conf_dict)
+            if 'type' in conf_dict:
+                _type = conf_dict.pop('type')
+                if _type == 'normal':
+                    conf_record = self.zkOper.retrieve_mcluster_info_from_config()
+                    re_conf_dict = self.__rewrite_conf_info(conf_dict, conf_record)
+                    self.zkOper.writeClusterNormalConf(re_conf_dict)
+                elif _type == 'vip':
+                    conf_record = self.zkOper.retrieve_mclustervip_info_from_config()
+                    re_conf_dict = self.__rewrite_conf_info(conf_dict, conf_record)
+                    self.zkOper.writeClusterVipConf(re_conf_dict)
+            elif 'servers' in conf_dict:
+                error_msg = self.__update_white_list(conf_dict)
+            else:
+                error_msg = 'the key of the params is not correct'
+        except:
+            error_msg = str( traceback.format_exc() )
+            logging.error( error_msg )
+        finally:
+            return error_msg
+    
+    def __update_white_list(self, conf_dict):
+        error_msg = ''
+        conf_white_str = conf_dict.get('servers')
+        ip_pattern = '(((2[0-4]\d|25[0-5]|[01]?\d\d?)\.){3}(2[0-4]\d|25[0-5]|[01]?\d\d?),)+((2[0-4]\d|25[0-5]|[01]?\d\d?)\.){3}(2[0-4]\d|25[0-5]|[01]?\d\d?)'
+        if not re.match(ip_pattern, conf_white_str):
+            error_msg = 'the values of the params is not correct'
+            logging.error(error_msg)
+            return error_msg
+        conf_white_list = conf_white_str.split(',')
+        privs_white_list = self.zkOper.retrieve_servers_white_list()
+        add = list( set(conf_white_list) - set(privs_white_list) )
+        delete = list( set(privs_white_list) - set(conf_white_list) )
+        both = list( set(privs_white_list) & set(conf_white_list) )
+        for item in add:
+            self.zkOper.add_server_into_white_list(item)
+        for item in delete:
+            self.zkOper.del_server_from_white_list(item)
+        return error_msg      
+            
     def __rewrite_conf_info(self, conf_dict, conf_record):
         for key, value in conf_dict.items():
             if key in conf_record:
@@ -228,10 +263,7 @@ class ContainerCluster_Action(Abstract_Async_Thread):
             else:
                 params.setdefault(host_ip, container_name)
         return params
-
-    #def recover_deleted_ips_to_ipPool(self, ):
-        
-
+     
 class ContainerCluster_stop_Action(ContainerCluster_Action):
     
     def __init__(self, containerClusterName):
@@ -264,45 +296,6 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
         except:
             logging.info(traceback.format_exc())
             self.threading_exception_queue.put(sys.exc_info())
-
-    def check_resource(self, verify_dict):
-        result_dict = {}
-        error_msg = ''
-        nodeCount = verify_dict.get('nodeCount')
-        
-        ip_list = self.zkOper.get_ips_from_ipPool()
-        if len(ip_list) < nodeCount:
-            error_msg = 'ips are not enough!'
-        
-        ecect_server = ElectServer()
-        host_ip_list = ecect_server.elect_server_list(verify_dict)
-        logging.info('host_ip_list:%s' % str(host_ip_list))
-        num = 0
-        for weighted_value, available_host_num in host_ip_list:
-            num += available_host_num
-        
-        if num < nodeCount:
-            error_msg += 'server resource are not enough!'
-        
-        select_ip_list = self.get_host_ip_list(host_ip_list, nodeCount)
-        logging.info('select_ip_list:%s' % str(select_ip_list))
-        result_dict.setdefault('error_msg', error_msg)
-        result_dict.setdefault('select_ip_list', select_ip_list)
-        return result_dict
-
-    def get_host_ip_list(self, host_ip_list, container_num):
-        hostip_num_dict, ip_list = {}, []    
-        for host_ip, available_host_num in host_ip_list:
-            hostip_num_dict.setdefault(host_ip, available_host_num)
-        
-        for i in range(container_num):
-            for host_ip, available_host_num in hostip_num_dict.items():
-                if available_host_num >0:
-                    ip_list.append(host_ip)
-                    hostip_num_dict[host_ip] = available_host_num - 1
-                if len(ip_list) == container_num:
-                    return ip_list
-        return ip_list
   
     def _issue_create_action(self, args={}):
         logging.info('args:%s' % str(args))
@@ -311,8 +304,9 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
         
         verify_item = {'nodeCount':4, 'mem_limit':3}
         select_ip_list = []
-
-        ret = self.check_resource(verify_item)
+        
+        res_verify = ResourceVerify(verify_item)
+        ret = res_verify.check_resource()
         error_msg = ret.get('error_msg')
         if error_msg:
             container_cluster_info = {}
@@ -349,7 +343,7 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
         if not check_result:
             raise MyError('not all container succeed created')
         
-        flag = self._check_mlcuster_manager_stat(create_container_node_ip_list, create_container_arg_list, 6)
+        flag = self._check_mcluster_manager_stat(create_container_node_ip_list, create_container_arg_list, 6)
         if flag:
             container_cluster_info = self.zkOper.retrieve_container_cluster_info(containerClusterName)
             container_cluster_info.setdefault('start_flag', 'succeed')
@@ -398,14 +392,8 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
     def _get_container_params(self, containerCount, containerClusterName, adminUser, adminPasswd):
 
         create_container_arg_list = []
-        
-        try:
-            containerIPList = self.__retrieve_ip_resource(containerCount)
-        except:
-            raise MyError('No ip in Ip pool, please add!')
-
+        containerIPList = self.__retrieve_ip_resource(containerCount)
         volumes, binds = self.__get_normal_volumes_args()
-
         for i in range(int(containerCount)):
             create_container_arg, env = {}, {}
             create_container_arg.setdefault('containerClusterName', containerClusterName)
@@ -517,7 +505,7 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
                     break
         return create_node_ip_list
     
-    def _check_mlcuster_manager_stat(self, create_container_node_ip_list, create_container_arg_list, num):
+    def _check_mcluster_manager_stat(self, create_container_node_ip_list, create_container_arg_list, num):
         container_name_list = []
         check_container_node_ip_list = []
         for index, create_container_arg in enumerate(create_container_arg_list):
@@ -661,47 +649,4 @@ class GetClustersChanges():
             exist = 'alive'
         return exist
 
-class ElectServer(Abstract_Container_Opers):
-    
-    def elect_server_list(self, verify_item):
-        score_dict, score_list, ips_result  = {}, [], []
-        host_ip_list = self.zkOper.retrieve_data_node_list()
-        available_dict = {}
-        for host_ip in host_ip_list:
-            host_score, available_host_num = self.get_score(host_ip, verify_item)
-            if host_score != 0 :
-                score_dict.setdefault(host_ip, host_score)
-                available_dict.setdefault(host_ip, available_host_num)
-                score_list.append(host_score)
-        
-        score_list.sort(reverse=True)
-        for score in score_list:
-            for _host_ip,_host_score in score_dict.items():
-                host_array = (_host_ip, available_dict.get(_host_ip))
-                if _host_score == score and host_array not in ips_result:
-                    ips_result.append((_host_ip, available_dict.get(_host_ip)))
-                    break
-        return ips_result
-    
-    def get_score(self, host_ip, verify_item={}):
-        """
-        return score and the num of avaliable hosts
-        """
-        
-        server_url = 'http://%s:%s/server/resource' % (host_ip, options.port)
-        containers_url ='http://%s:%s/server/containers/resource' % (host_ip, options.port)
-        logging.info('server_url: %s' % server_url)
-        logging.info('containers_url: %s' % containers_url)
-        server_res = http_get(server_url)
-        containers_res = http_get(containers_url)
-        logging.info('server_res: %s' % str(server_res) )
-        logging.info('containers_res: %s' % str(containers_res) )
-        mem_value = float(server_res["response"]["mem_res"]["total"]) - float((containers_res["response"]["container_alloc_mem"])/1024/1024)
-        mem_limit = verify_item.get('mem_limit')
-        if mem_limit and mem_value < mem_limit:
-            weighted_value = 0
-            num = 0
-        else:
-            weighted_value = mem_value
-            num = int(mem_value/mem_limit)
-        return weighted_value, num
+
