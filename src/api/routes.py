@@ -30,11 +30,12 @@ handlers = [
     (r"/containerCluster/status/(.*)", CheckContainerClusterStatusHandler),
     (r"/inner/MclusterManager/status/(.*)", StartMclusterManagerHandler),
     (r"/containerCluster/conf", ClusterConfigHandler),
-    (r"/containerCluster/ips", AddIpsIntoIpPoolHandler),
+    (r"/containerCluster/ips/add", AddIpsIntoIpPoolHandler),
     (r"/inner/container", ContainerHandler),
     (r"/container/start", StartContainerHandler),
     (r"/container/stop", StopContainerHandler),
     (r"/container/remove", RemoveContainerHandler),
     (r"/container/status/(.*)", CheckContainerStatusHandler),
-    (r"/monitor/status", ContainerStatus)
+    (r"/monitor/status", ContainerStatus),
+    (r"/containerCluster/ips/get", GetIpsFromIpPool)
 ]

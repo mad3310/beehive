@@ -26,6 +26,7 @@ class ResInfoAsyncHandler:
     """
     
     check_res_ip_usable = CheckResIpUsable()
+    check_res_ip_num = CheckResIpNum()
     def __init__(self):
         pass
     
@@ -34,3 +35,4 @@ class ResInfoAsyncHandler:
         
     def _action(self):
         self.check_res_ip_usable.check()
+        self.check_res_ip_num.check()

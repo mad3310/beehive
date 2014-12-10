@@ -60,6 +60,33 @@ class CheckStatusBase(object):
                      monitor_key + " monitor_value:" + str(result_dict))
         self.zkOper.write_monitor_status(monitor_type, monitor_key, result_dict)
 
+class CheckResIpNum(checkStatusBase):
+    ip_opers = IpOpers()
+
+    def check(self):
+        try:
+            monitor_type, monitor_key, error_record = 'res', 'ip_num', ''
+            success_count = 0
+            success_count = self.ip_opers.get_ip_num()
+            if success_count < 20:
+                error_record = 'the number of ips in ip Pool is %s, please add ips!' % success_count
+            alarm_level = self.retrieve_alarm_level(0, success_count, 0)
+            super(CheckResIpNum, self).write_status(0, success_count, 0, \
+                                                        alarm_level, error_record, 
+                                                        monitor_type, monitor_key)
+        
+        except:
+            logging.error( str(traceback.format_exc()) )
+
+    def retrieve_alarm_level(self, total_count, success_count, failed_count):
+        if 20 < success_count:
+            return options.alarm_nothing
+        elif 15 < success_count <= 20:
+            return options.alarm_general
+        else:
+            return options.alarm_serious
+
+
 class CheckResIpUsable(CheckStatusBase):
     
     ip_opers = IpOpers()
