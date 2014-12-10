@@ -4,7 +4,6 @@
 import urllib
 import time
 import logging
-#import pythoncom
 import threading
 import json
 import socket
@@ -23,10 +22,8 @@ class FuncThread(threading.Thread):
         self.finished = False
 
     def run(self):
-        #pythoncom.CoInitialize()
         self.rst = self.func(*self.params, **self.paramMap)
         self.finished = True
-        #pythoncom.CoUninitialize()
 
     def getResult(self):
         return self.rst
@@ -131,3 +128,6 @@ def http_get(url, _connect_timeout=30.0, _request_timeout=30.0, auth_username=No
 #     except Exception, e:
 #         logging.error(str(e))
 #         return e
+
+
+

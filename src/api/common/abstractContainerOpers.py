@@ -16,7 +16,6 @@ class Abstract_Container_Opers(object):
     def create(self, dict):
         raise NotImplementedError, "Cannot call abstract method"
     
-    
     @abstractmethod
     def start(self, dict):
         raise NotImplementedError, "Cannot call abstract method"

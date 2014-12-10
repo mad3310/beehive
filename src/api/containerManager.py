@@ -14,7 +14,7 @@ import logging.config
 
 from tornado.options import options
 from common.appdefine import appDefine
-
+from common.scedulerOpers import Sceduler_Opers
 
 class Application(tornado.web.Application):
     def __init__(self):
@@ -32,6 +32,7 @@ def main():
     tornado.options.parse_command_line()
     http_server = tornado.httpserver.HTTPServer(Application())
     http_server.listen(options.port)
+    sceduler_opers = Sceduler_Opers()
     tornado.ioloop.IOLoop.instance().start()
 
 if __name__ == "__main__":

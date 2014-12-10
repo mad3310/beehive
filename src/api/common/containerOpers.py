@@ -49,7 +49,7 @@ class Container_Opers(Abstract_Container_Opers):
         env = eval(arg_dict.get('env'))
         
         logging.info('container_name: %s' % container_name)
-        logging.info('container_type: %s' % container_type)
+        logging.info('container_type : %s' % container_type)
         logging.info('env: %s' % str(env) )
         
         if container_type == 'mclusternode':
@@ -113,13 +113,13 @@ class Container_Opers(Abstract_Container_Opers):
 
     def check(self, container_name):
         result = {}
-        container_operation_record = self.zkOper.retrieve_container_status(container_name)
+        container_operation_record = self.zkOper.retrieve_container_status_from_containerName(container_name)
         status = container_operation_record.get('status')
         message = container_operation_record.get('message')
         result.setdefault('status', status)
         result.setdefault('message', message)
         return result
-
+    
     def _get_container_info(self, arg_dict):
         env = eval(arg_dict.get('env'))
         container_node_info= {}

@@ -65,7 +65,7 @@ class UpdateServer(object):
         """
         
         container_name_list = []
-        clusters = self.zkOper.retrieve_all_cluster()
+        clusters = self.zkOper.retrieve_cluster_list()
         for cluster in clusters:
             container_ip_list = self.zkOper.retrieve_container_list(cluster)
             for container_ip in container_ip_list:

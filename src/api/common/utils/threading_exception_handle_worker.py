@@ -3,10 +3,10 @@ import logging
 import traceback
 
 from tornado.options import options
-from api.common.utils.mail import send_email
+from common.utils.mail import send_email
 from tornado.web import HTTPError
-from api.common.utils.exceptions import HTTPAPIError
-from api.common.utils.threading_exception_queue import Threading_Exception_Queue
+from common.utils.exceptions import HTTPAPIError
+from common.utils.threading_exception_queue import Threading_Exception_Queue
 
 class Thread_Exception_Handler_Worker(threading.Thread):
     
@@ -38,6 +38,7 @@ class Thread_Exception_Handler_Worker(threading.Thread):
                 logging.error(e)
                 self._send_error_email(exception)
         except:
+            logging.error('exc_info : %s' % str( exc_info) )
             exc_type, exc_obj, exc_trace = exc_info
             # deal with the exception
             logging.error(exc_type)

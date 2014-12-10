@@ -78,9 +78,10 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
             cluster_stat = 'failed'
         vip = nodes_stat.get('vip')
         normal = nodes_stat.get('normal')
-        vip_node = vip[0]
-        logging.info('vip:%s' % str(vip_node))
-        all_nodes_stat.append(vip_node)
+        if not vip:
+            vip_node = vip[0]
+            logging.info('vip:%s' % str(vip_node))
+            all_nodes_stat.append(vip_node)
         for normal_node in normal:
             normal_nodes_stat.append(normal_node)
             all_nodes_stat.append(normal_node)
@@ -116,8 +117,6 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         container_cluster_info = self.zkOper.retrieve_container_cluster_info(containerClusterName)
         start_flag = container_cluster_info.get('start_flag')
 
-        if len(container_node_list) != container_count:
-            return failed_rst
         if not start_flag:
             return failed_rst
         else:
@@ -189,6 +188,8 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
             
     def __rewrite_conf_info(self, conf_dict, conf_record):
         for key, value in conf_dict.items():
+            if key == 'mem_limit':
+                value = eval(value)
             if key in conf_record:
                 conf_record[key] = value
             else:
@@ -264,6 +265,7 @@ class ContainerCluster_Action(Abstract_Async_Thread):
                 params.setdefault(host_ip, container_name)
         return params
      
+
 class ContainerCluster_stop_Action(ContainerCluster_Action):
     
     def __init__(self, containerClusterName):
@@ -302,9 +304,11 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
         containerClusterName = args.get('containerClusterName')
         logging.info('containerClusterName : %s' % str(containerClusterName))
         
-        verify_item = {'nodeCount':4, 'mem_limit':3}
-        select_ip_list = []
+        verify_item = self.zkOper.retrieve_config_node_value()
+        logging.info('config node info in zk: %s, type: %s' % ( str( verify_item), type(verify_item)) )
         
+        select_ip_list = []
+         
         res_verify = ResourceVerify(verify_item)
         ret = res_verify.check_resource()
         error_msg = ret.get('error_msg')
@@ -331,7 +335,6 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
         else:
             create_container_node_ip_list = self.__choose_host()
         
-        #create_container_node_ip_list = self.__choose_host()
         logging.info('choose host iplist: %s' % str(create_container_node_ip_list) )
         
         container_finished_flag_dict = self.__dispatch_create_container_task(create_container_node_ip_list, create_container_arg_list, 
@@ -342,7 +345,7 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
         logging.info('check_result: %s' % check_result)
         if not check_result:
             raise MyError('not all container succeed created')
-        
+                   
         flag = self._check_mcluster_manager_stat(create_container_node_ip_list, create_container_arg_list, 6)
         if flag:
             container_cluster_info = self.zkOper.retrieve_container_cluster_info(containerClusterName)
@@ -561,9 +564,7 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
             return False
 
 
-class ClusterInfoCollector():
-    
-    zkOper = ZkOpers('127.0.0.1', 2181)
+class ClusterInfoCollector(Abstract_Container_Opers):
     
     def __init__(self):
         pass
@@ -590,9 +591,7 @@ class ClusterInfoCollector():
         return cluster_zk_info
 
 
-class GetClustersChanges():
-    
-    zkOper = ZkOpers('127.0.0.1', 2181)
+class GetClustersChanges(Abstract_Container_Opers):
     
     def __init__(self):
         pass
@@ -647,6 +646,4 @@ class GetClustersChanges():
             exist = 'destroyed'
         else:
             exist = 'alive'
-        return exist
-
-
+        return exis

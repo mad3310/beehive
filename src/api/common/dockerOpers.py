@@ -57,7 +57,7 @@ class Docker_Opers(client):
     def inspect_container(self, container):
         c = client()
         return c.inspect_container(container)
-
+    
 if __name__ == '__main__':
     d = Docker_Opers()
     print d.inspect_container('d-mcl-djimlwy-n-1')

@@ -7,18 +7,30 @@ Created on Sep 17, 2014
 @author: root
 '''
 
+import logging
 import os
-from abstractContainerOpers import Abstract_Container_Opers
-from utils.exceptions import MyError
+import traceback
+import time
+import Queue
+
 from zkOpers import ZkOpers
+from utils.autoutil import doInThread
+from utils.exceptions import MyError
+from abstractContainerOpers import Abstract_Container_Opers
+from resourceOpers import Res_Opers
 
 class IpOpers(object):
     '''
     classdocs
     '''
-    
+    store_illegal_ips_queue = Queue.Queue()
+    store_all_ips_queue = Queue.Queue()
+
     zkOper = ZkOpers('127.0.0.1', 2181)
     
+    def __init__(self):
+        pass
+        
     def write_into_ipPool(self, args_dict):
         ip_segment = args_dict.get('ipSegment')
         ip_count = int(args_dict.get('ipCount'))
@@ -35,7 +47,7 @@ class IpOpers(object):
         if len(ips) < ip_count:
             raise MyError('the ips of this segment is less the the number you need, please apply less ips')
         for ip in ips:
-            if self._ping_ip_usable(ip):
+            if self.ip_legal(ip):
                 choosed_ip.append(ip)
                 num += 1
             if num == ip_count:
@@ -50,14 +62,68 @@ class IpOpers(object):
             ip = '.'.join(ip_items)
             all_ips.append(ip)
         return all_ips       
-        
-    def _ping_ip_usable(self, ip):
-        cmd = 'ping -w 1 %s' % str(ip)
-        ping_ret = os.system(cmd)
-        if ping_ret != 0:
+
+    def ip_legal(self, ip):
+        try:
+            cmd = 'ping -w 2 %s' % str(ip)
+            ret = os.system(cmd)
+            if not ret:
+                logging.info('ping ip: %s result :%s' % (ip, str(ret)) )
+                return False
+            res_opers = Res_Opers()
+            host_con_ip_list = res_opers.get_containers_ip()
+            if ip in host_con_ip_list:
+                return False
             return True
-    
-if __name__ == '__main__':
-    ipops = IpOpers()
-    print ipops._ping_ip_usable('10.200.85.28')
-#    print os.system('docker ps')
+
+        except:
+            logging.error( str(traceback.format_exc()) )
+        
+    def ips_legal(self):
+        """
+        """
+        while not self.store_all_ips_queue.empty():
+            ip = self.store_all_ips_queue.get(block=False)
+            is_lagel = self.ip_legal(ip)
+            if not is_lagel:
+                self.store_illegal_ips_queue.put(ip)
+
+    def get_illegal_ips(self, thread_num):
+        """check ip pools
+           
+           thread_num: how many thread to do check if ip is legal
+           put all ips in ip pools into store_all_ips_queue,
+           do check ip is legal in  threads, if illegal, put illegal ip into store_illegal_ips_queue,
+           if all threads end, get illegal ips and return them
+        """
+        
+        illegal_ips, thread_obj_list = [], []
+        ip_list = self.zkOper.get_ips_from_ipPool()
+        logging.info('ips in ip pool:%s' % str(ip_list) )
+        
+        logging.info('put all ips in ip pools into store_all_ips_queue')
+        
+        self.store_all_ips_queue._init(0)
+        self.store_all_ips_queue.queue.extend(ip_list)
+        
+        logging.info('queue size :%s' % str(self.store_all_ips_queue.qsize()) )
+        for i in range(thread_num):
+            thread_obj = doInThread(self.ips_legal)
+            thread_obj_list.append(thread_obj)
+        
+        while thread_obj_list:
+            succ = []
+            for thread_obj in thread_obj_list:
+                logging.info('thread : %s, isAlive: %s' % (thread_obj, str(thread_obj.isAlive()) ) )
+                if not thread_obj.isAlive():
+                    succ.append(thread_obj)
+            for item in succ:
+                thread_obj_list.remove(item)
+            time.sleep(0.5)
+        
+        logging.info('get illegal_ip')
+        while not self.store_illegal_ips_queue.empty():
+            illegal_ip = self.store_illegal_ips_queue.get(block=False)
+            illegal_ips.append(illegal_ip)
+        logging.info('illegal_ips :%s' % str(illegal_ips) )
+        return illegal_ips

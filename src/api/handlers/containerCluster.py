@@ -241,6 +241,7 @@ class AddIpsIntoIpPoolHandler(APIHandler):
         try:
             self.ip_opers.write_into_ipPool(args)
         except:
+            logging.error( str(traceback.format_exc()) )
             raise HTTPAPIError(status_code=500, error_detail="lock by other thread on assign ip processing",\
                                 response =  "check if the zookeeper ensure the path!")
         
@@ -347,4 +348,3 @@ class CheckClusterSyncHandler(APIHandler):
         logging.info('data:%s' % str(res_info))
         dict.setdefault('data', res_info)
         self.finish(dict)
-        

@@ -158,15 +158,19 @@ def _get_route_dicts(route_list=None):
     r_list = []
     for line in route_list:
         if ( line == '' ): continue
+        route_ip = line.split()[1]
+        netmask = line.split()[2]
+        if ( len(route_ip.split(r'.')) != 4 or len(netmask.split(r'.')) !=4 ): continue
         route_info = {}
-        route_info['route_ip'] = line.split()[1]
-        mask_num = _mask_to_num(line.split()[2])
+        route_info['route_ip'] = route_ip
+        mask_num = _mask_to_num(netmask)
         if isinstance(mask_num, dict):
             return { 'false' : 'netmask Illegal: %s' % (mask_num['false']) }
         else:
             route_info['mask_num'] = mask_num
         route_info['dev'] = line.split()[7]
-        r_list.append(route_info)
+        if not route_info in r_list:  
+            r_list.append(route_info)
     return r_list
 
 def _mask_to_num(netmask=None):

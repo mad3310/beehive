@@ -71,7 +71,6 @@ class Res_Opers():
     def get_containers_info(self):
         #docker_c = docker.Client(base_url = 'unix://var/run/docker.sock')
         containers_list = self.docker_c.containers()
-        self._logger.info("container_id_list :" + str(containers_list))
         return containers_list
     
     def get_containers_id(self):
@@ -80,7 +79,6 @@ class Res_Opers():
         id_list = []
         for container_iter in containers_info:
             id_list.append(container_iter['Id'])
-        self._logger.info("containers_id_list :" + str(containers_info))  
         return id_list
     
     def get_containers_ip(self):
@@ -91,7 +89,6 @@ class Res_Opers():
             for item in env:
                 if item.startswith("IP="):
                     ip_list.append(item.split("=")[1])
-        self._logger.info("containers_ip_list :" + str(ip_list))
         return ip_list
     
     def get_containers_alloc_mem(self):

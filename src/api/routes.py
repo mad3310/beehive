@@ -5,6 +5,7 @@ from handlers.serverCluster import *
 from handlers.server import *
 from handlers.containerCluster import *
 from handlers.container import *
+from handlers.monitor import *
 from handlers.admin import AdminConf, AdminUser, AdminReset
 
 handlers = [
@@ -33,7 +34,7 @@ handlers = [
     (r"/inner/container", ContainerHandler),
     (r"/container/start", StartContainerHandler),
     (r"/container/stop", StopContainerHandler),
-    #(r"/container/remove", RemoveContainerHandler),
+    (r"/container/remove", RemoveContainerHandler),
     (r"/container/status/(.*)", CheckContainerStatusHandler),
-    
+    (r"/monitor/status", ContainerStatus)
 ]
