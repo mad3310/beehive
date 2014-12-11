@@ -60,7 +60,7 @@ class CheckStatusBase(object):
                      monitor_key + " monitor_value:" + str(result_dict))
         self.zkOper.write_monitor_status(monitor_type, monitor_key, result_dict)
 
-class CheckResIpNum(checkStatusBase):
+class CheckResIpNum(CheckStatusBase):
     ip_opers = IpOpers()
 
     def check(self):

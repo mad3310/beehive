@@ -93,7 +93,7 @@ class UpdateServer(object):
         create_info.setdefault('hostIp', self.host_ip)
         con_name = inspect.get('Config').get('Hostname')
         create_info.setdefault('containerName', con_name)
-        volumes = inspect.get('Config').get('Volumes')
+        volumes = inspect.get('Volumes')
         create_info.setdefault('mountDir', str(volumes) )
         image = inspect.get('Config').get('Image')
         if 'gbalancer' in image:
