@@ -37,5 +37,5 @@ handlers = [
     (r"/container/remove", RemoveContainerHandler),
     (r"/container/status/(.*)", CheckContainerStatusHandler),
     (r"/monitor/status", ContainerStatus),
-    (r"/containerCluster/ips/get", GetIpsFromIpPool)
+    #(r"/containerCluster/ips/get", GetIpsFromIpPool)
 ]
