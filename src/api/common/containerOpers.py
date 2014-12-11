@@ -28,14 +28,9 @@ class Container_Opers(Abstract_Container_Opers):
     
     def issue_create_action(self, arg_dict):
         
-        container_node_info = self._get_container_info(arg_dict)
-        logging.info('get container info: %s' % str(container_node_info))
-        
         create_result = self.create(arg_dict)
-        
         if create_result:
             logging.info('create container successful, write info!')
-            self.zkOper.write_container_node_info(container_node_info)
             return
         failed_container_name = arg_dict.get('container_name')
         return failed_container_name
@@ -97,6 +92,9 @@ class Container_Opers(Abstract_Container_Opers):
         if not result:
             logging.error('the exception of creating container')
             return False
+        container_node_info = self._get_container_info(mem_limit, arg_dict)
+        logging.info('get container info: %s' % str(container_node_info))
+        self.zkOper.write_container_node_info(container_node_info)
         return True
     
     def stop(self, container_name):
@@ -120,9 +118,10 @@ class Container_Opers(Abstract_Container_Opers):
         result.setdefault('message', message)
         return result
     
-    def _get_container_info(self, arg_dict):
+    def _get_container_info(self, mem_limit,  arg_dict):
         env = eval(arg_dict.get('env'))
         container_node_info= {}
+        container_node_info.setdefault('Memory', mem_limit)
         container_node_info.setdefault('containerClusterName', arg_dict.get('containerClusterName'))
         container_node_info.setdefault('containerNodeIP', arg_dict.get('container_ip'))
         container_node_info.setdefault('hostIp', arg_dict.get('host_ip'))
