@@ -38,7 +38,7 @@ class UpdateServer(object):
         for item in both:
             self.update_both_note(item)
 
-    def update_bote_note(self, container_name):
+    def update_both_note(self, container_name):
         status = {}
         server_con_stat = get_container_stat(container_name)
         zk_con_stat = self.zkOper.retrieve_container_status_from_containerName(container_name)
