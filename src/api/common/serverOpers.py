@@ -89,7 +89,7 @@ class UpdateServer(object):
     def _compare(self, host_container_list, zk_container_list):
         add = list( set(host_container_list) - set(zk_container_list) )
         delete = list( set(zk_container_list) - set(host_container_list) )
-        both = list( set(host_container_list) && set( zk_container_list) )
+        both = list( set(host_container_list) & set( zk_container_list) )
         return add, delete, both
 
     def _write_container_into_zk(self, create_info):
