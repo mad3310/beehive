@@ -78,10 +78,10 @@ class StartContainerHandler(APIHandler):
                                 log_message= "container %s not exist!" % container_name,\
                                 response =  "please check!")
         
-        stat_flag = get_container_stat(container_name)
-        if not stat_flag:
+        stat = get_container_stat(container_name)
+        if stat == 'started':
             massage = {}
-            massage.setdefault("status", "started")
+            massage.setdefault("status", stat)
             massage.setdefault("message", "no need this operation, the container has been started!")
             self.finish(massage)
             return
@@ -122,10 +122,10 @@ class StopContainerHandler(APIHandler):
                                 log_message= "container %s not exist!" % container_name,\
                                 response =  "please check!")
         
-        stat_flag = get_container_stat(container_name)
-        if stat_flag == 1:
+        stat = get_container_stat(container_name)
+        if stat == 'stopped':
             massage = {}
-            massage.setdefault("status", "stopped")
+            massage.setdefault("status", stat)
             massage.setdefault("message", "no need this operation, the container has been stopped!")
             self.finish(massage)
             return

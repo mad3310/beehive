@@ -29,27 +29,37 @@ class UpdateServer(object):
     def update(self):
         host_containers = self._get_containers_from_host()
         zk_containers = self._get_containers_from_zookeeper()
-        add, delete = self._compare(host_containers, zk_containers)
+        add, delete, both = self._compare(host_containers, zk_containers)
+
         for item in add:
             self.update_add_note(item)
         for item in delete:
             self.update_del_note(item)
-    
+        for item in both:
+            self.update_both_note(item)
+
+    def update_bote_note(self, container_name):
+        status = {}
+        server_con_stat = get_container_stat(container_name)
+        zk_con_stat = self.zkOper.retrieve_container_status_from_containerName(container_name)
+        if server_con_stat != zk_con_stat:
+            status.setdefault('status',  server_con_stat)
+            status.setdefault('message',  '')
+        self.zkOper.write_container_status(container_name, status)
+
     def update_add_note(self, container_name):
+        status = {}
         create_info = self._get_container_info_as_zk(container_name)
         logging.info('create_info as zk: \n%s' % str( create_info ) )
         self._write_container_into_zk(create_info)
-        stat_flag = get_container_stat(container_name)
-        if stat_flag == 0:
-            status = {'status': 'started', 'message': ''}
-        else:
-            status = {'status': 'stopped', 'message': ''}
+        stat = get_container_stat(container_name)
+        status = {'status': stat, 'message': ''}
         self.zkOper.write_container_status(container_name, status)
 
     def update_del_note(self, container_name):
         status = {'status': 'destroyed', 'message': ''}
         self.zkOper.write_container_status(container_name, status)
-        
+
     def _get_containers_from_host(self):
         container_name_list = []
         container_info_list = self.docker_opers.containers(all=True)
@@ -60,8 +70,8 @@ class UpdateServer(object):
         return container_name_list
 
     def _get_containers_from_zookeeper(self):
-        """
-        get containers from zookeeper by host_ip
+        """if the status container in zookeeper is destroyed, regard this container as not exist.
+        
         """
         
         container_name_list = []
@@ -79,7 +89,8 @@ class UpdateServer(object):
     def _compare(self, host_container_list, zk_container_list):
         add = list( set(host_container_list) - set(zk_container_list) )
         delete = list( set(zk_container_list) - set(host_container_list) )
-        return add, delete
+        both = list( set(host_container_list) && set( zk_container_list) )
+        return add, delete, both
 
     def _write_container_into_zk(self, create_info):
         self.zkOper.write_container_node_info(create_info)

@@ -195,7 +195,7 @@ def get_container_stat(container_name):
     
     exists = check_container_exists(container_name)
     if not exists:
-        return 2
+        return 'destroyed'
     c = docker.Client('unix://var/run/docker.sock')
     container_info_list =  c.containers(all=True)
     for container_info in container_info_list:
@@ -204,9 +204,9 @@ def get_container_stat(container_name):
         if name == container_name:
             stat = container_info.get('Status')
             if 'Up' in stat:
-                return 0
+                return 'started'
             elif 'Exited' in stat:
-                return 1
+                return 'stopped'
 
 def check_container_exists(container_name):
     c = docker.Client('unix://var/run/docker.sock')

@@ -173,8 +173,8 @@ class Container_Opers(Abstract_Container_Opers):
         logging.info(cmd)
         
     def _check_create_status(self, container_name):
-        flag = get_container_stat(container_name)
-        if flag == 0:
+        stat = get_container_stat(container_name)
+        if stat == 'started':
             return True
         else:
             return False
@@ -214,14 +214,12 @@ class Container_start_action(Abstract_Async_Thread):
         start_flag = {'status':'starting', 'message':''}
         self.zkOper.write_container_status(self.container_name, start_flag)
         self.docker_opers.start(self.container_name)
-        flag = get_container_stat(self.container_name)
-        if flag == 1:
-            status = 'failed'
+        stat = get_container_stat(self.container_name)
+        if stat == 'stopped':
             message = 'start container %s failed' % self.container_name
         else:
-            status = 'started'
             message = ''
-        start_rst.setdefault('status', status)
+        start_rst.setdefault('status', stat)
         start_rst.setdefault('message', message)
         logging.info('write start result')
         self.zkOper.write_container_status(self.container_name, start_rst)
@@ -250,8 +248,8 @@ class Container_stop_action(Abstract_Async_Thread):
         self.zkOper.write_container_status(self.container_name, stop_flag)
         
         self.docker_opers.stop(self.container_name, 30)
-        flag = get_container_stat(self.container_name)
-        if flag == 0:
+        stat = get_container_stat(self.container_name)
+        if stat == 'started':
             status = 'failed'
             message = 'stop container %s failed' % self.container_name
         else:
