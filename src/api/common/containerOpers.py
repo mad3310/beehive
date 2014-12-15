@@ -98,7 +98,7 @@ class Container_Opers(Abstract_Container_Opers):
             return False
         container_node_info = self._get_container_info(container_name, arg_dict)
         logging.info('get container info: %s' % str(container_node_info))
-        self.zkOper.write_container_node_info(containerClusterName, container_ip, 'started', container_node_info)
+        self.zkOper.write_container_node_info('started', container_node_info)
         return True
     
     def stop(self, container_name):
