@@ -14,6 +14,7 @@ import re
 from utils.autoutil import *
 from resourceOpers import Res_Opers
 from kazoo.client import KazooClient
+from container_module import Container
 
 class ZkOpers(object):
     
@@ -306,11 +307,12 @@ class ZkOpers(object):
         self.zk.set(path, str(containerClusterProps))
             
     def write_container_node_info(self, status, containerProps):
-        container_name = containerProps.get('container_name')
-        if not container_name:
-            logging.error('not get container_name')
-        cluster = get_containerClusterName_from_containerName(container_name)
-        container_ip = self.get_containerIp(cluster, container_name)
+        inspect = containerProps.get('inspect')
+        con = Container(inspect=inspect)
+        cluster = con.cluster()
+        logging.info('get container cluster :%s' % cluster)
+        container_ip = con.ip()
+        logging.info('get container ip :%s' % container_ip)
         clusterUUID = self.getClusterUUID()
         path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + cluster + "/" + container_ip
         self.zk.ensure_path(path)
