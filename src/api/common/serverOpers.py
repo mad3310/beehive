@@ -52,7 +52,7 @@ class UpdateServer(object):
         status = {}
         create_info = self._get_container_info_as_zk(container_name)
         logging.info('create_info as zk: \n%s' % str( create_info ) )
-        self._write_container_into_zk(create_info)
+        self._write_container_into_zk(container_name, create_info)
         stat = get_container_stat(container_name)
         status = {'status': stat, 'message': ''}
         self.zkOper.write_container_status_by_containerName(container_name, status)
@@ -93,8 +93,9 @@ class UpdateServer(object):
         both = list( set(host_container_list) & set( zk_container_list) )
         return add, delete, both
 
-    def _write_container_into_zk(self, create_info):
-        self.zkOper.write_container_node_info(create_info)
+    def _write_container_into_zk(self, container_name, create_info):
+        container_stat = get_container_stat(container_name)
+        self.zkOper.write_container_node_info(container_stat, create_info)
 
     def _get_container_info_as_zk(self, container_name):
         create_info = {}

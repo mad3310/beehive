@@ -125,6 +125,7 @@ class Container_Opers(Abstract_Container_Opers):
     def _get_container_info(self, container_name, arg_dict):
         con = Container(container_name)
         container_node_info= {}
+        container_node_info.setdefault('container_name', container_name)
         container_node_info.setdefault('inspect', con.inspect)
         container_node_info.setdefault('host_ip', arg_dict.get('host_ip'))
         container_node_info.setdefault('type', arg_dict.get('container_type'))
