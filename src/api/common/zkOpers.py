@@ -309,7 +309,8 @@ class ZkOpers(object):
     def write_container_node_info(self, status, containerProps):
         inspect = containerProps.get('inspect')
         con = Container(inspect=inspect)
-        cluster = con.cluster()
+        container_name = con.name()
+        cluster = con.cluster(container_name)
         logging.info('get container cluster :%s' % cluster)
         container_ip = con.ip()
         logging.info('get container ip :%s' % container_ip)

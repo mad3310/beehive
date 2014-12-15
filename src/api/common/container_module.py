@@ -70,7 +70,8 @@ class Container():
             return 'mclusternode'
     
     def name(self):
-        pass
+        name = self.inspect.get('Name')
+        return name.replace('/', '')
     
     def hostname(self):
-        pass
+        return self.inspect.get('Config').get('Hostname')
