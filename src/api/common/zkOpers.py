@@ -308,7 +308,7 @@ class ZkOpers(object):
     def write_container_node_info(self, status, containerProps):
         container_name = containerProps.get('container_name')
         cluster = get_containerClusterName_from_containerName(container_name)
-        container_ip = self.get_containerIp(container_name)
+        container_ip = self.get_containerIp(cluster, container_name)
         clusterUUID = self.getClusterUUID()
         path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + cluster + "/" + container_ip
         self.zk.ensure_path(path)
