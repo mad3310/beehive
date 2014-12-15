@@ -129,5 +129,19 @@ def http_get(url, _connect_timeout=30.0, _request_timeout=30.0, auth_username=No
 #         logging.error(str(e))
 #         return e
 
-
-
+def get_containerClusterName_from_containerName(container_name):
+    try:
+        containerClusterName = ''
+        if 'd-mcl' in container_name:
+            containerClusterName = re.findall('d-mcl-(.*)-n-\d', container_name)[0]
+        elif 'd_mcl' in container_name:
+            containerClusterName = re.findall('d_mcl_(.*)_node_\d', container_name)[0]
+        elif 'vip' in container_name:
+            containerClusterName = re.findall('d-vip-(.*)', container_name)[0]
+        elif 'doc-mcl' in container_name:
+            containerClusterName = re.findall('doc-mcl-(.*)-n-\d', container_name)[0]
+        else:
+            containerClusterName = container_name
+        return containerClusterName
+    except:
+        logging.error( str(traceback.format_exc()) )

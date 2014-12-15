@@ -116,7 +116,7 @@ class ZkOpers(object):
         return self._retrieveSpecialPathProp(path)
     
     def retrieve_container_status_from_containerName(self, container_name):
-        containerClusterName = self.get_containerClusterName_from_containerName(container_name)
+        containerClusterName = get_containerClusterName_from_containerName(container_name)
         container_ip = self.get_containerIp(containerClusterName, container_name)
         return self.retrieve_container_status_value(containerClusterName, container_ip)
         
@@ -305,11 +305,9 @@ class ZkOpers(object):
         self.zk.ensure_path(path)
         self.zk.set(path, str(containerClusterProps))
             
-    def write_container_node_info(self, containerProps):
-        containerClusterName = containerProps['containerClusterName']
-        containerNodeIp = containerProps['ipAddr']
+    def write_container_node_info(self, cluster, container_ip, status, containerProps):
         clusterUUID = self.getClusterUUID()
-        path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + containerClusterName + "/" + containerNodeIp
+        path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + cluster + "/" + container_ip
         self.zk.ensure_path(path)
         self.zk.set(path, str(containerProps))
         container_name = containerProps.get('containerName')
@@ -322,7 +320,7 @@ class ZkOpers(object):
         self.zk.ensure_path(path)
     
     def write_container_status(self, container_name, record):
-        containerClusterName = self.get_containerClusterName_from_containerName(container_name)
+        containerClusterName = get_containerClusterName_from_containerName(container_name)
         container_ip = self.get_containerIp(containerClusterName, container_name)
         clusterUUID = self.getClusterUUID()
         path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + containerClusterName + "/" + container_ip +"/status"

@@ -7,14 +7,17 @@ Created on Sep 8, 2014
 @author: root
 '''
 
+
+import os
+import sys
 import logging
 import traceback
 import docker
-import os, sys
 
 from abstractContainerOpers import Abstract_Container_Opers
 from abstractAsyncThread import Abstract_Async_Thread
 from dockerOpers import Docker_Opers
+from container_module import Container
 from helper import *
 
 class Container_Opers(Abstract_Container_Opers):
@@ -92,9 +95,9 @@ class Container_Opers(Abstract_Container_Opers):
         if not result:
             logging.error('the exception of creating container')
             return False
-        container_node_info = self._get_container_info(mem_limit, arg_dict)
+        container_node_info = self._get_container_info(container_name, arg_dict)
         logging.info('get container info: %s' % str(container_node_info))
-        self.zkOper.write_container_node_info(container_node_info)
+        self.zkOper.write_container_node_info(containerClusterName, container_ip, 'started', container_node_info)
         return True
     
     def stop(self, container_name):
@@ -117,21 +120,15 @@ class Container_Opers(Abstract_Container_Opers):
         result.setdefault('status', status)
         result.setdefault('message', message)
         return result
-    
-    def _get_container_info(self, mem_limit,  arg_dict):
-        env = eval(arg_dict.get('env'))
+   
+    def _get_container_info(self, container_name, arg_dict):
+        con = Container(container_name)
         container_node_info= {}
-        container_node_info.setdefault('Memory', mem_limit)
-        container_node_info.setdefault('containerClusterName', arg_dict.get('containerClusterName'))
-        container_node_info.setdefault('containerNodeIP', arg_dict.get('container_ip'))
-        container_node_info.setdefault('hostIp', arg_dict.get('host_ip'))
-        container_node_info.setdefault('ipAddr', arg_dict.get('container_ip'))
-        container_node_info.setdefault('containerName', arg_dict.get('container_name'))
-        container_node_info.setdefault('mountDir', arg_dict.get('volumes'))
+        container_node_info.setdefault('inspect', con.inspect)
+        container_node_info.setdefault('cluster', arg_dict.get('containerClusterName'))
+        container_node_info.setdefault('container_ip', arg_dict.get('container_ip'))
+        container_node_info.setdefault('host_ip', arg_dict.get('host_ip'))
         container_node_info.setdefault('type', arg_dict.get('container_type'))
-        container_node_info.setdefault('zookeeperId', env.get('ZKID'))
-        container_node_info.setdefault('netMask', env.get('NETMASK'))
-        container_node_info.setdefault('gateAddr', env.get('GATEWAY'))
         return container_node_info
     
     def _log_docker_run_command(self, env, _mem_limit, _volumes, container_name, image_name):

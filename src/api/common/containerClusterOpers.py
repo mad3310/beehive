@@ -17,6 +17,7 @@ from utils.exceptions import MyError
 from utils.autoutil import *
 from zkOpers import ZkOpers
 from resourceVerify import ResourceVerify
+from container_module import Container
 
 
 class ContainerCluster_Opers(Abstract_Container_Opers):
@@ -106,6 +107,23 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
                 cluster_stat = 'failed'
         return cluster_stat
     
+    def __get_create_info(self, containerClusterName, container_node):
+        create_info = {}
+        container_node_value = self.zkOper.retrieve_container_node_value(containerClusterName, container_node)
+        inspect = container_node_value.get('inspect')
+        
+        create_info.setdefault('hostIp', container_node_value.get('host_ip') )
+        create_info.setdefault('type', container_node_value.get('type') )
+        con = Container(inspect=inspect)
+        create_info.setdefault('containerClusterName', con.cluster() )
+        create_info.setdefault('zookeeperId', con.zookeeper_id() )
+        create_info.setdefault('gateAddr', con.gateway() )
+        create_info.setdefault('netMask', con.gateway() )
+        create_info.setdefault('mountDir', con.volumes() )
+        create_info.setdefault('ipAddr', con.ip() )
+        create_info.setdefault('containerName', con.name() )
+        return create_info
+    
     def check_create_status(self, containerClusterName):
         failed_rst = {'code':"000001"}
         succ_rst = {'code':"000000"}
@@ -122,11 +140,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         else:
             if start_flag == 'succeed':
                 for container_node in container_node_list:
-                    container_node_value = self.zkOper.retrieve_container_node_value(containerClusterName, container_node)
-                    if not container_node_value:
-                        return failed_rst
-                    containerName = container_node_value.get('containerName')
-                    hostIp = container_node_value.get('hostIp')
+                    container_node_value = self.__get_create_info(containerClusterName, container_node)
                     message_list.append(container_node_value)
                 check_rst_dict.update(succ_rst)
                 check_rst_dict.setdefault('containers', message_list)
@@ -308,21 +322,22 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
         logging.info('config node info in zk: %s, type: %s' % ( str( verify_item), type(verify_item)) )
         
         select_ip_list = []
-         
-        res_verify = ResourceVerify(verify_item)
-        ret = res_verify.check_resource()
-        error_msg = ret.get('error_msg')
-        if error_msg:
-            container_cluster_info = {}
-            container_cluster_info['containerClusterName'] = containerClusterName
-            container_cluster_info['start_flag'] = 'lack_resource'
-            container_cluster_info['error_msg'] = error_msg
-            self.zkOper.write_container_cluster_info(container_cluster_info)
-            logging.info('check resource failed:%s' % str(error_msg) )
-            return
-        else:
-            select_ip_list = ret.get('select_ip_list')
-            logging.info('select_ip_list:%s' % str(select_ip_list))
+        is_res_verify = verify_item.get('is_res_verify')
+        if is_res_verify:
+            res_verify = ResourceVerify(verify_item)
+            ret = res_verify.check_resource()
+            error_msg = ret.get('error_msg')
+            if error_msg:
+                container_cluster_info = {}
+                container_cluster_info['containerClusterName'] = containerClusterName
+                container_cluster_info['start_flag'] = 'lack_resource'
+                container_cluster_info['error_msg'] = error_msg
+                self.zkOper.write_container_cluster_info(container_cluster_info)
+                logging.info('check resource failed:%s' % str(error_msg) )
+                return
+            else:
+                select_ip_list = ret.get('select_ip_list')
+                logging.info('select_ip_list:%s' % str(select_ip_list))
         
         containerCount = verify_item.get('nodeCount')
         self.create_container_cluser_info(containerCount, containerClusterName)
@@ -345,8 +360,11 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
         logging.info('check_result: %s' % check_result)
         if not check_result:
             raise MyError('not all container succeed created')
-                   
-        flag = self._check_mcluster_manager_stat(create_container_node_ip_list, create_container_arg_list, 6)
+        
+        flag = True
+        check_mcluster = verify_item.get('check_mcluster')
+        if check_mcluster:
+            flag = self._check_mcluster_manager_stat(create_container_node_ip_list, create_container_arg_list, 6)
         if flag:
             container_cluster_info = self.zkOper.retrieve_container_cluster_info(containerClusterName)
             container_cluster_info.setdefault('start_flag', 'succeed')

@@ -17,6 +17,7 @@ from helper import *
 from zkOpers import ZkOpers
 from invokeCommand import InvokeCommand
 from tornado.options import options
+from container_module import Container
 
 class UpdateServer(object):
     
@@ -97,46 +98,16 @@ class UpdateServer(object):
 
     def _get_container_info_as_zk(self, container_name):
         create_info = {}
-        inspect = self.docker_opers.inspect_container(container_name)
-        if not isinstance(inspect, dict):
-            logging.error('get inspect failed')
-            return create_info
+        con = Container(container_name)
+        
         create_info.setdefault('hostIp', self.host_ip)
-        con_name = inspect.get('Config').get('Hostname')
-        create_info.setdefault('containerName', con_name)
-        volumes = inspect.get('Volumes')
-        create_info.setdefault('Memory', inspect.get('Config').get('Memory'))
-        create_info.setdefault('mountDir', str(volumes) )
-        image = inspect.get('Config').get('Image')
+        image = con.image()
         if 'gbalancer' in image:
             create_info.setdefault('type', 'mclustervip')
         else:
             create_info.setdefault('type', 'mclusternode')
-        
-        cluster = self.zkOper.get_containerClusterName_from_containerName(container_name)
-        create_info.setdefault('containerClusterName', cluster)
-        Env = inspect.get('Config').get('Env')
-        for item in Env:
-            if 'ZKID' in item:
-                value = self._get_value(item)
-                create_info.setdefault('zookeeperId', value)
-            elif item.startswith('IP'):
-                value = self._get_value(item)
-                create_info.setdefault('ipAddr', value)
-            elif item.startswith('GATEWAY'):
-                value = self._get_value(item)
-                create_info.setdefault('gateAddr', value)
-            elif item.startswith('NETMASK'):
-                value = self._get_value(item)
-                create_info.setdefault('netMask', value)
+        create_info.setdefault('inspect', con.inspect)
         return create_info
-
-    def _get_value(self, item):
-        try:
-            value = re.findall('.*=(.*)', item)[0]
-            return value
-        except:
-            logging.error( str(traceback.format_exc()) )
 
 
 class Server_Opers(Abstract_Container_Opers):
