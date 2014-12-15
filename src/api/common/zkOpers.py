@@ -111,6 +111,11 @@ class ZkOpers(object):
         path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + containerClusterName + '/' + container_node
         return self._retrieveSpecialPathProp(path)
 
+    def retrieve_container_node_value_from_containerName(self, container_name):
+        cluster = get_containerClusterName_from_containerName(container_name)
+        container_ip = self.get_containerIp(containerClusterName, container_name)
+        self.retrieve_container_status_value(cluster, container_ip)
+
     def retrieve_container_status_value(self, containerClusterName, container_node):
         clusterUUID = self.getClusterUUID()
         path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + containerClusterName + '/' + container_node + '/status'
@@ -305,8 +310,32 @@ class ZkOpers(object):
         path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + containerClusterName
         self.zk.ensure_path(path)
         self.zk.set(path, str(containerClusterProps))
+
+    def write_container_node_value(self, cluster, container_ip, containerProps):
+        """write container value
+        
+        """
+        
+        clusterUUID = self.getClusterUUID()
+        path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + cluster + "/" + container_ip
+        self.zk.ensure_path(path)
+        self.zk.set(path, str(containerProps))
+
+    def write_container_node_value_by_containerName(self, container_name, containerProps):
+        """only write container value and not write status value
+        
+        """
+        
+        cluster = get_containerClusterName_from_containerName(container_name)
+        container_ip = self.get_containerIp(containerClusterName, container_name)
+        self.write_container_node_value(cluster, container_ip, containerProps)
+
             
     def write_container_node_info(self, status, containerProps):
+        """write container value and status value
+        
+        """
+        
         inspect = containerProps.get('inspect')
         con = Container(inspect=inspect)
         container_name = con.name()

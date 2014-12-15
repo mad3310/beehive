@@ -19,14 +19,15 @@ from invokeCommand import InvokeCommand
 from tornado.options import options
 from container_module import Container
 
+
 class UpdateServer(object):
-    
+
     zkOper = ZkOpers('127.0.0.1',2181)
     docker_opers = Docker_Opers()
-    
+
     def __init__(self, host_ip):
         self.host_ip = host_ip
-    
+
     def update(self):
         host_containers = self._get_containers_from_host()
         zk_containers = self._get_containers_from_zookeeper()
@@ -41,12 +42,17 @@ class UpdateServer(object):
 
     def update_both_note(self, container_name):
         status = {}
+        server_inspect = self.docker_opers.inspect_container(container_name)
+        zk_inspect = self.zkOper.retrieve_container_node_value_from_containerName(container_name)
+        if server_inspect != zk_inspect:
+            self.zkOper.write_container_node_value_by_containerName(container_name, server_inspect)
+        
         server_con_stat = get_container_stat(container_name)
         zk_con_stat = self.zkOper.retrieve_container_status_from_containerName(container_name)
         if server_con_stat != zk_con_stat:
             status.setdefault('status',  server_con_stat)
             status.setdefault('message',  '')
-        self.zkOper.write_container_status_by_containerName(container_name, status)
+            self.zkOper.write_container_status_by_containerName(container_name, status)
 
     def update_add_note(self, container_name):
         status = {}
@@ -80,7 +86,9 @@ class UpdateServer(object):
                 container_info = self.zkOper.retrieve_container_node_value(cluster, container_ip)
                 hostIp = container_info.get('hostIp')
                 if self.host_ip == hostIp:
-                    container_name = container_info.get('containerName')
+                    inspect = container_info.get('inspect')
+                    con = Container(inspect=inspect)
+                    container_name = con.name()
                     container_name_list.append(container_name)
         return container_name_list
 
