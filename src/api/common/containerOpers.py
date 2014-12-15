@@ -44,6 +44,7 @@ class Container_Opers(Abstract_Container_Opers):
         container_name = arg_dict.get('container_name')
         container_type = arg_dict.get('container_type')
         containerClusterName = arg_dict.get('containerClusterName')
+        container_ip = arg_dict.get('container_ip')
         env = eval(arg_dict.get('env'))
         
         logging.info('container_name: %s' % container_name)
