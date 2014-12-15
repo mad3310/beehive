@@ -310,39 +310,27 @@ class ZkOpers(object):
         path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + cluster + "/" + container_ip
         self.zk.ensure_path(path)
         self.zk.set(path, str(containerProps))
-        container_name = containerProps.get('containerName')
-        self.write_container_status(container_name, "{'status':'started', 'message':''}")
+        self.write_container_status(cluster, container_ip, "{'status':'started', 'message':''}")
     
     def write_started_node(self, data_node_ip):
         clusterUUID = self.getClusterUUID()
         path = self.rootPath + "/" + clusterUUID + "/monitor_status/node/started/" + data_node_ip
         self.logger.debug("the started data node:" + data_node_ip)
         self.zk.ensure_path(path)
+
+    def write_container_status(self, cluster, container_ip, record):
+        clusterUUID = self.getClusterUUID()
+        path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + cluster + "/" + container_ip +"/status"
+        self.zk.ensure_path(path)
+        self.zk.set(path, str(record))
     
-    def write_container_status(self, container_name, record):
+    def write_container_status_by_containerName(self, container_name, record):
         containerClusterName = get_containerClusterName_from_containerName(container_name)
         container_ip = self.get_containerIp(containerClusterName, container_name)
         clusterUUID = self.getClusterUUID()
         path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + containerClusterName + "/" + container_ip +"/status"
         self.zk.ensure_path(path)
         self.zk.set(path, str(record))
-        
-    def get_containerClusterName_from_containerName(self, container_name):
-        try:
-            containerClusterName = ''
-            if 'd-mcl' in container_name:
-                containerClusterName = re.findall('d-mcl-(.*)-n-\d', container_name)[0]
-            elif 'd_mcl' in container_name:
-                containerClusterName = re.findall('d_mcl_(.*)_node_\d', container_name)[0]
-            elif 'vip' in container_name:
-                containerClusterName = re.findall('d-vip-(.*)', container_name)[0]
-            elif 'doc-mcl' in container_name:
-                containerClusterName = re.findall('doc-mcl-(.*)-n-\d', container_name)[0]
-            else:
-                containerClusterName = container_name
-            return containerClusterName
-        except:
-            logging.error( str(traceback.format_exc()) )
     
     def get_containerIp(self, containerClusterName, container_name):
         con_ip = ''

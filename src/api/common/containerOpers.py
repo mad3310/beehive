@@ -126,8 +126,6 @@ class Container_Opers(Abstract_Container_Opers):
         con = Container(container_name)
         container_node_info= {}
         container_node_info.setdefault('inspect', con.inspect)
-        container_node_info.setdefault('cluster', arg_dict.get('containerClusterName'))
-        container_node_info.setdefault('container_ip', arg_dict.get('container_ip'))
         container_node_info.setdefault('host_ip', arg_dict.get('host_ip'))
         container_node_info.setdefault('type', arg_dict.get('container_type'))
         return container_node_info
@@ -209,7 +207,7 @@ class Container_start_action(Abstract_Async_Thread):
         start_rst, start_flag = {}, {}
         logging.info('write start flag')
         start_flag = {'status':'starting', 'message':''}
-        self.zkOper.write_container_status(self.container_name, start_flag)
+        self.zkOper.write_container_status_by_containerName(self.container_name, start_flag)
         self.docker_opers.start(self.container_name)
         stat = get_container_stat(self.container_name)
         if stat == 'stopped':
@@ -219,7 +217,7 @@ class Container_start_action(Abstract_Async_Thread):
         start_rst.setdefault('status', stat)
         start_rst.setdefault('message', message)
         logging.info('write start result')
-        self.zkOper.write_container_status(self.container_name, start_rst)
+        self.zkOper.write_container_status_by_containerName(self.container_name, start_rst)
 
         
 class Container_stop_action(Abstract_Async_Thread):
@@ -242,7 +240,7 @@ class Container_stop_action(Abstract_Async_Thread):
         stop_rst, stop_flag = {}, {}
         logging.info('write stop flag')
         stop_flag = {'status':'stopping', 'message':''}
-        self.zkOper.write_container_status(self.container_name, stop_flag)
+        self.zkOper.write_container_status_by_containerName(self.container_name, stop_flag)
         
         self.docker_opers.stop(self.container_name, 30)
         stat = get_container_stat(self.container_name)
@@ -255,7 +253,7 @@ class Container_stop_action(Abstract_Async_Thread):
         stop_rst.setdefault('status', status)
         stop_rst.setdefault('message', message)
         logging.info('write stop result')
-        self.zkOper.write_container_status(self.container_name, stop_rst)
+        self.zkOper.write_container_status_by_containerName(self.container_name, stop_rst)
 
 
 class Container_destroy_action(Abstract_Async_Thread):
@@ -279,7 +277,7 @@ class Container_destroy_action(Abstract_Async_Thread):
         destroy_rst, destroy_flag = {}, {}
         logging.info('write destroy flag')
         destroy_flag = {'status':'destroying', 'message':''}
-        self.zkOper.write_container_status(self.container_name, destroy_flag)
+        self.zkOper.write_container_status_by_containerName(self.container_name, destroy_flag)
         mount_dir = ''
         mount_dir = self._get_normal_node_mount_dir()
         self.docker_opers.destroy(self.container_name)
@@ -297,7 +295,7 @@ class Container_destroy_action(Abstract_Async_Thread):
             destroy_rst.setdefault('status', 'destroyed')
             destroy_rst.setdefault('message', '')
 
-        self.zkOper.write_container_status(self.container_name, destroy_rst)
+        self.zkOper.write_container_status_by_containerName(self.container_name, destroy_rst)
     
     def _get_normal_node_mount_dir(self):
         mount_dir = ''

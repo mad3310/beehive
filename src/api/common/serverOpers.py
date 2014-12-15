@@ -46,7 +46,7 @@ class UpdateServer(object):
         if server_con_stat != zk_con_stat:
             status.setdefault('status',  server_con_stat)
             status.setdefault('message',  '')
-        self.zkOper.write_container_status(container_name, status)
+        self.zkOper.write_container_status_by_containerName(container_name, status)
 
     def update_add_note(self, container_name):
         status = {}
@@ -55,11 +55,11 @@ class UpdateServer(object):
         self._write_container_into_zk(create_info)
         stat = get_container_stat(container_name)
         status = {'status': stat, 'message': ''}
-        self.zkOper.write_container_status(container_name, status)
+        self.zkOper.write_container_status_by_containerName(container_name, status)
 
     def update_del_note(self, container_name):
         status = {'status': 'destroyed', 'message': ''}
-        self.zkOper.write_container_status(container_name, status)
+        self.zkOper.write_container_status_by_containerName(container_name, status)
 
     def _get_containers_from_host(self):
         container_name_list = []
