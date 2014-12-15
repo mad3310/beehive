@@ -53,9 +53,6 @@ class UpdateServer(object):
         create_info = self._get_container_info_as_zk(container_name)
         logging.info('create_info as zk: \n%s' % str( create_info ) )
         self._write_container_into_zk(container_name, create_info)
-        stat = get_container_stat(container_name)
-        status = {'status': stat, 'message': ''}
-        self.zkOper.write_container_status_by_containerName(container_name, status)
 
     def update_del_note(self, container_name):
         status = {'status': 'destroyed', 'message': ''}

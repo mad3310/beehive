@@ -320,6 +320,7 @@ class ZkOpers(object):
         self.zk.set(path, str(containerProps))
         stat = {}
         stat.setdefault('status', status)
+        stat.setdefault('message', '')
         self.write_container_status(cluster, container_ip, stat)
     
     def write_started_node(self, data_node_ip):
