@@ -113,7 +113,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         container_node_value = self.zkOper.retrieve_container_node_value(containerClusterName, container_node)
         inspect = container_node_value.get('inspect')
         
-        create_info.setdefault('host_ip', container_node_value.get('host_ip') )
+        create_info.setdefault('hostIp', container_node_value.get('host_ip') )
         create_info.setdefault('type', container_node_value.get('type') )
         con = Container(inspect=inspect)
         container_name = con.name()
