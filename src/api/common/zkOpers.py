@@ -367,10 +367,7 @@ class ZkOpers(object):
     def write_container_status_by_containerName(self, container_name, record):
         containerClusterName = get_containerClusterName_from_containerName(container_name)
         container_ip = self.get_containerIp(containerClusterName, container_name)
-        clusterUUID = self.getClusterUUID()
-        path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + containerClusterName + "/" + container_ip +"/status"
-        self.zk.ensure_path(path)
-        self.zk.set(path, str(record))
+        self.write_container_status(containerClusterName, container_ip, record)
     
     def get_containerIp(self, containerClusterName, container_name):
         con_ip = ''

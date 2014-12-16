@@ -274,6 +274,9 @@ class Container_destroy_action(Abstract_Async_Thread):
             self.threading_exception_queue.put(sys.exc_info())
 
     def _issue_destroy_action(self):
+        """destroy container and remove docker mount dir data
+        
+        """
 
         destroy_rst, destroy_flag = {}, {}
         logging.info('write destroy flag')
