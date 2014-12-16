@@ -217,8 +217,9 @@ def get_all_containers():
     return container_name_list
 
 def check_container_exists(container_name):
-    containers = get_all_containers()
-    return container_name in containers
+    container_name_list = []
+    container_name_list = get_all_containers()
+    return container_name in container_name_list
 
 # def check_container_exists(container_name):
 #     c = docker.Client('unix://var/run/docker.sock')

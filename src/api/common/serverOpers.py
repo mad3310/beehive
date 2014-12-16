@@ -84,8 +84,8 @@ class UpdateServer(object):
             container_ip_list = self.zkOper.retrieve_container_list(cluster)
             for container_ip in container_ip_list:
                 container_info = self.zkOper.retrieve_container_node_value(cluster, container_ip)
-                hostIp = container_info.get('hostIp')
-                if self.host_ip == hostIp:
+                host_ip = container_info.get('host_ip')
+                if self.host_ip == host_ip:
                     inspect = container_info.get('inspect')
                     con = Container(inspect=inspect)
                     container_name = con.name()
@@ -106,7 +106,7 @@ class UpdateServer(object):
         create_info = {}
         con = Container(container_name)
         
-        create_info.setdefault('hostIp', self.host_ip)
+        create_info.setdefault('host_ip', self.host_ip)
         image = con.image()
         if 'gbalancer' in image:
             create_info.setdefault('type', 'mclustervip')
