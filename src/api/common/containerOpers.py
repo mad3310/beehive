@@ -19,6 +19,7 @@ from abstractAsyncThread import Abstract_Async_Thread
 from dockerOpers import Docker_Opers
 from container_module import Container
 from helper import *
+from resourceOpers import Res_Opers
 
 class Container_Opers(Abstract_Container_Opers):
     
@@ -186,6 +187,10 @@ class Container_Opers(Abstract_Container_Opers):
             else:
                 re_bind_arg.setdefault(k, v)
         return re_bind_arg
+
+    def get_disk_load(self, container_name):
+        res_opers = Res_Opers(container_name)
+        return res_opers.get_container_disk_load()
 
 
 class Container_start_action(Abstract_Async_Thread):

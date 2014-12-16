@@ -28,14 +28,17 @@ handlers = [
     (r"/containerCluster/sync", CheckClusterSyncHandler),
     (r"/containerCluster/createStatus/(.*)", CheckCreateClusterStatusHandler),
     (r"/containerCluster/status/(.*)", CheckContainerClusterStatusHandler),
+    (r"/containerCluster/resource/disk/([.*])", GatherContainersDiskLoadHandler),
     (r"/inner/MclusterManager/status/(.*)", StartMclusterManagerHandler),
     (r"/containerCluster/conf", ClusterConfigHandler),
     (r"/containerCluster/ips/add", AddIpsIntoIpPoolHandler),
     (r"/inner/container", ContainerHandler),
+    (r"/container/resource/disk/([.*])", GetContainersDiskLoadHandler),
     (r"/container/start", StartContainerHandler),
     (r"/container/stop", StopContainerHandler),
     (r"/container/remove", RemoveContainerHandler),
     (r"/container/status/(.*)", CheckContainerStatusHandler),
     (r"/monitor/status", ContainerStatus),
-    #(r"/containerCluster/ips/get", GetIpsFromIpPool)
+    #(r"/containerCluster/ips/get", GetIpsFromIpPool),
+    
 ]

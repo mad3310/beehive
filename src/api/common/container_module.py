@@ -71,7 +71,8 @@ class Container():
     
     def name(self):
         name = self.inspect.get('Name')
-        return name.replace('/', '')
+        if name:
+            return name.replace('/', '')
     
     def hostname(self):
         return self.inspect.get('Config').get('Hostname')

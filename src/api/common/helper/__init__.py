@@ -188,9 +188,6 @@ def _mask_to_num(netmask=None):
 
 def get_container_stat(container_name):
     """
-    0: started
-    1: stoped
-    2: deleted or not exist
     """
     
     exists = check_container_exists(container_name)
@@ -208,15 +205,30 @@ def get_container_stat(container_name):
             elif 'Exited' in stat:
                 return 'stopped'
 
-def check_container_exists(container_name):
+def get_all_containers():
+    container_name_list = []
     c = docker.Client('unix://var/run/docker.sock')
     container_info_list = c.containers(all=True)
     flag = False
     for container_info in container_info_list:
         name = container_info.get('Names')[0]
         name = name.replace('/', '')
-        logging.info('name:%s; container_name:%s' %(name, container_name))
-        if name == container_name:
-            flag = True
-            break
-    return flag
+        container_name_list.append(name)
+    return container_name_list
+
+def check_container_exists(container_name):
+    containers = get_all_containers()
+    return container_name in containers
+
+# def check_container_exists(container_name):
+#     c = docker.Client('unix://var/run/docker.sock')
+#     container_info_list = c.containers(all=True)
+#     flag = False
+#     for container_info in container_info_list:
+#         name = container_info.get('Names')[0]
+#         name = name.replace('/', '')
+#         logging.info('name:%s; container_name:%s' %(name, container_name))
+#         if name == container_name:
+#             flag = True
+#             break
+#     return flag
