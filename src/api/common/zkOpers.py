@@ -113,7 +113,7 @@ class ZkOpers(object):
 
     def retrieve_container_node_value_from_containerName(self, container_name):
         cluster = get_containerClusterName_from_containerName(container_name)
-        container_ip = self.get_containerIp(containerClusterName, container_name)
+        container_ip = self.get_containerIp(cluster, container_name)
         self.retrieve_container_status_value(cluster, container_ip)
 
     def retrieve_container_status_value(self, containerClusterName, container_node):

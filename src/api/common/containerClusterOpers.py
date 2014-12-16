@@ -666,4 +666,4 @@ class GetClustersChanges(Abstract_Container_Opers):
             exist = 'destroyed'
         else:
             exist = 'alive'
-        return exis
+        return exist
