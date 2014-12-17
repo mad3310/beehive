@@ -52,11 +52,14 @@ class Server_Opers(Abstract_Container_Opers):
         con = Container(container)
         container_id = con.id()
         logging.info( 'container id :%s' % container_id )
-        used_mem_cmd = 'cat /cgroup/memory/lxc/%s/memory.usage_in_bytes' % container_id
-        limit_mem_cmd = 'cat /cgroup/memory/lxc/%s/memory.limit_in_bytes' % container_id
+        used_mem_path = '/cgroup/memory/lxc/%s/memory.usage_in_bytes' % container_id
+        limit_mem_path = '/cgroup/memory/lxc/%s/memory.limit_in_bytes' % container_id
+        used_mem_cmd = 'cat %s' % used_mem_path
+        limit_mem_cmd = 'cat %s' % limit_mem_path
+        
         logging.info('used : %s, limit: %s' % (used_mem_cmd, limit_mem_cmd) )
         
-        if os.path.exist(used_mem_cmd) and os.path.exist(limit_mem_cmd):
+        if os.path.exists(used_mem_path) and os.path.exists(limit_mem_path):
             used_mem = float(commands.getoutput(used_mem_cmd) )
             limit_mem = float(commands.getoutput(limit_mem_cmd) )
             mem_load_rate =  used_mem / limit_mem*100
