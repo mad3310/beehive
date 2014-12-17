@@ -40,5 +40,4 @@ handlers = [
     (r"/container/status/(.*)", CheckContainerStatusHandler),
     (r"/monitor/status", ContainerStatus),
     #(r"/containerCluster/ips/get", GetIpsFromIpPool),
-    
 ]

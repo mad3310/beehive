@@ -60,6 +60,7 @@ class CheckStatusBase(object):
                      monitor_key + " monitor_value:" + str(result_dict))
         self.zkOper.write_monitor_status(monitor_type, monitor_key, result_dict)
 
+
 class CheckResIpNum(CheckStatusBase):
     ip_opers = IpOpers()
 
@@ -111,6 +112,36 @@ class CheckResIpUsable(CheckStatusBase):
                                                     alarm_level, error_record, monitor_type, \
                                                     monitor_key)
         
+    def retrieve_alarm_level(self, total_count, success_count, failed_count):
+        if failed_count == 0:
+            return options.alarm_nothing
+        else:
+            return options.alarm_serious
+
+
+class CheckResMemLoad(CheckStatusBase):
+
+    server_opers = Server_Opers()
+
+    def check(self):
+        monitor_type, monitor_key, error_record = 'container', 'mem_load', ''
+        failed_count = 0
+        try:
+            logging.info('do monitor memory load')
+            containers_mem_load = self.server_opers.get_containers_mem_load()
+            failed_count = len(container_mem_load)
+            if failed_count:
+                for container, mem_load_rate in containers_mem_load.items():
+                    error_record += 'container : %s , memory load rate : %s' % (container, mem_load_rate )
+        except:
+            logging.error( str(traceback.format_exc()) )
+            
+        alarm_level = self.retrieve_alarm_level(0, 0, failed_count)
+        super(CheckResIpUsable, self).write_status(0, 0, \
+                                                    failed_count, \
+                                                    alarm_level, error_record, monitor_type, \
+                                                    monitor_key)
+
     def retrieve_alarm_level(self, total_count, success_count, failed_count):
         if failed_count == 0:
             return options.alarm_nothing

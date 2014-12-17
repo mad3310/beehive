@@ -76,3 +76,7 @@ class Container():
     
     def hostname(self):
         return self.inspect.get('Config').get('Hostname')
+
+    def id(self):
+        return self.inspect.get('Id')
+        

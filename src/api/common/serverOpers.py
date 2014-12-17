@@ -6,9 +6,13 @@ Created on Sep 10, 2014
 
 @author: root
 '''
-import os, time, re
-import logging, traceback
+import os
+import re
+import time
+import logging
 import docker
+import traceback
+import commands
 
 from dockerOpers import Docker_Opers
 from abstractContainerOpers import Abstract_Container_Opers
@@ -18,6 +22,39 @@ from zkOpers import ZkOpers
 from invokeCommand import InvokeCommand
 from tornado.options import options
 from container_module import Container
+
+
+class Server_Opers(Abstract_Container_Opers):
+    '''
+    classdocs
+    '''
+    
+    def retrieveServerResource(self):
+        resource = {'memoryCount':3,'diskCount':500}
+        return resource
+    
+    def update(self):
+        host_ip = getHostIp()
+        logging.info('host_ip: %s' % host_ip)
+        server = UpdateServer(host_ip)
+        server.update()
+
+    def get_containers_mem_load(self):
+        mem_load_dict = {}
+        containers = get_all_containers()
+        for container in containers:
+            mem_rate = self.get_mem_load(container)
+            mem_load_dict.setdefault(container, mem_rate)
+        return mem_load_dict
+
+    def get_mem_load(self, container):
+        con = Container(container)
+        container_id = con.id()
+        used_mem_cmd = 'cat /cgroup/memory/lxc/%s/memory.usage_in_bytes' % container_id
+        limit_mem_cmd = 'cat /cgroup/memory/lxc/%s/memory.limit_in_bytes' % container_id
+        used_mem = float(commands.getoutput(used_mem_cmd) )
+        limit_mem_cmd = float(commands.getoutput(limit_mem_cmd) )
+        return used_mem / limit_mem_cmd*100
 
 
 class UpdateServer(object):
@@ -116,17 +153,3 @@ class UpdateServer(object):
         return create_info
 
 
-class Server_Opers(Abstract_Container_Opers):
-    '''
-    classdocs
-    '''
-    
-    def retrieveServerResource(self):
-        resource = {'memoryCount':3,'diskCount':500}
-        return resource
-    
-    def update(self):
-        host_ip = getHostIp()
-        logging.info('host_ip: %s' % host_ip)
-        server = UpdateServer(host_ip)
-        server.update()
