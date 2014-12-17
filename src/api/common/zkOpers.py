@@ -327,7 +327,7 @@ class ZkOpers(object):
         """
         
         cluster = get_containerClusterName_from_containerName(container_name)
-        container_ip = self.get_containerIp(containerClusterName, container_name)
+        container_ip = self.get_containerIp(cluster, container_name)
         self.write_container_node_value(cluster, container_ip, containerProps)
 
             

@@ -129,7 +129,7 @@ class CheckResMemLoad(CheckStatusBase):
         try:
             logging.info('do monitor memory load')
             containers_mem_load = self.server_opers.get_containers_mem_load()
-            failed_count = len(container_mem_load)
+            failed_count = len(containers_mem_load)
             if failed_count:
                 for container, mem_load_rate in containers_mem_load.items():
                     error_record += 'container : %s , memory load rate : %s' % (container, mem_load_rate )

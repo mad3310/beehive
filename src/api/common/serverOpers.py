@@ -48,13 +48,20 @@ class Server_Opers(Abstract_Container_Opers):
         return mem_load_dict
 
     def get_mem_load(self, container):
+        mem_load_rate = 0
         con = Container(container)
         container_id = con.id()
+        logging.info( 'container id :%s' % container_id )
         used_mem_cmd = 'cat /cgroup/memory/lxc/%s/memory.usage_in_bytes' % container_id
         limit_mem_cmd = 'cat /cgroup/memory/lxc/%s/memory.limit_in_bytes' % container_id
-        used_mem = float(commands.getoutput(used_mem_cmd) )
-        limit_mem_cmd = float(commands.getoutput(limit_mem_cmd) )
-        return used_mem / limit_mem_cmd*100
+        logging.info('used : %s, limit: %s' % (used_mem_cmd, limit_mem_cmd) )
+        
+        if os.path.exist(used_mem_cmd) and os.path.exist(limit_mem_cmd):
+            used_mem = float(commands.getoutput(used_mem_cmd) )
+            limit_mem = float(commands.getoutput(limit_mem_cmd) )
+            mem_load_rate =  used_mem / limit_mem*100
+            logging.info('used_mem:%s, limit_mem: %s, mem_load_rate:%s ' % (used_mem, limit_mem, mem_load_rate) )
+        return mem_load_rate
 
 
 class UpdateServer(object):
