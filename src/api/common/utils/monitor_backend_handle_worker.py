@@ -7,7 +7,7 @@ import threading
 import time
 
 from common.zkOpers import ZkOpers
-from common.monitorOpers import ResInfoAsyncHandler
+from common.monitorOpers import ResInfoAsyncHandler, ContainerInfoAsyncHandler
 
 
 class Monitor_Backend_Handle_Worker(threading.Thread):
