@@ -62,7 +62,7 @@ class Server_Opers(Abstract_Container_Opers):
         if os.path.exists(used_mem_path) and os.path.exists(limit_mem_path):
             used_mem = float(commands.getoutput(used_mem_cmd) )
             limit_mem = float(commands.getoutput(limit_mem_cmd) )
-            mem_load_rate =  used_mem / limit_mem*100
+            mem_load_rate =  used_mem / limit_mem
             logging.info('used_mem:%s, limit_mem: %s, mem_load_rate:%s ' % (used_mem, limit_mem, mem_load_rate) )
         return mem_load_rate
 
@@ -89,10 +89,10 @@ class UpdateServer(object):
 
     def update_both_note(self, container_name):
         status = {}
-        server_inspect = self.docker_opers.inspect_container(container_name)
-        zk_inspect = self.zkOper.retrieve_container_node_value_from_containerName(container_name)
-        if server_inspect != zk_inspect:
-            self.zkOper.write_container_node_value_by_containerName(container_name, server_inspect)
+        server_info = self._get_container_info_as_zk(container_name)
+        zk_con_info = self.zkOper.retrieve_container_node_value_from_containerName(container_name)
+        if server_info != zk_con_info:
+            self.zkOper.write_container_node_value_by_containerName(container_name, server_info)
         
         server_con_stat = get_container_stat(container_name)
         zk_con_stat = self.zkOper.retrieve_container_status_from_containerName(container_name)

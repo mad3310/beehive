@@ -377,8 +377,10 @@ class ZkOpers(object):
         container_ip_list = self.retrieve_container_list(containerClusterName)
         for container_ip in container_ip_list:
             container_info = self.retrieve_container_node_value(containerClusterName, container_ip)
-            containerName = container_info.get('container_name')
-            if container_name == containerName:
+            con_inspect = container_info.get('inspect')
+            con = Container(inspcet=con_inspect)
+            con_name = con.name()
+            if container_name == con_name:
                 con_ip = container_ip
                 break
         return con_ip
