@@ -131,6 +131,7 @@ class CheckContainersMemLoad(CheckStatusBase):
         try:
             logging.info('do monitor memory load')
             containers_mem_load = self._get()
+            logging.info('containers_mem_load:%s' % str(containers_mem_load) )
             overload_containers = self.__get_host_overload_containers(containers_mem_load)
             
             logging.info('load memory:%s' % str(overload_containers) )
@@ -169,8 +170,9 @@ class CheckContainersMemLoad(CheckStatusBase):
         for host_ip, host_cons_mem_load in containers_mem_load.items():
             overload_containers = {}
             for container, mem_load_info in host_cons_mem_load.items():
-                mem_load_rate = mem_load_info.get('mem_load_info')
+                mem_load_rate = mem_load_info.get('mem_load_rate')
                 if mem_load_rate > 0.75:
+                    logging.info('mem_load_rate bigger than 0.75: %s' % str(mem_load_rate) )
                     overload_containers.setdefault(container, mem_load_info)
             ret.setdefault(host_ip, overload_containers)
         return ret
