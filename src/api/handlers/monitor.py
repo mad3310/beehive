@@ -60,6 +60,7 @@ class CheckServerContainersMemLoad(APIHandler):
         self.finish( cons_mem_load )
 
 
+@require_basic_auth
 class CheckServersContainersMemLoad(APIHandler):
     
     zkOper = ZkOpers('127.0.0.1', 2181)
@@ -77,20 +78,14 @@ class CheckServersContainersMemLoad(APIHandler):
                 requesturi = 'http://%s:%s/monitor/server/containers/memory' % (server, options.port)
                 logging.info('server requesturi: %s' % str(requesturi))
                 response = yield Task(async_client.fetch, requesturi)
-                body = json.loads(response.body.split())
+                body = json.loads(response.body.strip())
                 logging.info('response body : %s' % str(body) )
-                server_cons_mem_load.setdefault(server, body)
+                con_mem_load = body.get('response')
+                server_cons_mem_load.setdefault(server, con_mem_load)
         except:
             logging.error( str(traceback.format_exc() ) )
             
         async_client.close()
         
         self.finish( server_cons_mem_load )
-
-
-
-
-
-
-
 

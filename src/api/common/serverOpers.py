@@ -48,7 +48,7 @@ class Server_Opers(Abstract_Container_Opers):
         return mem_load_dict
 
     def get_mem_load(self, container):
-        mem_load_rate = 0
+        mem_load_rate, mem_load_dict = 0, {}
         con = Container(container)
         container_id = con.id()
         logging.info( 'container id :%s' % container_id )
@@ -64,7 +64,10 @@ class Server_Opers(Abstract_Container_Opers):
             limit_mem = float(commands.getoutput(limit_mem_cmd) )
             mem_load_rate =  used_mem / limit_mem
             logging.info('used_mem:%s, limit_mem: %s, mem_load_rate:%s ' % (used_mem, limit_mem, mem_load_rate) )
-        return mem_load_rate
+            mem_load_dict.setdefault('used_mem', used_mem)
+            mem_load_dict.setdefault('limit_mem', limit_mem)
+            mem_load_dict.setdefault('mem_load_rate', mem_load_rate)
+        return mem_load_dict
 
 
 class UpdateServer(object):

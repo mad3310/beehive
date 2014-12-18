@@ -25,13 +25,13 @@ class ContainerInfoAsyncHandler:
     
     """
     
-    check_res_mem_load = CheckResMemLoad()
+    check_con_mem_load = CheckContainerMemLoad()
     
     def retrieve_info(self):
         self._action()
     
     def _action(self):
-        self.check_res_mem_load.check()
+        self.check_con_mem_load.check()
 
 
 class ResInfoAsyncHandler:
