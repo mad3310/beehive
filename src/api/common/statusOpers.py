@@ -138,9 +138,9 @@ class CheckContainersMemLoad(CheckStatusBase):
             for host_ip, host_cons_mem_load in overload_containers.items():
                 for container, mem_load_info in host_cons_mem_load.items():
                     failed_count += 1
-                    
                     used_mem = mem_load_info.get('used_mem')
                     limit_mem = mem_load_info.get('limit_mem')
+                    mem_load_rate = mem_load_info.get('mem_load_rate')
                     error_record += 'host ip :%s, container : %s , used memory: %s, memory top limit: %s, '\
                                     'memory load rate : %s' % (host_ip, container, str(used_mem), str(limit_mem), mem_load_rate)
             
