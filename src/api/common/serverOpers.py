@@ -160,6 +160,7 @@ class UpdateServer(object):
         else:
             create_info.setdefault('type', 'mclusternode')
         create_info.setdefault('inspect', con.inspect)
+        create_info.setdefault('container_name', container_name)
         return create_info
 
 
