@@ -125,22 +125,30 @@ class CheckResMemLoad(CheckStatusBase):
 
     def check(self):
         monitor_type, monitor_key, error_record = 'container', 'mem_load', ''
-        failed_count = 0
+        failed_count, containers_mem_load = 0, {}
         try:
             logging.info('do monitor memory load')
             containers_mem_load = self.server_opers.get_containers_mem_load()
-            failed_count = len(containers_mem_load)
+            overload_containers = self.__get_overload_containers(containers_mem_load)
+            failed_count = len(overload_containers)
             if failed_count:
-                for container, mem_load_rate in containers_mem_load.items():
+                for container, mem_load_rate in overload_containers.items():
                     error_record += 'container : %s , memory load rate : %s' % (container, mem_load_rate )
         except:
             logging.error( str(traceback.format_exc()) )
             
         alarm_level = self.retrieve_alarm_level(0, 0, failed_count)
-        super(CheckResIpUsable, self).write_status(0, 0, \
+        super(CheckResMemLoad, self).write_status(0, 0, \
                                                     failed_count, \
                                                     alarm_level, error_record, monitor_type, \
                                                     monitor_key)
+
+    def __get_overload_containers(self, containers_mem_load):
+        overload_containers = {}
+        for container, mem_load_rate in containers_mem_load.items():
+            if mem_load_rate > 0.75:
+                overload_containers.setdefault(container, mem_load_rate)
+        return overload_containers
 
     def retrieve_alarm_level(self, total_count, success_count, failed_count):
         if failed_count == 0:

@@ -11,7 +11,7 @@ from handlers.base import APIHandler
 from common.serverOpers import Server_Opers
 from common.resourceOpers import Res_Opers
 from common.utils.exceptions import HTTPAPIError
-
+from tornado.web import asynchronous
 
 class ServerHandler(APIHandler):
     '''
@@ -19,6 +19,7 @@ class ServerHandler(APIHandler):
     '''
     server_opers = Server_Opers()
 
+    @asynchronous
     def get(self):
         dict = self.server_opers.retrieveServerResource()
         return self.finish(dict)
@@ -31,6 +32,7 @@ class UpdateServerHandler(APIHandler):
     
     server_opers = Server_Opers()
     
+    @asynchronous
     def get(self):
         try:
            self.server_opers.update()
@@ -52,6 +54,7 @@ class CollectServerResHandler(APIHandler):
     _logger = logging.getLogger("process_info")
     res_opers = Res_Opers()
     
+    @asynchronous
     def get(self):
         
         try:
@@ -73,6 +76,7 @@ class CollectContainerResHandler(APIHandler):
     """
     _logger = logging.getLogger("process_info")
     
+    @asynchronous
     def get(self):
         
         try:

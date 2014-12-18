@@ -9,6 +9,7 @@ from common.containerOpers import *
 from common.utils.exceptions import HTTPAPIError
 from common.tornado_basic_auth import require_basic_auth
 from common.helper import *
+from tornado.web import asynchronous
 
 
 @require_basic_auth
@@ -16,6 +17,7 @@ class ContainerHandler(APIHandler):
     
     container_opers = Container_Opers()
     
+    @asynchronous
     def post(self):
         args = self.get_all_arguments()
         create_failed_rst = self.container_opers.issue_create_action(args)
@@ -60,6 +62,7 @@ class StartContainerHandler(APIHandler):
      
     container_opers = Container_Opers()
     
+    @asynchronous
     def post(self):
         args = self.get_all_arguments()
         logging.info('all_arguments: %s' % str(args))
@@ -105,6 +108,7 @@ class StopContainerHandler(APIHandler):
     
     container_opers = Container_Opers()
     
+    @asynchronous
     def post(self):
         args = self.get_all_arguments()
         logging.info('all_arguments: %s' % str(args))
@@ -148,7 +152,8 @@ class StopContainerHandler(APIHandler):
 class RemoveContainerHandler(APIHandler):
         
     container_opers = Container_Opers()
-        
+    
+    @asynchronous    
     def post(self):
         args = self.get_all_arguments()
         logging.info('all_arguments: %s' % str(args))
@@ -189,6 +194,7 @@ class CheckContainerStatusHandler(APIHandler):
     '''
     container_opers = Container_Opers()
     
+    @asynchronous
     def get(self, container_name):
         
         exists = check_container_exists(container_name)
@@ -219,6 +225,7 @@ class GetContainersDiskLoadHandler(APIHandler):
     
     container_opers = Container_Opers()
     
+    @asynchronous
     def get(self, container_name_list):
         container_disk_load = {}
         containers = get_all_containers()
