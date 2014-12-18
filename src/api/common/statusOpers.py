@@ -132,14 +132,17 @@ class CheckContainersMemLoad(CheckStatusBase):
             logging.info('do monitor memory load')
             containers_mem_load = self._get()
             overload_containers = self.__get_host_overload_containers(containers_mem_load)
-            failed_count = len(overload_containers)
-            if failed_count:
-                for host_ip, host_cons_mem_load in overload_containers.items():
-                    for container, mem_load_info in host_cons_mem_load.items():
-                        used_mem = mem_load_info.get('used_mem')
-                        limit_mem = mem_load_info.get('limit_mem')
-                        error_record += 'host ip :%s, container : %s , used memory: %s, memory top limit: %s, '\
-                                        'memory load rate : %s' % (host_ip, container, str(used_mem), str(limit_mem), mem_load_rate)
+            
+            logging.info('load memory:%s' % str(overload_containers) )
+            for host_ip, host_cons_mem_load in overload_containers.items():
+                for container, mem_load_info in host_cons_mem_load.items():
+                    failed_count += 1
+                    
+                    used_mem = mem_load_info.get('used_mem')
+                    limit_mem = mem_load_info.get('limit_mem')
+                    error_record += 'host ip :%s, container : %s , used memory: %s, memory top limit: %s, '\
+                                    'memory load rate : %s' % (host_ip, container, str(used_mem), str(limit_mem), mem_load_rate)
+            
         except:
             logging.error( str(traceback.format_exc()) )
             

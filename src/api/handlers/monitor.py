@@ -32,7 +32,7 @@ class ContainerStatus(APIHandler):
         for monitor_type in monitor_types:
             monitor_status_list = self.zkOper.retrieve_monitor_status_list(monitor_type)
             monitor_status_list_count = len(monitor_status_list)
-        
+            
             monitor_type_sub_dict = {}
             for monitor_status_key in monitor_status_list:
                 monitor_status_value = self.zkOper.retrieve_monitor_status_value(monitor_type, monitor_status_key)
