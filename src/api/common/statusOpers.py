@@ -144,7 +144,7 @@ class CheckContainersMemLoad(CheckStatusBase):
             logging.error( str(traceback.format_exc()) )
             
         alarm_level = self.retrieve_alarm_level(0, 0, failed_count)
-        super(CheckContainerMemLoad, self).write_status(0, 0, \
+        super(CheckContainersMemLoad, self).write_status(0, 0, \
                                                     failed_count, \
                                                     alarm_level, error_record, monitor_type, \
                                                     monitor_key)
