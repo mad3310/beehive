@@ -76,7 +76,7 @@ class Server_Opers(Abstract_Container_Opers):
             under_oom = conl.get_under_oom_value()
             if under_oom:
                 alarm_item.append(container)
-        return alart_item
+        return alarm_item
 
 
 class ContainerLoad(object):
@@ -98,14 +98,14 @@ class ContainerLoad(object):
         value = 0
         file_cmd = 'cat %s' % file_path
         if os.path.exists(file_path):
-            value = float(commands.getoutput(file_cmd))
+            value = commands.getoutput(file_cmd)
         return value
 
     def get_con_used_mem(self):
-        return self.get_file_value(self.used_mem_path)
+        return float(self.get_file_value(self.used_mem_path) )
 
     def get_con_limit_mem(self):
-        return self.get_file_value(self.limit_mem_path)
+        return float(self.get_file_value(self.limit_mem_path))
 
     def get_under_oom_value(self): 
         value = self.get_file_value(self.under_oom_path)
