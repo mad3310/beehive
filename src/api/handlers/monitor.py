@@ -64,14 +64,14 @@ class CheckServerContainersMemLoad(APIHandler):
 @require_basic_auth
 class CheckServersContainersMemLoad(APIHandler):
     
-    zkOper = ZkOpers('127.0.0.1', 2181)
+    zkOpers = ZkOpers('127.0.0.1', 2181)
     
     @asynchronous
     @engine
     def get(self):
         
         async_client = AsyncHTTPClient()
-        server_list = self.zkOper.retrieve_servers_white_list()
+        server_list = self.zkOpers.retrieve_servers_white_list()
         
         server_cons_mem_load = {}
         try:
@@ -87,7 +87,6 @@ class CheckServersContainersMemLoad(APIHandler):
             logging.error( str(traceback.format_exc() ) )
             
         async_client.close()
-        self.zkOper.close()
         self.finish( server_cons_mem_load )
 
 
@@ -135,8 +134,8 @@ class CheckServersContainersUnderOom(APIHandler):
         except:
             logging.error( str(traceback.format_exc() ) )
         
-        async_client.close()
-        self.zkOper.close()
+        async_client.()
+        #self.zkOper.close()
         self.finish( server_cons_mem_load )
 
 

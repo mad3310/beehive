@@ -85,7 +85,7 @@ class ContainerLoad(object):
         self.container_name = container_name
         self.container_id = ''
         if not self.container_id:
-            self.container_id = self.get_container_id(self.container_name)
+            self.container_id = self.get_container_id()
         self.used_mem_path = '/cgroup/memory/lxc/%s/memory.usage_in_bytes' % self.container_id
         self.limit_mem_path = '/cgroup/memory/lxc/%s/memory.limit_in_bytes' % self.container_id
         self.under_oom_path = '/cgroup/memory/lxc/%s/memory.oom_control' % self.container_id
@@ -116,8 +116,8 @@ class ContainerLoad(object):
 
     def get_mem_load(self):
         mem_load_rate, mem_load_dict = 0, {}
-        used_mem = self.get_con_used_mem(self.container_name)
-        limit_mem = self.get_con_limit_mem(self.container_name)
+        used_mem = self.get_con_used_mem()
+        limit_mem = self.get_con_limit_mem()
         
         logging.info('used_mem:%s, limit_mem: %s, mem_load_rate:%s ' % (used_mem, limit_mem, mem_load_rate) )
         if used_mem and limit_mem:
