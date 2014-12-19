@@ -110,7 +110,8 @@ class ContainerLoad(object):
     def get_under_oom_value(self): 
         value = self.get_file_value(self.under_oom_path)
         try:
-            return re.findall('.*under_oom (/d)$', value)[0]
+            under_oom_value = re.findall('.*under_oom (\d)$', value)[0]
+            return int(under_oom_value)
         except Exception,e:
             logging.error(str(e))
 
