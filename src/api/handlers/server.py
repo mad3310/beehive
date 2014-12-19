@@ -91,3 +91,6 @@ class CollectContainerResHandler(APIHandler):
         
         self._logger.setLevel(logging.INFO)
         self.finish(container_res)
+
+
+class AddServerMemoryHandler(APIHandler): pass
