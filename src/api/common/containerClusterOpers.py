@@ -78,13 +78,14 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
             cluster_stat = 'failed'
         vip = nodes_stat.get('vip')
         normal = nodes_stat.get('normal')
-        if not vip:
+        if vip:
             vip_node = vip[0]
             logging.info('vip:%s' % str(vip_node))
             all_nodes_stat.append(vip_node)
-        for normal_node in normal:
-            normal_nodes_stat.append(normal_node)
-            all_nodes_stat.append(normal_node)
+        if normal:
+            for normal_node in normal:
+                normal_nodes_stat.append(normal_node)
+                all_nodes_stat.append(normal_node)
 
         stat_set_list = list(set(all_nodes_stat))
         if len(stat_set_list) == 1:
@@ -646,4 +647,4 @@ class GetClustersChanges(Abstract_Container_Opers):
             exist = 'destroyed'
         else:
             exist = 'alive'
-        return exis
+        return exist
