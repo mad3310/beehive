@@ -121,6 +121,43 @@ class CheckResIpUsable(CheckStatusBase):
             return options.alarm_serious
 
 
+class CheckContainersUnderOom(CheckStatusBase):
+    
+    server_opers = Server_Opers()
+    
+    def check(self):
+        monitor_type, monitor_key, error_record = 'container', 'mem_load', ''
+        failed_count, containers_mem_load = 0, {}
+        try:
+            logging.info('do check under_oom')
+            containers_under_oom = self._get()
+            logging.info('containers_under_oom:%s' % str(containers_under_oom) )
+            
+            for host_ip, host_cons_under_oom in containers_under_oom.items():
+                for key, illegal_cons in host_cons_under_oom.items():
+                    failed_count += len(illegal_cons)
+                    error_record += 'host ip :%s, illegal containers: %s' % (host_ip, str(illegal_cons) )            
+            
+        except:
+            logging.error( str(traceback.format_exc()) )
+            
+        alarm_level = self.retrieve_alarm_level(0, 0, failed_count)
+        super(CheckContainersUnderOom, self).write_status(0, 0, failed_count, 
+                                                         alarm_level, error_record,
+                                                         monitor_type, monitor_key)      
+
+    def _get(self):
+        try:
+            host_ip = getHostIp()
+            logging.info('host ip :%s' % host_ip)
+            adminUser, adminPasswd = _retrieve_userName_passwd()
+            uri = 'http://%s:%s/monitor/serverCluster/containers/under_oom' % (host_ip, options.port)
+            logging.info('get uri :%s' % uri)
+            ret = http_get(uri, auth_username = adminUser, auth_password = adminPasswd)
+            return ret.get('response')
+        except:
+            logging.error( str(traceback.format_exc()) )
+
 class CheckContainersMemLoad(CheckStatusBase):
 
     server_opers = Server_Opers()
@@ -142,16 +179,15 @@ class CheckContainersMemLoad(CheckStatusBase):
                     limit_mem = mem_load_info.get('limit_mem')
                     mem_load_rate = mem_load_info.get('mem_load_rate')
                     error_record += 'host ip :%s, container : %s , used memory: %s, memory top limit: %s, '\
-                                    'memory load rate : %s' % (host_ip, container, str(used_mem), str(limit_mem), mem_load_rate)
+                                    'memory load rate : %s; \n' % (host_ip, container, str(used_mem), str(limit_mem), mem_load_rate)
             
         except:
             logging.error( str(traceback.format_exc()) )
             
         alarm_level = self.retrieve_alarm_level(0, 0, failed_count)
-        super(CheckContainersMemLoad, self).write_status(0, 0, \
-                                                    failed_count, \
-                                                    alarm_level, error_record, monitor_type, \
-                                                    monitor_key)
+        super(CheckContainersMemLoad, self).write_status(0, 0, failed_count, 
+                                                         alarm_level, error_record,
+                                                         monitor_type, monitor_key) 
 
     def _get(self):
         try:

@@ -87,6 +87,55 @@ class CheckServersContainersMemLoad(APIHandler):
             logging.error( str(traceback.format_exc() ) )
             
         async_client.close()
+        self.zkOper.close()
+        self.finish( server_cons_mem_load )
+
+
+class CheckServerContainersUnderOom(APIHandler):
+    
+    server_opers = Server_Opers()
+    
+    @asynchronous
+    def get(self):
         
+        server_ip = self.request.remote_ip
+        cons_under_oom = {}
+        try:
+            illegal_containers = self.server_opers.get_containers_under_oom()
+            cons_under_oom.setdefault('illegal_containers', illegal_containers)
+        except:
+            logging.error( str( traceback.format_exc() ) )
+        
+        logging.info('get server %s containers memory load :%s' % (server_ip, str(cons_under_oom) ) )
+        self.finish( cons_under_oom )
+
+
+@require_basic_auth
+class CheckServersContainersUnderOom(APIHandler):
+    
+    zkOper = ZkOpers('127.0.0.1', 2181)
+    
+    @asynchronous
+    @engine
+    def get(self):
+        
+        async_client = AsyncHTTPClient()
+        server_list = self.zkOper.retrieve_servers_white_list()
+        
+        server_cons_under_oom = {}
+        try:
+            for server in server_list:
+                requesturi = 'http://%s:%s/monitor/server/containers/under_oom' % (server, options.port)
+                logging.info('server requesturi: %s' % str(requesturi))
+                response = yield Task(async_client.fetch, requesturi)
+                body = json.loads(response.body.strip())
+                logging.info('response body : %s' % str(body) )
+                under_oom = body.get('response')
+                server_cons_under_oom.setdefault(server, under_oom)
+        except:
+            logging.error( str(traceback.format_exc() ) )
+        
+        async_client.close()
+        self.zkOper.close()
         self.finish( server_cons_mem_load )
 

@@ -43,27 +43,85 @@ class Server_Opers(Abstract_Container_Opers):
         mem_load_dict = {}
         containers = get_all_containers()
         for container in containers:
-            mem_rate = self.get_mem_load(container)
-            mem_load_dict.setdefault(container, mem_rate)
+            conl = ContainerLoad(container)
+            mem_load = conl.get_mem_load()
+            mem_load_dict.setdefault(container, mem_load)
         return mem_load_dict
 
-    def get_mem_load(self, container):
+    def double_limit_mem(self, ):
+        pass
+
+    def add_containers_memory(self, container_name_list):
+        host_cons = get_all_containers()
+        containers = list ( set(host_cons) & set(container_name_list) )
+        add_ret = {}
+        for container in containers:
+            con = container(container)
+            inspect_limit_mem = con.memory()
+            conl = ContainerLoad(container)
+            con_limit_mem = conl.get_con_limit_mem()
+            if con_limit_mem == inspect_limit_mem *2:
+                continue
+            ret = self.double_limit_mem()
+            add_ret.setdefault(container, ret)
+        return add_ret
+    
+    def get_containers_under_oom(self):
+        containers = get_all_containers()
+        alarm_item = []
+        for container in containers:
+            con = Container(container)
+            container_id = con.id()
+            conl = ContainerLoad(container)
+            under_oom = conl.get_under_oom_value()
+            if under_oom:
+                alarm_item.append(container)
+        return alart_item
+
+
+class ContainerLoad(object):
+
+    def __init__(self, container_name):
+        self.container_name = container_name
+        self.container_id = ''
+        if not self.container_id:
+            self.container_id = self.get_container_id(self.container_name)
+        self.used_mem_path = '/cgroup/memory/lxc/%s/memory.usage_in_bytes' % self.container_id
+        self.limit_mem_path = '/cgroup/memory/lxc/%s/memory.limit_in_bytes' % self.container_id
+        self.under_oom_path = '/cgroup/memory/lxc/%s/memory.oom_control' % self.container_id
+    
+    def get_container_id(self):
+        con = Container(self.container_name)
+        return con.id()
+
+    def get_file_value(self, file_path):
+        value = 0
+        file_cmd = 'cat %s' % file_path
+        if os.path.exists(file_path):
+            value = float(commands.getoutput(file_cmd))
+        return value
+
+    def get_con_used_mem(self):
+        return self.get_file_value(self.used_mem_path)
+
+    def get_con_limit_mem(self):
+        return self.get_file_value(self.limit_mem_path)
+
+    def get_under_oom_value(self): 
+        value = self.get_file_value(self.under_oom_path)
+        try:
+            return re.findall('.*under_oom (/d)$', value)[0]
+        except Exception,e:
+            logging.error(str(e))
+
+    def get_mem_load(self):
         mem_load_rate, mem_load_dict = 0, {}
-        con = Container(container)
-        container_id = con.id()
-        logging.info( 'container id :%s' % container_id )
-        used_mem_path = '/cgroup/memory/lxc/%s/memory.usage_in_bytes' % container_id
-        limit_mem_path = '/cgroup/memory/lxc/%s/memory.limit_in_bytes' % container_id
-        used_mem_cmd = 'cat %s' % used_mem_path
-        limit_mem_cmd = 'cat %s' % limit_mem_path
+        used_mem = self.get_con_used_mem(self.container_name)
+        limit_mem = self.get_con_limit_mem(self.container_name)
         
-        logging.info('used : %s, limit: %s' % (used_mem_cmd, limit_mem_cmd) )
-        
-        if os.path.exists(used_mem_path) and os.path.exists(limit_mem_path):
-            used_mem = float(commands.getoutput(used_mem_cmd) )
-            limit_mem = float(commands.getoutput(limit_mem_cmd) )
+        logging.info('used_mem:%s, limit_mem: %s, mem_load_rate:%s ' % (used_mem, limit_mem, mem_load_rate) )
+        if used_mem and limit_mem:
             mem_load_rate =  used_mem / limit_mem
-            logging.info('used_mem:%s, limit_mem: %s, mem_load_rate:%s ' % (used_mem, limit_mem, mem_load_rate) )
             mem_load_dict.setdefault('used_mem', used_mem)
             mem_load_dict.setdefault('limit_mem', limit_mem)
             mem_load_dict.setdefault('mem_load_rate', mem_load_rate)

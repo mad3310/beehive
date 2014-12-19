@@ -32,7 +32,10 @@ class ZkOpers(object):
         logging.info("start zk")
         self.zk = KazooClient(hosts=zkAddress+':'+str(zkPort))
         self.zk.start()
-        
+    
+    def close(self):
+        self.zk.close()
+       
     def existCluster(self):
         self.zk.ensure_path(self.rootPath)
         clusters = self.zk.get_children(self.rootPath)

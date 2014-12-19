@@ -15,10 +15,12 @@ handlers = [
     (r"/serverCluster", ServerClusterHandler),
     (r"/serverCluster/update", UpdateServerClusterHandler),
     (r"/serverCluster/resource", GetServersInfoHandler),
+    (r"/serverCluster/containers/memory/add", AddServersMemoryHandler),
     (r"/server", ServerHandler),
     (r"/server/resource", CollectServerResHandler),
     (r"/server/containers/resource", CollectContainerResHandler),
     (r"/inner/server/update", UpdateServerHandler),
+    (r"/server/containers/memory/add", AddServerMemoryHandler),
     (r"/containerCluster", ContainerClusterHandler),
     #(r"/containerCluster/(.*)", ContainerClusterHandler),
     (r"/containerCluster/start", ContainerClusterStartHandler),
@@ -40,6 +42,9 @@ handlers = [
     (r"/container/status/(.*)", CheckContainerStatusHandler),
     (r"/monitor/status", ContainerStatus),
     (r"/monitor/serverCluster/containers/memory", CheckServersContainersMemLoad),
+    (r"/monitor/serverCluster/containers/under_oom", CheckServersContainersUnderOom),
     (r"/monitor/server/containers/memory", CheckServerContainersMemLoad),
+    (r"/monitor/server/containers/under_oom", CheckServerContainersUnderOom),
+    
     #(r"/containerCluster/ips/get", GetIpsFromIpPool),
 ]
