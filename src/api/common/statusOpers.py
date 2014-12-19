@@ -126,7 +126,7 @@ class CheckContainersUnderOom(CheckStatusBase):
     server_opers = Server_Opers()
     
     def check(self):
-        monitor_type, monitor_key, error_record = 'container', 'mem_load', ''
+        monitor_type, monitor_key, error_record = 'container', 'under_oom', ''
         failed_count, containers_mem_load = 0, {}
         try:
             logging.info('do check under_oom')
@@ -157,6 +157,7 @@ class CheckContainersUnderOom(CheckStatusBase):
             return ret.get('response')
         except:
             logging.error( str(traceback.format_exc()) )
+
 
 class CheckContainersMemLoad(CheckStatusBase):
 
