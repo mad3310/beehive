@@ -134,7 +134,7 @@ class CheckServersContainersUnderOom(APIHandler):
         except:
             logging.error( str(traceback.format_exc() ) )
         
-        async_client.()
+        async_client.close()
         #self.zkOper.close()
         self.finish( server_cons_mem_load )
 
