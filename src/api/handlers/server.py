@@ -6,12 +6,15 @@ Created on Sep 8, 2014
 import traceback
 import logging
 import socket
+import re
 
+from tornado.web import asynchronous
 from handlers.base import APIHandler
 from common.serverOpers import Server_Opers
 from common.resourceOpers import Res_Opers
 from common.utils.exceptions import HTTPAPIError
-from tornado.web import asynchronous
+from common.tornado_basic_auth import require_basic_auth
+
 
 class ServerHandler(APIHandler):
     '''
@@ -96,6 +99,7 @@ class CollectContainerResHandler(APIHandler):
 class AddServerMemoryHandler(APIHandler): pass
 
 
+@require_basic_auth
 class SwitchServerUnderoomHandler(APIHandler):
 
     server_opers = Server_Opers()
@@ -103,28 +107,34 @@ class SwitchServerUnderoomHandler(APIHandler):
     def post(self):
         args = self.get_all_arguments()
         switch = args.get('switch')
-        containerNameList = args.get('containerNameList')
         
-        if not switch or switch != ('on' or 'off'):
+        if not switch or switch != ('on' and 'off'):
             raise HTTPAPIError(status_code=400, error_detail="switch params wrong!",\
                                 notification = "direct", \
                                 log_message= "switch params wrong!",\
                                 response =  "please check params!")
         
-        if not containerNameList or not isinstance(containerNameList, list):
-            raise HTTPAPIError(status_code=400, error_detail="containerNameList params wrong!",\
+        containerNameList = args.get('containerNameList')
+        if not containerNameList:
+            raise HTTPAPIError(status_code=400, error_detail="switch params not given!",\
                                 notification = "direct", \
-                                log_message= "containerNameList params wrong, it should be a container name list!",\
+                                log_message= "switch params not given!",\
                                 response =  "please check params!")
         
+        if ',' in containerNameList:
+            containerNameList = containerNameList.split(',')
+        else:
+            containerNameList = [containerNameList]
+        
         value, result = 0, {}
-        try:            
+        try:
             if switch == 'on':
                 result = self.server_opers.open_containers_under_oom(containerNameList)
             elif switch == 'off':
                 result = self.server_opers.shut_containers_under_oom(containerNameList)
         except:
             logging.error( str(traceback.format_exc()) )
-            
+        
+        logging.info('under_oom result: %s' % str(result))   
         self.finish(result)
 
