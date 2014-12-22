@@ -12,7 +12,7 @@ import logging
 import traceback
 
 from tornado.options import options
-from tornado.httpclient import HTTPRequest
+from tornado.httpclient import HTTPRequest, AsyncHTTPClient
 from tornado.web import asynchronous
 from tornado.gen import engine, Task
 from common.configFileOpers import ConfigFileOpers
@@ -136,7 +136,7 @@ class SwitchServersUnderoomHandler(APIHandler):
         result = {}
         try:
             for server in server_list:
-                requesturi = 'http://%s:%s/server/containers/under_oom' % (server, options.port)
+                requesturi = 'http://%s:%s/inner/server/containers/under_oom' % (server, options.port)
                 logging.info('server requesturi: %s' % str(requesturi))
                 response = yield Task(async_client.fetch, requesturi)
                 body = json.loads(response.body.strip())
@@ -147,7 +147,6 @@ class SwitchServersUnderoomHandler(APIHandler):
             logging.error( str(traceback.format_exc() ) )
         
         async_client.close()
-        #self.zkOper.close()
         self.finish( result )
     
     

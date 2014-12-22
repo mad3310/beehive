@@ -99,7 +99,6 @@ class CollectContainerResHandler(APIHandler):
 class AddServerMemoryHandler(APIHandler): pass
 
 
-@require_basic_auth
 class SwitchServerUnderoomHandler(APIHandler):
 
     server_opers = Server_Opers()
@@ -108,7 +107,7 @@ class SwitchServerUnderoomHandler(APIHandler):
         args = self.get_all_arguments()
         switch = args.get('switch')
         
-        if not switch or switch != ('on' and 'off'):
+        if not switch or (switch!='on' and switch!='off'):
             raise HTTPAPIError(status_code=400, error_detail="switch params wrong!",\
                                 notification = "direct", \
                                 log_message= "switch params wrong!",\
