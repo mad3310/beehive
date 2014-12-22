@@ -99,6 +99,7 @@ class CollectContainerResHandler(APIHandler):
 class AddServerMemoryHandler(APIHandler): pass
 
 
+@require_basic_auth
 class SwitchServerUnderoomHandler(APIHandler):
 
     server_opers = Server_Opers()

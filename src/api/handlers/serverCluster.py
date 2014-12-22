@@ -10,6 +10,7 @@ import uuid
 import json
 import logging
 import traceback
+import urllib
 
 from tornado.options import options
 from tornado.httpclient import HTTPRequest, AsyncHTTPClient
@@ -19,7 +20,7 @@ from common.configFileOpers import ConfigFileOpers
 from common.serverOpers import Server_Opers
 from common.utils.exceptions import HTTPAPIError
 from common.tornado_basic_auth import require_basic_auth
-from common.helper import _request_fetch
+from common.helper import _request_fetch, _retrieve_userName_passwd
 from common.ipOpers import IpOpers
 from common.serverClusterOpers import ServerCluster_Opers
 from common.utils.autoutil import http_get
@@ -124,24 +125,29 @@ class UpdateServerClusterHandler(APIHandler):
 class AddServersMemoryHandler(APIHandler): pass
 
 
+@require_basic_auth
 class SwitchServersUnderoomHandler(APIHandler):
     
     @asynchronous
     @engine
     def post(self):
         
-        async_client = AsyncHTTPClient()
+        args = self.get_all_arguments()
         server_list = self.zkOper.retrieve_servers_white_list()
+        auth_username, auth_password = _retrieve_userName_passwd()
+        async_client = AsyncHTTPClient()
         
         result = {}
         try:
             for server in server_list:
-                requesturi = 'http://%s:%s/inner/server/containers/under_oom' % (server, options.port)
+                requesturi = 'http://%s:%s/server/containers/under_oom' % (server, options.port)
                 logging.info('server requesturi: %s' % str(requesturi))
-                response = yield Task(async_client.fetch, requesturi)
-                body = json.loads(response.body.strip())
-                logging.info('response body : %s' % str(body) )
-                ret = body.get('response')
+                request = HTTPRequest(url=requesturi, method='POST', body=urllib.urlencode(args), connect_timeout=40, \
+                                      request_timeout=40, auth_username = auth_username, auth_password = auth_password)
+        
+                response = yield Task(async_client.fetch, request)
+                body = json.loads( response.body.strip())
+                ret =  body.get('response')
                 result.update(ret)
         except:
             logging.error( str(traceback.format_exc() ) )

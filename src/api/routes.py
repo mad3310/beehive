@@ -21,7 +21,7 @@ handlers = [
     (r"/server/resource", CollectServerResHandler),
     (r"/server/containers/resource", CollectContainerResHandler),
     (r"/server/containers/memory/add", AddServerMemoryHandler),
-    (r"/inner/server/containers/under_oom", SwitchServerUnderoomHandler),
+    (r"/server/containers/under_oom", SwitchServerUnderoomHandler),
     (r"/inner/server/update", UpdateServerHandler),
     (r"/containerCluster", ContainerClusterHandler),
     #(r"/containerCluster/(.*)", ContainerClusterHandler),
