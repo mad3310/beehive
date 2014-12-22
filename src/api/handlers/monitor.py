@@ -137,9 +137,3 @@ class CheckServersContainersUnderOom(APIHandler):
         async_client.close()
         #self.zkOper.close()
         self.finish( server_cons_under_oom )
-
-
-class AddServersMemoryHandler(APIHandler): pass
-
-
-class AddServerMemoryHandler(APIHandler): pass

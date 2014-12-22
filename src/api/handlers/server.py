@@ -94,3 +94,35 @@ class CollectContainerResHandler(APIHandler):
 
 
 class AddServerMemoryHandler(APIHandler): pass
+
+
+class SwitchServerUnderoomHandler(APIHander):
+
+    server_opers = Server_Opers()
+
+    def get(self, switch, containers):
+        
+        if not switch or switch != ('on' or 'off'):
+            raise HTTPAPIError(status_code=400, error_detail="switch params wrong!",\
+                                notification = "direct", \
+                                log_message= "switch params wrong!",\
+                                response =  "please check params!")
+        
+        if not containers or not isinstance(containers, list):
+            raise HTTPAPIError(status_code=400, error_detail="containerNameList params wrong!",\
+                                notification = "direct", \
+                                log_message= "containerNameList params wrong, it should be a container name list!",\
+                                response =  "please check params!")
+        
+        value = 0
+        try:            
+            if switch == 'on':
+                self.server_opers.open_containers_under_oom()
+            elif switch == 'off':
+                self.server_opers.shut_containers_under_oom()
+        except:
+            logging.error( str(traceback.format_exc()) )
+        
+        
+        
+        

@@ -61,3 +61,9 @@ class ServerCluster_Opers(object):
         http_client.close()
         logging.info('succ:%s' % str(succ))
         logging.info('fail:%s' % str(fail))
+
+
+class AddServersMemoryHandler(APIHandler): pass
+
+
+

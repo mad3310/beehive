@@ -48,6 +48,24 @@ class Server_Opers(Abstract_Container_Opers):
             mem_load_dict.setdefault(container, mem_load)
         return mem_load_dict
 
+    def open_containers_under_oom(self, container_name_list):
+        host_cons = get_all_containers()
+        containers = list ( set(host_cons) & set(container_name_list) )
+        for container in containers:
+            conl = ContainerLoad(container)
+            ret = conl.open_container_under_oom()
+            if not ret:
+                logging.error('container %s under oom value open failed' % container)
+
+    def shut_containers_under_oom(self, container_name_list):
+        host_cons = get_all_containers()
+        containers = list ( set(host_cons) & set(container_name_list) )
+        for container in containers:
+            conl = ContainerLoad(container)
+            ret = conl.shut_container_under_oom()
+            if not ret:
+                logging.error('container %s under oom value shut down failed' % container)
+
     def double_limit_mem(self, ):
         pass
 
@@ -114,6 +132,21 @@ class ContainerLoad(object):
             return int(under_oom_value)
         except Exception,e:
             logging.error(str(e))
+    
+    def _change_container_under_oom(self, switch_value):
+        if not os.path.exists(self.under_oom_path):
+            logging.error(' container: %s under oom path not exist' % self.container_name)
+            return
+        cmd = 'echo %s > %s' % (switch_value, conl.under_oom_path)
+        commands.getoutput(cmd)
+
+    def open_container_under_oom(self):
+        self._change_container_under_oom(0)
+        return self.get_under_oom_value() == '0'
+
+    def shut_container_under_oom(self):
+        self._change_container_under_oom(1)
+        return self.get_under_oom_value() == '1'
 
     def get_mem_load(self):
         mem_load_rate, mem_load_dict = 0, {}
