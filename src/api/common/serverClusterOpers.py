@@ -63,7 +63,5 @@ class ServerCluster_Opers(object):
         logging.info('fail:%s' % str(fail))
 
 
-class AddServersMemoryHandler(APIHandler): pass
-
 
 

@@ -96,7 +96,7 @@ class CollectContainerResHandler(APIHandler):
 class AddServerMemoryHandler(APIHandler): pass
 
 
-class SwitchServerUnderoomHandler(APIHander):
+class SwitchServerUnderoomHandler(APIHandler):
 
     server_opers = Server_Opers()
 
@@ -114,15 +114,14 @@ class SwitchServerUnderoomHandler(APIHander):
                                 log_message= "containerNameList params wrong, it should be a container name list!",\
                                 response =  "please check params!")
         
-        value = 0
+        value, result = 0, {}
         try:            
             if switch == 'on':
-                self.server_opers.open_containers_under_oom()
+                result = self.server_opers.open_containers_under_oom()
             elif switch == 'off':
-                self.server_opers.shut_containers_under_oom()
+                result = self.server_opers.shut_containers_under_oom()
         except:
             logging.error( str(traceback.format_exc()) )
-        
-        
-        
-        
+            
+        self.finish(result)
+

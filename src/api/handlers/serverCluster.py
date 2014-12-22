@@ -118,3 +118,35 @@ class UpdateServerClusterHandler(APIHandler):
         dict.setdefault("message", "serverCluster update successful")
         self.finish(dict)
         
+
+class AddServersMemoryHandler(APIHandler): pass
+
+
+class SwitchServersUnderoomHandler(APIHandler):
+    
+    
+    @asynchronous
+    @engine
+    def get(self):
+        
+        async_client = AsyncHTTPClient()
+        server_list = self.zkOper.retrieve_servers_white_list()
+        
+        result = {}
+        try:
+            for server in server_list:
+                requesturi = 'http://%s:%s/server/containers/under_oom' % (server, options.port)
+                logging.info('server requesturi: %s' % str(requesturi))
+                response = yield Task(async_client.fetch, requesturi)
+                body = json.loads(response.body.strip())
+                logging.info('response body : %s' % str(body) )
+                ret = body.get('response')
+                result.update(ret)
+        except:
+            logging.error( str(traceback.format_exc() ) )
+        
+        async_client.close()
+        #self.zkOper.close()
+        self.finish( result )
+    
+    

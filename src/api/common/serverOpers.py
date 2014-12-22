@@ -49,6 +49,7 @@ class Server_Opers(Abstract_Container_Opers):
         return mem_load_dict
 
     def open_containers_under_oom(self, container_name_list):
+        result = {}
         host_cons = get_all_containers()
         containers = list ( set(host_cons) & set(container_name_list) )
         for container in containers:
@@ -56,8 +57,11 @@ class Server_Opers(Abstract_Container_Opers):
             ret = conl.open_container_under_oom()
             if not ret:
                 logging.error('container %s under oom value open failed' % container)
+            result.setdefault(container, ret)
+        return result
 
     def shut_containers_under_oom(self, container_name_list):
+        result = {}
         host_cons = get_all_containers()
         containers = list ( set(host_cons) & set(container_name_list) )
         for container in containers:
@@ -65,6 +69,8 @@ class Server_Opers(Abstract_Container_Opers):
             ret = conl.shut_container_under_oom()
             if not ret:
                 logging.error('container %s under oom value shut down failed' % container)
+            result.setdefault(container, ret)
+        return result
 
     def double_limit_mem(self, ):
         pass
