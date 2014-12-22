@@ -11,17 +11,19 @@ import json
 import logging
 import traceback
 
+from tornado.options import options
+from tornado.httpclient import HTTPRequest
+from tornado.web import asynchronous
+from tornado.gen import engine, Task
 from common.configFileOpers import ConfigFileOpers
 from common.serverOpers import Server_Opers
 from common.utils.exceptions import HTTPAPIError
 from common.tornado_basic_auth import require_basic_auth
-from tornado.options import options
-from handlers.base import APIHandler
-from tornado.httpclient import HTTPRequest
 from common.helper import _request_fetch
 from common.ipOpers import IpOpers
 from common.serverClusterOpers import ServerCluster_Opers
 from common.utils.autoutil import http_get
+from handlers.base import APIHandler
 
 
 @require_basic_auth
@@ -123,7 +125,6 @@ class AddServersMemoryHandler(APIHandler): pass
 
 
 class SwitchServersUnderoomHandler(APIHandler):
-    
     
     @asynchronous
     @engine
