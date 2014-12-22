@@ -138,21 +138,29 @@ class ContainerLoad(object):
             return int(under_oom_value)
         except Exception,e:
             logging.error(str(e))
+
+    def get_oom_kill_disable_value(self): 
+        value = self.get_file_value(self.under_oom_path)
+        try:
+            under_oom_value = re.findall('oom_kill_disable (\d)\\nunder_oom.*', value)[0]
+            return int(under_oom_value)
+        except Exception,e:
+            logging.error(str(e))
     
     def _change_container_under_oom(self, switch_value):
         if not os.path.exists(self.under_oom_path):
             logging.error(' container: %s under oom path not exist' % self.container_name)
             return
-        cmd = 'echo %s > %s' % (switch_value, conl.under_oom_path)
+        cmd = 'echo %s > %s' % (switch_value, self.under_oom_path)
         commands.getoutput(cmd)
 
     def open_container_under_oom(self):
         self._change_container_under_oom(0)
-        return self.get_under_oom_value() == '0'
+        return self.get_oom_kill_disable_value() == 0
 
     def shut_container_under_oom(self):
         self._change_container_under_oom(1)
-        return self.get_under_oom_value() == '1'
+        return self.get_oom_kill_disable_value() == 1
 
     def get_mem_load(self):
         mem_load_rate, mem_load_dict = 0, {}
