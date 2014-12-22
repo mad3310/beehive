@@ -128,7 +128,7 @@ class SwitchServersUnderoomHandler(APIHandler):
     
     @asynchronous
     @engine
-    def get(self):
+    def post(self):
         
         async_client = AsyncHTTPClient()
         server_list = self.zkOper.retrieve_servers_white_list()

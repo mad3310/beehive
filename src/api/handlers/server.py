@@ -100,7 +100,10 @@ class SwitchServerUnderoomHandler(APIHandler):
 
     server_opers = Server_Opers()
 
-    def get(self, switch, containers):
+    def post(self):
+        args = self.get_all_arguments()
+        switch = args.get('switch')
+        containerNameList = args.get('containerNameList')
         
         if not switch or switch != ('on' or 'off'):
             raise HTTPAPIError(status_code=400, error_detail="switch params wrong!",\
@@ -108,7 +111,7 @@ class SwitchServerUnderoomHandler(APIHandler):
                                 log_message= "switch params wrong!",\
                                 response =  "please check params!")
         
-        if not containers or not isinstance(containers, list):
+        if not containerNameList or not isinstance(containerNameList, list):
             raise HTTPAPIError(status_code=400, error_detail="containerNameList params wrong!",\
                                 notification = "direct", \
                                 log_message= "containerNameList params wrong, it should be a container name list!",\
@@ -117,9 +120,9 @@ class SwitchServerUnderoomHandler(APIHandler):
         value, result = 0, {}
         try:            
             if switch == 'on':
-                result = self.server_opers.open_containers_under_oom()
+                result = self.server_opers.open_containers_under_oom(containerNameList)
             elif switch == 'off':
-                result = self.server_opers.shut_containers_under_oom()
+                result = self.server_opers.shut_containers_under_oom(containerNameList)
         except:
             logging.error( str(traceback.format_exc()) )
             
