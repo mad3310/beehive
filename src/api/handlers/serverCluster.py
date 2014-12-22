@@ -133,6 +133,21 @@ class SwitchServersUnderoomHandler(APIHandler):
     def post(self):
         
         args = self.get_all_arguments()
+        switch = args.get('switch')
+        
+        if not switch or (switch!='on' and switch!='off'):
+            raise HTTPAPIError(status_code=400, error_detail="switch params wrong!",\
+                                notification = "direct", \
+                                log_message= "switch params wrong!",\
+                                response =  "please check params!")
+        
+        containerNameList = args.get('containerNameList')
+        if not containerNameList:
+            raise HTTPAPIError(status_code=400, error_detail="containerNameList params not given!",\
+                                notification = "direct", \
+                                log_message= "containerNameList params not given!",\
+                                response =  "please check params!")
+        
         server_list = self.zkOper.retrieve_servers_white_list()
         auth_username, auth_password = _retrieve_userName_passwd()
         async_client = AsyncHTTPClient()

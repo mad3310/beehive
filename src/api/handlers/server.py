@@ -116,9 +116,9 @@ class SwitchServerUnderoomHandler(APIHandler):
         
         containerNameList = args.get('containerNameList')
         if not containerNameList:
-            raise HTTPAPIError(status_code=400, error_detail="switch params not given!",\
+            raise HTTPAPIError(status_code=400, error_detail="containerNameList params not given!",\
                                 notification = "direct", \
-                                log_message= "switch params not given!",\
+                                log_message= "containerNameList params not given!",\
                                 response =  "please check params!")
         
         if ',' in containerNameList:
