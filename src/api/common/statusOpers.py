@@ -32,7 +32,6 @@ class CheckStatusBase(object):
     @abstractmethod
     def retrieve_alarm_level(self, total_count, success_count, failed_count):
         raise NotImplementedError, "Cannot call abstract method"
-    
    
         result_dict = {}
         format_str = "total=%s, success count=%s, failed count=%s"
@@ -143,8 +142,14 @@ class CheckContainersUnderOom(CheckStatusBase):
             
         alarm_level = self.retrieve_alarm_level(0, 0, failed_count)
         super(CheckContainersUnderOom, self).write_status(0, 0, failed_count, 
-                                                         alarm_level, error_record,
-                                                         monitor_type, monitor_key)      
+                                                          alarm_level, error_record,
+                                                          monitor_type, monitor_key)      
+
+    def retrieve_alarm_level(self, total_count, success_count, failed_count):
+        if failed_count == 0:
+            return options.alarm_nothing
+        else:
+            return options.alarm_serious
 
     def _get(self):
         try:
