@@ -46,6 +46,15 @@ def send_email(to, subject, body, html=None, attachments=[]):
         fr = utf8(fr)
     to = [utf8(t) for t in to]
 
+    mtlist = []
+    for mail in to:
+        for t in re.split(';|,', mail):
+            mtlist.append(t)
+    mailto = []
+    for i in range(len(mtlist)):
+        if re.match('\S*\s*<\s*\S+@\S+\.\S+>', mtlist[i]): mailto.append(mtlist[i])
+
+
     if html:
         # Multipart HTML and plain text
         message = MIMEMultipart("alternative")
@@ -71,7 +80,7 @@ def send_email(to, subject, body, html=None, attachments=[]):
     message["To"] = COMMASPACE.join(to)
     message["Subject"] = utf8(subject)
 
-    _get_session().send_mail(fr, to, utf8(message.as_string()))
+    _get_session().send_mail(fr, mailto, utf8(message.as_string()))
 
 
 class EmailAddress(object):
