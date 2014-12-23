@@ -32,5 +32,4 @@ define("server_cluster_property",default=join(base_dir,"config","serverCluster.p
 
 define("alarm_serious", default="tel:sms:email", help="alarm level is serious")
 define("alarm_general", default="sms:email", help="alarm level is general")
-
 define("alarm_nothing", default="nothing", help="no alarm")

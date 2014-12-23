@@ -311,7 +311,7 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
             logging.info('begin create')
             self._issue_create_action(self.dict)
         except:
-            logging.info(traceback.format_exc())
+            logging.info( str(traceback.format_exc()) )
             self.threading_exception_queue.put(sys.exc_info())
   
     def _issue_create_action(self, args={}):
