@@ -19,6 +19,7 @@ from utils.exceptions import MyError
 from abstractContainerOpers import Abstract_Container_Opers
 from resourceOpers import Res_Opers
 
+
 class IpOpers(object):
     '''
     classdocs
@@ -114,7 +115,6 @@ class IpOpers(object):
         while thread_obj_list:
             succ = []
             for thread_obj in thread_obj_list:
-                logging.info('thread : %s, isAlive: %s' % (thread_obj, str(thread_obj.isAlive()) ) )
                 if not thread_obj.isAlive():
                     succ.append(thread_obj)
             for item in succ:

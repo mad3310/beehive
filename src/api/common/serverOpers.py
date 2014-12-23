@@ -8,6 +8,7 @@ Created on Sep 10, 2014
 '''
 import os
 import re
+import sys
 import time
 import logging
 import docker
@@ -15,16 +16,16 @@ import traceback
 import commands
 
 from dockerOpers import Docker_Opers
-from abstractContainerOpers import Abstract_Container_Opers
 from common.utils.autoutil import *
 from helper import *
 from zkOpers import ZkOpers
 from invokeCommand import InvokeCommand
 from tornado.options import options
 from container_module import Container
+from abstractAsyncThread import Abstract_Async_Thread
 
 
-class Server_Opers(Abstract_Container_Opers):
+class Server_Opers(Abstract_Async_Thread):
     '''
     classdocs
     '''
@@ -34,61 +35,82 @@ class Server_Opers(Abstract_Container_Opers):
         return resource
     
     def update(self):
-        host_ip = getHostIp()
-        logging.info('host_ip: %s' % host_ip)
-        server = UpdateServer(host_ip)
-        server.update()
+        try:
+            logging.info('update server!')
+            host_ip = getHostIp()
+            logging.info('host_ip: %s' % host_ip)
+            server = UpdateServer(host_ip)
+            server.update()
+        except:
+            logging.info( str(traceback.format_exc()) )
+            self.threading_exception_queue.put(sys.exc_info())
 
     def get_containers_mem_load(self):
-        mem_load_dict = {}
-        containers = get_all_containers()
-        for container in containers:
-            conl = ContainerLoad(container)
-            mem_load = conl.get_mem_load()
-            mem_load_dict.setdefault(container, mem_load)
-        return mem_load_dict
+        try:
+            mem_load_dict = {}
+            containers = get_all_containers()
+            for container in containers:
+                conl = ContainerLoad(container)
+                mem_load = conl.get_mem_load()
+                mem_load_dict.setdefault(container, mem_load)
+            return mem_load_dict
+        except:
+            logging.info( str(traceback.format_exc()) )
+            self.threading_exception_queue.put(sys.exc_info())
 
     def open_containers_under_oom(self, container_name_list):
-        result = {}
-        host_cons = get_all_containers()
-        containers = list ( set(host_cons) & set(container_name_list) )
-        for container in containers:
-            conl = ContainerLoad(container)
-            ret = conl.open_container_under_oom()
-            if not ret:
-                logging.error('container %s under oom value open failed' % container)
-            result.setdefault(container, ret)
-        return result
+        try:
+            result = {}
+            host_cons = get_all_containers()
+            containers = list ( set(host_cons) & set(container_name_list) )
+            for container in containers:
+                conl = ContainerLoad(container)
+                ret = conl.open_container_under_oom()
+                if not ret:
+                    logging.error('container %s under oom value open failed' % container)
+                result.setdefault(container, ret)
+            return result
+        except:
+            logging.info( str(traceback.format_exc()) )
+            self.threading_exception_queue.put(sys.exc_info())    
 
     def shut_containers_under_oom(self, container_name_list):
-        result = {}
-        host_cons = get_all_containers()
-        containers = list ( set(host_cons) & set(container_name_list) )
-        for container in containers:
-            conl = ContainerLoad(container)
-            ret = conl.shut_container_under_oom()
-            if not ret:
-                logging.error('container %s under oom value shut down failed' % container)
-            result.setdefault(container, ret)
-        return result
+        try:
+            result = {}
+            host_cons = get_all_containers()
+            containers = list ( set(host_cons) & set(container_name_list) )
+            for container in containers:
+                conl = ContainerLoad(container)
+                ret = conl.shut_container_under_oom()
+                if not ret:
+                    logging.error('container %s under oom value shut down failed' % container)
+                result.setdefault(container, ret)
+            return result
+        except:
+            logging.info( str(traceback.format_exc()) )
+            self.threading_exception_queue.put(sys.exc_info()) 
 
     def double_limit_mem(self, ):
         pass
 
     def add_containers_memory(self, container_name_list):
-        host_cons = get_all_containers()
-        containers = list ( set(host_cons) & set(container_name_list) )
-        add_ret = {}
-        for container in containers:
-            con = container(container)
-            inspect_limit_mem = con.memory()
-            conl = ContainerLoad(container)
-            con_limit_mem = conl.get_con_limit_mem()
-            if con_limit_mem == inspect_limit_mem *2:
-                continue
-            ret = self.double_limit_mem()
-            add_ret.setdefault(container, ret)
-        return add_ret
+        try:
+            host_cons = get_all_containers()
+            containers = list ( set(host_cons) & set(container_name_list) )
+            add_ret = {}
+            for container in containers:
+                con = container(container)
+                inspect_limit_mem = con.memory()
+                conl = ContainerLoad(container)
+                con_limit_mem = conl.get_con_limit_mem()
+                if con_limit_mem == inspect_limit_mem *2:
+                    continue
+                ret = self.double_limit_mem()
+                add_ret.setdefault(container, ret)
+            return add_ret
+        except:
+            logging.info( str(traceback.format_exc()) )
+            self.threading_exception_queue.put(sys.exc_info())
     
     def get_containers_under_oom(self):
         containers = get_all_containers()
@@ -133,19 +155,13 @@ class ContainerLoad(object):
 
     def get_under_oom_value(self): 
         value = self.get_file_value(self.under_oom_path)
-        try:
-            under_oom_value = re.findall('.*under_oom (\d)$', value)[0]
-            return int(under_oom_value)
-        except Exception,e:
-            logging.error(str(e))
+        under_oom_value = re.findall('.*under_oom (\d)$', value)[0]
+        return int(under_oom_value)
 
     def get_oom_kill_disable_value(self): 
         value = self.get_file_value(self.under_oom_path)
-        try:
-            under_oom_value = re.findall('oom_kill_disable (\d)\\nunder_oom.*', value)[0]
-            return int(under_oom_value)
-        except Exception,e:
-            logging.error(str(e))
+        under_oom_value = re.findall('oom_kill_disable (\d)\\nunder_oom.*', value)[0]
+        return int(under_oom_value)
     
     def _change_container_under_oom(self, switch_value):
         if not os.path.exists(self.under_oom_path):

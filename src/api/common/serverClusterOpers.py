@@ -2,11 +2,11 @@
 #-*- coding: utf-8 -*-
 
 import os
+import sys
 import logging
 import traceback
 import tornado.httpclient
 
-from abstractContainerOpers import Abstract_Container_Opers
 from zkOpers import ZkOpers
 from tornado.options import options
 from tornado.gen import Callback, Wait
@@ -14,7 +14,7 @@ from abstractAsyncThread import Abstract_Async_Thread
 from utils.autoutil import *
 
 
-class ServerCluster_Opers(object):
+class ServerCluster_Opers(Abstract_Async_Thread):
     '''
     classdocs
     '''
@@ -23,8 +23,16 @@ class ServerCluster_Opers(object):
     def __init__(self):
         pass
     
-    @tornado.gen.engine
     def update(self):
+        try:
+            logging.info('do update server!')
+            self._update()
+        except:
+            logging.error( str(traceback.format_exc()) )
+            self.threading_exception_queue.put(sys.exc_info())
+    
+    @tornado.gen.engine
+    def _update(self):
 
         http_client = tornado.httpclient.AsyncHTTPClient()
           
@@ -61,7 +69,3 @@ class ServerCluster_Opers(object):
         http_client.close()
         logging.info('succ:%s' % str(succ))
         logging.info('fail:%s' % str(fail))
-
-
-
-
