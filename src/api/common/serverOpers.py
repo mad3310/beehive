@@ -135,7 +135,9 @@ class ContainerLoad(object):
         self.used_mem_path = '/cgroup/memory/lxc/%s/memory.usage_in_bytes' % self.container_id
         self.limit_mem_path = '/cgroup/memory/lxc/%s/memory.limit_in_bytes' % self.container_id
         self.under_oom_path = '/cgroup/memory/lxc/%s/memory.oom_control' % self.container_id
-    
+        self.mysql_mnt_path = '/srv/docker/vfs/dir/%s' % self.container_id
+        self.root_mnt_path = '/srv/docker/devicemapper/mnt/<container full id>'
+
     def get_container_id(self):
         con = Container(self.container_name)
         return con.id()
@@ -190,6 +192,9 @@ class ContainerLoad(object):
             mem_load_dict.setdefault('limit_mem', limit_mem)
             mem_load_dict.setdefault('mem_load_rate', mem_load_rate)
         return mem_load_dict
+
+    def get_disk_load(self):
+        return res_opers.get_container_disk_load()
 
 
 class UpdateServer(object):
