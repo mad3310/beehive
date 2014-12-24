@@ -20,7 +20,6 @@ from common.helper import *
 from common.mclusterOper import MclusterManager
 
 
-
 @require_basic_auth
 class ContainerClusterHandler(APIHandler):
     '''
@@ -84,7 +83,7 @@ class ContainerClusterHandler(APIHandler):
             logging.error(str(traceback.format_exc()))
             raise HTTPAPIError(status_code=417, error_detail="containerCluster removed failed!",\
                                 response =  "check if the containerCluster removed!")
-      
+        
         dict = {}
         dict.setdefault("message", "remove container has been done but need some time, please wait a little and check the result!")
         self.finish(dict)
@@ -272,6 +271,7 @@ class ClusterConfigHandler(APIHandler):
     @asynchronous
     def post(self):
         args = self.get_all_arguments()
+        logging.info('config args:%s' % str(args))
         error_msg = self.containerClusterOpers.config(args)
         if error_msg:
             raise HTTPAPIError(status_code=500, error_detail=error_msg,\
