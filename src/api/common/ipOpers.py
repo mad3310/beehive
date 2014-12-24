@@ -114,7 +114,6 @@ class IpOpers(object):
         while thread_obj_list:
             succ = []
             for thread_obj in thread_obj_list:
-                logging.info('thread : %s, isAlive: %s' % (thread_obj, str(thread_obj.isAlive()) ) )
                 if not thread_obj.isAlive():
                     succ.append(thread_obj)
             for item in succ:
