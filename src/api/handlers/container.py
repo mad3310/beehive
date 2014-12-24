@@ -52,7 +52,7 @@ class ContainerHandler(APIHandler):
 #                                 response =  "container start raise exception, please check!!")
 #          
 #         dict = {}
-#         dict.setdefault("message", "remove container has been done but need some time, please wait a little and check the result!")
+#         dict.setdefault("message", "remove container has been done but need some time, please wait a moment and check the result!")
 #         self.finish(dict)
 
 @require_basic_auth
@@ -178,7 +178,7 @@ class RemoveContainerHandler(APIHandler):
                                 response =  "container start raise exception, please check!!")
           
         dict = {}
-        dict.setdefault("message", "remove container has been done but need some time, please wait a little and check the result!")
+        dict.setdefault("message", "remove container has been done but need some time, please wait a moment and check the result!")
         self.finish(dict)
 
 

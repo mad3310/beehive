@@ -85,7 +85,7 @@ class ContainerClusterHandler(APIHandler):
                                 response =  "check if the containerCluster removed!")
         
         dict = {}
-        dict.setdefault("message", "remove container has been done but need some time, please wait a little and check the result!")
+        dict.setdefault("message", "remove container has been done but need some time, please wait a moment and check the result!")
         self.finish(dict)
     
     def check_resource(self):

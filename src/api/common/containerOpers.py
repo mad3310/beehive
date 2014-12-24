@@ -103,9 +103,11 @@ class Container_Opers(Abstract_Container_Opers):
         ret = False
         while n:
             ret = init_container(container_name)
+            logging.info('init container, try times :%s' % n)
             if ret:
                 break
             n -= 1
+            
         return ret
         
     def stop(self, container_name):

@@ -365,7 +365,7 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
         logging.info('check_result: %s' % check_result)
         if not check_result:
             raise MyError('not all container succeed created')
-                   
+        
         flag = self._check_mcluster_manager_stat(create_container_node_ip_list, create_container_arg_list, 6)
         if flag:
             container_cluster_info = self.zkOper.retrieve_container_cluster_info(containerClusterName)
