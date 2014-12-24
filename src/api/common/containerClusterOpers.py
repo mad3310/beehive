@@ -22,9 +22,7 @@ from utils.threading_exception_queue import Threading_Exception_Queue
 
 
 class ContainerCluster_Opers(Abstract_Container_Opers):
-    
-    threading_exception_queue = Threading_Exception_Queue()
-    
+        
     def __init__(self):
         super(ContainerCluster_Opers, self).__init__()
     
@@ -72,7 +70,6 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
             return cluster_status
         except:
             logging.error(str( traceback.format_exc()) )
-            self.threading_exception_queue.put(sys.exc_info())
     
     def _get_cluster_status(self, nodes_stat):
         
@@ -128,16 +125,16 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         create_info.setdefault('ipAddr', con.ip() )
         create_info.setdefault('containerName', con.name() )
         return create_info
-    
-    def check_create_status(self, containerClusterName):
-        try:
-            logging.info('create create result status!')
-            return self.__check_create_status(containerClusterName)
-        except:
-            logging.info( str(traceback.format_exc()) )
-            self.threading_exception_queue.put(sys.exc_info())
+#     
+#     def check_create_status(self, containerClusterName):
+#         try:
+#             logging.info('create create result status!')
+#             return self.__check_create_status(containerClusterName)
+#         except:
+#             logging.info( str(traceback.format_exc()) )
+#             self.threading_exception_queue.put(sys.exc_info())
 
-    def __check_create_status(self, containerClusterName):
+    def check_create_status(self, containerClusterName):
         failed_rst = {'code':"000001"}
         succ_rst = {'code':"000000"}
         lack_rst = {'code':"000002"}
@@ -191,7 +188,6 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         except:
             error_msg = str( traceback.format_exc() )
             logging.error( error_msg )
-            self.threading_exception_queue.put(sys.exc_info())
         finally:
             return error_msg
     

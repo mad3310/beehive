@@ -18,7 +18,7 @@ class Thread_Exception_Handler_Worker(threading.Thread):
     def run(self):
         exc_info = None
         try:
-            while not self.threading_exception_queue.empty(): 
+            while not self.threading_exception_queue.empty():
                 exc_info = self.threading_exception_queue.get(block=False)
                 
                 if exc_info is None:
