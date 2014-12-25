@@ -102,19 +102,22 @@ class ElectServer(Abstract_Container_Opers):
         return score and the num of avaliable hosts
         """
         
+        mem_free_limit = 0
+        normal_info = self.zkOper.retrieve_mcluster_info_from_config()
+        mem_limit = normal_info.get('mem_limit')/1024/1024
         server_url = 'http://%s:%s/server/resource' % (host_ip, options.port)
-        containers_url ='http://%s:%s/server/containers/resource' % (host_ip, options.port)
         server_res = http_get(server_url)
-        containers_res = http_get(containers_url)
         logging.info('server_res: %s' % str(server_res) )
-        logging.info('containers_res: %s' % str(containers_res) )
-        mem_value = float(server_res["response"]["mem_res"]["total"]) - float((containers_res["response"]["container_alloc_mem"])/1024/1024)
-        mem_limit = verify_item.get('mem_limit')
-        logging.info('mem_limit:%s, mem_value:%s' % (mem_limit, mem_value) )
-        if mem_limit and mem_value < mem_limit:
+        mem_free_limit = verify_item.get('mem_free_limit')
+        if not mem_free_limit:
+            mem_free_limit = 10*1024
+        mem_usable = float(server_res["response"]["mem_res"]["free"]) - mem_free_limit
+        logging.info('mem_usable:%s' %  mem_usable)
+        
+        if mem_usable and mem_usable < mem_limit:
             weighted_value = 0
             num = 0
         else:
-            weighted_value = mem_value
-            num = int(mem_value/mem_limit)
+            weighted_value = mem_usable
+            num = int(mem_usable/mem_limit)
         return weighted_value, num
