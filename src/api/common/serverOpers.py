@@ -45,7 +45,7 @@ class Server_Opers(Abstract_Async_Thread):
             logging.info( str(traceback.format_exc()) )
             self.threading_exception_queue.put(sys.exc_info())
 
-    def get_containers_mem_load(self):
+    def get_all_containers_mem_load(self):
         try:
             mem_load_dict = {}
             containers = get_all_containers()
@@ -58,11 +58,26 @@ class Server_Opers(Abstract_Async_Thread):
             logging.info( str(traceback.format_exc()) )
             self.threading_exception_queue.put(sys.exc_info())
 
+    def get_all_containers_under_oom(self):
+        containers = get_all_containers()
+        alarm_item = []
+        for container in containers:
+            con = Container(container)
+            container_id = con.id()
+            conl = ContainerLoad(container)
+            under_oom = conl.get_under_oom_value()
+            if under_oom:
+                alarm_item.append(container)
+        return alarm_item
+
+    def _get_containers(self, container_name_list):
+        host_cons = get_all_containers()
+        return list ( set(host_cons) & set(container_name_list) )
+
     def open_containers_under_oom(self, container_name_list):
         try:
             result = {}
-            host_cons = get_all_containers()
-            containers = list ( set(host_cons) & set(container_name_list) )
+            containers = self._get_containers(container_name_list)
             for container in containers:
                 conl = ContainerLoad(container)
                 ret = conl.open_container_under_oom()
@@ -77,8 +92,7 @@ class Server_Opers(Abstract_Async_Thread):
     def shut_containers_under_oom(self, container_name_list):
         try:
             result = {}
-            host_cons = get_all_containers()
-            containers = list ( set(host_cons) & set(container_name_list) )
+            containers = self._get_containers(container_name_list)
             for container in containers:
                 conl = ContainerLoad(container)
                 ret = conl.shut_container_under_oom()
@@ -89,9 +103,6 @@ class Server_Opers(Abstract_Async_Thread):
         except:
             logging.info( str(traceback.format_exc()) )
             self.threading_exception_queue.put(sys.exc_info()) 
-
-    def double_limit_mem(self, ):
-        pass
 
     def add_containers_memory(self, container_name_list):
         try:
@@ -111,18 +122,25 @@ class Server_Opers(Abstract_Async_Thread):
         except:
             logging.info( str(traceback.format_exc()) )
             self.threading_exception_queue.put(sys.exc_info())
-    
-    def get_containers_under_oom(self):
-        containers = get_all_containers()
-        alarm_item = []
-        for container in containers:
-            con = Container(container)
-            container_id = con.id()
-            conl = ContainerLoad(container)
-            under_oom = conl.get_under_oom_value()
-            if under_oom:
-                alarm_item.append(container)
-        return alarm_item
+
+    def get_containers_disk_load(self, container_name_list):
+        try:
+            result = {}
+            containers = self._get_containers(container_name_list)
+            for container in containers:
+                load = {}
+                conl = ContainerLoad(container)
+                root_mnt_size, mysql_mnt_size = conl.get_sum_disk_load()
+                load.setdefault('root_mount', root_mnt_size)
+                load.setdefault('mysql_mount', mysql_mnt_size)
+                result.setdefault(container, load)
+            return result
+        except:
+            logging.info( str(traceback.format_exc()) )
+            self.threading_exception_queue.put(sys.exc_info())
+
+    def double_limit_mem(self, ):
+        pass
 
 
 class ContainerLoad(object):
@@ -136,7 +154,7 @@ class ContainerLoad(object):
         self.limit_mem_path = '/cgroup/memory/lxc/%s/memory.limit_in_bytes' % self.container_id
         self.under_oom_path = '/cgroup/memory/lxc/%s/memory.oom_control' % self.container_id
         self.mysql_mnt_path = '/srv/docker/vfs/dir/%s' % self.container_id
-        self.root_mnt_path = '/srv/docker/devicemapper/mnt/<container full id>'
+        self.root_mnt_path = '/srv/docker/devicemapper/mnt/%s' % self.container_id
 
     def get_container_id(self):
         con = Container(self.container_name)
@@ -148,6 +166,15 @@ class ContainerLoad(object):
         if os.path.exists(file_path):
             value = commands.getoutput(file_cmd)
         return value
+
+    def get_dir_size(self, dir_path):
+        size = 0
+        dir_cmd = 'du -sm %s' % dir_path
+        if os.path.exists(dir_path):
+            value = commands.getoutput(dir_cmd)
+            if value:
+                size = re.findall('(.*)\\t.*', ret)[0]
+        return size
 
     def get_con_used_mem(self):
         return float(self.get_file_value(self.used_mem_path) )
@@ -193,8 +220,16 @@ class ContainerLoad(object):
             mem_load_dict.setdefault('mem_load_rate', mem_load_rate)
         return mem_load_dict
 
-    def get_disk_load(self):
-        return res_opers.get_container_disk_load()
+    def get_root_mnt_size(self):
+        return self.get_dir_size(self.root_mnt_path)
+
+    def get_mysql_mnt_size(self):
+        return self.get_dir_size(self.mysql_mnt_path)
+
+    def get_sum_disk_load(self):
+        root_mnt_size = self.get_root_mnt_size()
+        mysql_mnt_size = self.get_mysql_mnt_size()
+        return root_mnt_size, mysql_mnt_size
 
 
 class UpdateServer(object):

@@ -138,3 +138,29 @@ class SwitchServerUnderoomHandler(APIHandler):
         logging.info('under_oom result: %s' % str(result))   
         self.finish(result)
 
+
+@require_basic_auth
+class GetServerContainersDiskLoadHandler(APIHandler):
+    """get the disk container use server 
+    
+    """
+    
+    server_opers = Server_Opers()
+    
+    @asynchronous
+    def get(self, container_name_list):
+        host_ip = self.request.remote_ip
+        container_disk_load = {}
+        try:
+            container_disk_load = self.server_opers.get_containers_disk_load(container_name_list)
+        except:
+            logging.error( str( traceback.format_exc() ) )
+            raise HTTPAPIError(status_code=500, error_detail="server exceptions",\
+                                notification = "direct", \
+                                log_message= "server exception",\
+                                response =  "server exception!")
+        
+        logging.info('get disk load on this server:%s, result:%s' %( host_ip, str(container_disk_load)) )
+        self.finish(container_disk_load)
+        
+        

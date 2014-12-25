@@ -166,8 +166,50 @@ class SwitchServersUnderoomHandler(APIHandler):
                 result.update(ret)
         except:
             logging.error( str(traceback.format_exc() ) )
+            raise HTTPAPIError(status_code=500, error_detail="switch server under_oom failed, action:%s!" % switch,\
+                                notification = "direct", \
+                                log_message= "switch server under_oom failed, action:%s!" % switch ,\
+                                response =  "please check reasons")
         
         async_client.close()
         self.finish( result )
     
+
+@require_basic_auth
+class GetServersContainersDiskLoadHandler(APIHandler):
     
+    zkOpers = ZkOpers('127.0.0.1', 2181)
+    
+    @asynchronous
+    @engine
+    def get(self, container_name_list):
+        
+        logging.info('get servers containers disk load method, container_name_list:%s' % str(container_name_list) )
+        if not (container_name_list and isinstance(container_name_list, list)):
+            raise HTTPAPIError(status_code=400, error_detail="containerNameList is illegal!",\
+                                notification = "direct", \
+                                log_message= "containerNameList is illegal!",\
+                                response =  "please check params!")
+        
+        async_client = AsyncHTTPClient()
+        server_list = self.zkOpers.retrieve_servers_white_list()
+        
+        servers_cons_disk_load, cons_disk_load = {}, {}
+        try:
+            for server in server_list:
+                requesturi = 'http://%s:%s/server/containers/disk/%s' % (server, options.port, container_name_list)
+                logging.info('server requesturi: %s' % str(requesturi))
+                response = yield Task(async_client.fetch, requesturi)
+                body = json.loads(response.body.strip())
+                logging.info('response body : %s' % str(body) )
+                cons_disk_load = body.get('response')
+                servers_cons_disk_load.update(cons_disk_load)
+        except:
+            logging.error( str(traceback.format_exc() ) )
+            raise HTTPAPIError(status_code=500, error_detail="get servers containers disk load fails",\
+                                notification = "direct", \
+                                log_message= "get servers containers disk load fails" ,\
+                                response =  "please check reasons")
+        
+        async_client.close()
+        self.finish( server_cons_disk_load )
