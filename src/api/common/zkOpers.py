@@ -290,6 +290,12 @@ class ZkOpers(object):
         self.zk.ensure_path(path)
         self.zk.set(path, str(info))
 
+    def writeConfigVerify(self, info):
+        clusterUUID = self.getClusterUUID()
+        path = self.rootPath + '/' + clusterUUID + '/config'
+        self.zk.ensure_path(path)
+        self.zk.set(path, str(info))
+    
     def writeClusterVipConf(self, info):
         clusterUUID = self.getClusterUUID()
         path = self.rootPath + '/' + clusterUUID + '/config/vip'

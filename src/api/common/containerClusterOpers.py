@@ -203,7 +203,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
                 error_msg = self.__update_white_list(conf_dict)
             elif 'nodeCount' in conf_dict:
                 conf_dict = self.__rewrite_config(conf_dict)
-                
+                self.zkoper.writeConfigVerify(conf_dict)
             else:
                 error_msg = 'the key of the params is not correct'
         except:
