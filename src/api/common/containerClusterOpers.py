@@ -440,7 +440,7 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
         except:
             logging.error(str(traceback.format_exc()))
             return False
-   
+    
     def _get_container_params(self, containerCount, containerClusterName, adminUser, adminPasswd):
 
         create_container_arg_list = []
