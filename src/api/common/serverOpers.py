@@ -153,7 +153,6 @@ class ContainerLoad(object):
         self.used_mem_path = '/cgroup/memory/lxc/%s/memory.usage_in_bytes' % self.container_id
         self.limit_mem_path = '/cgroup/memory/lxc/%s/memory.limit_in_bytes' % self.container_id
         self.under_oom_path = '/cgroup/memory/lxc/%s/memory.oom_control' % self.container_id
-        self.mysql_mnt_path = '/srv/docker/vfs/dir/%s' % self.container_id
         self.root_mnt_path = '/srv/docker/devicemapper/mnt/%s' % self.container_id
 
     def get_container_id(self):
@@ -173,7 +172,9 @@ class ContainerLoad(object):
         if os.path.exists(dir_path):
             value = commands.getoutput(dir_cmd)
             if value:
-                size = re.findall('(.*)\\t.*', ret)[0]
+                size = re.findall('(.*)\\t.*', value)[0]
+        else:
+            logging.info('path %s not exist, may be VIP node' % dir_path)
         return size
 
     def get_con_used_mem(self):
@@ -224,7 +225,12 @@ class ContainerLoad(object):
         return self.get_dir_size(self.root_mnt_path)
 
     def get_mysql_mnt_size(self):
-        return self.get_dir_size(self.mysql_mnt_path)
+        mysql_mnt_path = ''
+        con = Container(self.container_name)
+        volumes = con.volumes()
+        if volumes:
+            mysql_mnt_path = volumes.get('/srv/mcluster')
+        return self.get_dir_size(mysql_mnt_path)
 
     def get_sum_disk_load(self):
         root_mnt_size = self.get_root_mnt_size()
