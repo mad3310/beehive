@@ -121,7 +121,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         create_info.setdefault('zookeeperId', con.zookeeper_id() )
         create_info.setdefault('gateAddr', con.gateway() )
         create_info.setdefault('netMask', con.netmask() )
-        create_info.setdefault('mountDir', con.volumes() )
+        create_info.setdefault('mountDir', str(con.volumes()) )
         create_info.setdefault('ipAddr', con.ip() )
         create_info.setdefault('containerName', con.name() )
         return create_info
