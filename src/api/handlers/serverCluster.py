@@ -184,24 +184,29 @@ class GetherServersContainersDiskLoadHandler(APIHandler):
     @asynchronous
     @engine
     def post(self):
-        container_name_list = self.get_all_arguments()
-        
-        logging.info('get servers containers disk load method, container_name_list:%s' % str(container_name_list) )
+        args = self.get_all_arguments()
+        containers = args.get('containerNameList')
+        logging.info('get servers containers disk load method, containerNameList:%s' % str(containers) )
+        container_name_list = containers.split(',')
         if not (container_name_list and isinstance(container_name_list, list)):
             raise HTTPAPIError(status_code=400, error_detail="containerNameList is illegal!",\
                                 notification = "direct", \
                                 log_message= "containerNameList is illegal!",\
                                 response =  "please check params!")
         
+        auth_username, auth_password = _retrieve_userName_passwd()
         async_client = AsyncHTTPClient()
         server_list = self.zkOpers.retrieve_servers_white_list()
-        
+
         servers_cons_disk_load, cons_disk_load = {}, {}
         try:
             for server in server_list:
-                requesturi = 'http://%s:%s/server/containers/disk/%s' % (server, options.port, container_name_list)
+                requesturi = 'http://%s:%s/server/containers/disk' % (server, options.port)
                 logging.info('server requesturi: %s' % str(requesturi))
-                response = yield Task(async_client.fetch, requesturi)
+                request = HTTPRequest(url=requesturi, method='POST', body=urllib.urlencode(args), connect_timeout=40, \
+                                      request_timeout=40, auth_username = auth_username, auth_password = auth_password)
+                
+                response = yield Task(async_client.fetch, request)
                 body = json.loads(response.body.strip())
                 logging.info('response body : %s' % str(body) )
                 cons_disk_load = body.get('response')
@@ -214,4 +219,4 @@ class GetherServersContainersDiskLoadHandler(APIHandler):
                                 response =  "please check reasons")
         
         async_client.close()
-        self.finish( server_cons_disk_load )
+        self.finish( servers_cons_disk_load )
