@@ -140,7 +140,7 @@ class SwitchServerUnderoomHandler(APIHandler):
 
 
 @require_basic_auth
-class GetServerContainersDiskLoadHandler(APIHandler):
+class GetherServerContainersDiskLoadHandler(APIHandler):
     """get the disk container use server 
     
     """
@@ -148,9 +148,16 @@ class GetServerContainersDiskLoadHandler(APIHandler):
     server_opers = Server_Opers()
     
     @asynchronous
-    def get(self, container_name_list):
+    def post(self):
+        container_name_list = self.get_all_arguments()
         host_ip = self.request.remote_ip
         container_disk_load = {}
+        if not (container_name_list and isinstance(container_name_list, list)):
+            raise HTTPAPIError(status_code=400, error_detail="containerNameList is illegal!",\
+                                notification = "direct", \
+                                log_message= "containerNameList is illegal!",\
+                                response =  "please check params!")
+        
         try:
             container_disk_load = self.server_opers.get_containers_disk_load(container_name_list)
         except:

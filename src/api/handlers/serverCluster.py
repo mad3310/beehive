@@ -177,13 +177,14 @@ class SwitchServersUnderoomHandler(APIHandler):
     
 
 @require_basic_auth
-class GetServersContainersDiskLoadHandler(APIHandler):
+class GetherServersContainersDiskLoadHandler(APIHandler):
     
     zkOpers = ZkOpers('127.0.0.1', 2181)
     
     @asynchronous
     @engine
-    def get(self, container_name_list):
+    def post(self):
+        container_name_list = self.get_all_arguments()
         
         logging.info('get servers containers disk load method, container_name_list:%s' % str(container_name_list) )
         if not (container_name_list and isinstance(container_name_list, list)):
