@@ -203,7 +203,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
                 error_msg = self.__update_white_list(conf_dict)
             elif 'nodeCount' in conf_dict:
                 conf_dict = self.__rewrite_config(conf_dict)
-                self.zkoper.writeConfigVerify(conf_dict)
+                self.zkOper.writeConfigVerify(conf_dict)
             else:
                 error_msg = 'the key of the params is not correct'
         except:
@@ -434,7 +434,7 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
         try:
             fetch_ret = http_post(requesturi, args_dict, _connect_timeout=100.0, _request_timeout=100.0, auth_username=admin_user, auth_password=admin_passwd )
             logging.info('POST result :%s' % str(fetch_ret))
-            ret = eval(fetch_ret).get('response').get('message')
+            ret = fetch_ret.get('response').get('message')
             if ret == 'Success Create Container':
                 return True
         except:
