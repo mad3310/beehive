@@ -166,7 +166,25 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
                 check_rst_dict.setdefault('error_msg', 'check mcluster stat failed')            
             
             return check_rst_dict
-    
+
+    def __rewrite_config(self, conf_dict):
+        check_mcluster = conf_dict.get('check_mcluster')
+        if check_mcluster:
+            conf_dict['check_mcluster'] = bool(check_mcluster)
+        
+        is_res_verify = conf_dict.get('is_res_verify')
+        if is_res_verify:
+            conf_dict['is_res_verify'] = bool(is_res_verify)
+        
+        mem_free_limit = conf_dict.get('mem_free_limit')
+        if mem_free_limit:
+            conf_dict['mem_free_limit'] = int(mem_free_limit)
+
+        nodeCount = conf_dict.get('nodeCount')
+        if nodeCount:
+            conf_dict['nodeCount'] = int(nodeCount)
+        return conf_dict
+  
     def config(self, conf_dict={}):
         try:
             error_msg = ''
@@ -183,6 +201,9 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
                     self.zkOper.writeClusterVipConf(re_conf_dict)
             elif 'servers' in conf_dict:
                 error_msg = self.__update_white_list(conf_dict)
+            elif 'nodeCount' in conf_dict:
+                conf_dict = self.__rewrite_config(conf_dict)
+                
             else:
                 error_msg = 'the key of the params is not correct'
         except:
@@ -411,7 +432,7 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
         logging.info('args_dict:%s' % args_dict)
         args_dict.setdefault('host_ip', host_ip)
         try:
-            fetch_ret = http_post(requesturi, args_dict, auth_username=admin_user, auth_password=admin_passwd )
+            fetch_ret = http_post(requesturi, args_dict, _connect_timeout=100.0, _request_timeout=100.0, auth_username=admin_user, auth_password=admin_passwd )
             logging.info('POST result :%s' % str(fetch_ret))
             ret = eval(fetch_ret).get('response').get('message')
             if ret == 'Success Create Container':

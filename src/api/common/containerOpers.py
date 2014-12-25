@@ -84,7 +84,7 @@ class Container_Opers(Abstract_Container_Opers):
                                               name=container_name, environment=env, tty=True, ports=_ports, stdin_open=True,
                                               mem_limit=_mem_limit, volumes=_volumes)
             c.start(container_name, privileged=True, network_mode='bridge', binds=_binds)
-            init_con_ret = init_container(container_name)
+            init_con_ret = self.init(3, container_name)
         except:
             logging.error('the exception of creating container:%s' % str(traceback.format_exc()))
             return False
@@ -101,7 +101,17 @@ class Container_Opers(Abstract_Container_Opers):
         logging.info('get container info: %s' % str(container_node_info))
         self.zkOper.write_container_node_info('started', container_node_info)
         return True
-    
+
+    def init(self, n, container_name):
+        ret = False
+        while n:
+            ret = init_container(container_name)
+            logging.info('init container, try times :%s' % n)
+            if ret:
+                break
+            n -= 1
+        return ret
+   
     def stop(self, container_name):
         container_stop_action = Container_stop_action(container_name)
         container_stop_action.start()
