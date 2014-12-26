@@ -96,9 +96,6 @@ class CollectContainerResHandler(APIHandler):
         self.finish(container_res)
 
 
-class AddServerMemoryHandler(APIHandler): pass
-
-
 @require_basic_auth
 class SwitchServerUnderoomHandler(APIHandler):
 
@@ -171,5 +168,35 @@ class GetherServerContainersDiskLoadHandler(APIHandler):
         
         logging.info('get disk load on this server:%s, result:%s' %( host_ip, str(container_disk_load)) )
         self.finish(container_disk_load)
+
+
+@require_basic_auth
+class AddServerMemoryHandler(APIHandler):
+    
+    server_opers = Server_Opers()
+    
+    @asynchronous
+    def post(self):
+        args = self.get_all_arguments()
+        containers = args.get('containerNameList')
+        container_name_list = containers.split(',')
+        if not (container_name_list and isinstance(container_name_list, list)):
+            raise HTTPAPIError(status_code=400, error_detail="containerNameList is illegal!",\
+                                notification = "direct", \
+                                log_message= "containerNameList is illegal!",\
+                                response =  "please check params!")
         
+        host_ip = self.request.remote_ip
+        mem_add_result = {}
+        try:
+            mem_add_result = self.server_opers.add_containers_memory(container_name_list)
+        except:
+            logging.error( str( traceback.format_exc() ) )
+            raise HTTPAPIError(status_code=500, error_detail="server exceptions",\
+                                notification = "direct", \
+                                log_message= "server exception",\
+                                response =  "server exception!")
+        
+        logging.info('add containers :%s memory on this server:%s, result:%s' % ( str(container_name_list), host_ip, str(mem_add_result)) )
+        self.finish(mem_add_result)
         

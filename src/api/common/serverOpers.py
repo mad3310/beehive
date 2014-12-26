@@ -106,17 +106,17 @@ class Server_Opers(Abstract_Async_Thread):
 
     def add_containers_memory(self, container_name_list):
         try:
-            host_cons = get_all_containers()
-            containers = list ( set(host_cons) & set(container_name_list) )
             add_ret = {}
+            containers = self._get_containers(container_name_list)
             for container in containers:
-                con = container(container)
+                con = Container(container)
                 inspect_limit_mem = con.memory()
                 conl = ContainerLoad(container)
                 con_limit_mem = conl.get_con_limit_mem()
                 if con_limit_mem == inspect_limit_mem *2:
+                    add_ret.setdefault(container, 'done before, do nothing!')
                     continue
-                ret = self.double_limit_mem()
+                ret = conl.double_mem()
                 add_ret.setdefault(container, ret)
             return add_ret
         except:
@@ -139,9 +139,6 @@ class Server_Opers(Abstract_Async_Thread):
             logging.info( str(traceback.format_exc()) )
             self.threading_exception_queue.put(sys.exc_info())
 
-    def double_limit_mem(self, ):
-        pass
-
 
 class ContainerLoad(object):
 
@@ -154,6 +151,7 @@ class ContainerLoad(object):
         self.limit_mem_path = '/cgroup/memory/lxc/%s/memory.limit_in_bytes' % self.container_id
         self.under_oom_path = '/cgroup/memory/lxc/%s/memory.oom_control' % self.container_id
         self.root_mnt_path = '/srv/docker/devicemapper/mnt/%s' % self.container_id
+        self.limit_memsw_path = '/cgroup/memory/lxc/%s/memory.memsw.limit_in_bytes' % self.container_id
 
     def get_container_id(self):
         con = Container(self.container_name)
@@ -165,6 +163,11 @@ class ContainerLoad(object):
         if os.path.exists(file_path):
             value = commands.getoutput(file_cmd)
         return value
+
+    def echo_value_to_file(self, value, file_path):
+        cmd = 'echo %s > %s' % (value, file_path)
+        commands.getoutput(cmd)
+        return self.get_file_value(file_path) == str(value)
 
     def get_dir_size(self, dir_path):
         size = 0
@@ -183,6 +186,9 @@ class ContainerLoad(object):
     def get_con_limit_mem(self):
         return float(self.get_file_value(self.limit_mem_path))
 
+    def get_con_limit_memsw(self):
+        return float(self.get_file_value(self.limit_memsw_path))
+
     def get_under_oom_value(self): 
         value = self.get_file_value(self.under_oom_path)
         under_oom_value = re.findall('.*under_oom (\d)$', value)[0]
@@ -192,7 +198,7 @@ class ContainerLoad(object):
         value = self.get_file_value(self.under_oom_path)
         under_oom_value = re.findall('oom_kill_disable (\d)\\nunder_oom.*', value)[0]
         return int(under_oom_value)
-    
+
     def _change_container_under_oom(self, switch_value):
         if not os.path.exists(self.under_oom_path):
             logging.error(' container: %s under oom path not exist' % self.container_name)
@@ -236,6 +242,21 @@ class ContainerLoad(object):
         root_mnt_size = self.get_root_mnt_size()
         mysql_mnt_size = self.get_mysql_mnt_size()
         return root_mnt_size, mysql_mnt_size
+
+    def double_memsw_size(self):
+        memsw_value = self.get_con_limit_memsw()
+        double_value = int(memsw_value)*2
+        return self.echo_value_to_file(double_value, self.limit_memsw_path)
+
+    def double_mem_size(self):
+        mem_value = self.get_con_limit_mem()
+        double_value = int(mem_value)*2
+        return self.echo_value_to_file(double_value, self.limit_mem_path)
+
+    def double_mem(self):
+        memsw_ret = self.double_memsw_size()
+        mem_ret = self.double_mem_size()
+        return mem_ret and mem_ret
 
 
 class UpdateServer(object):
@@ -336,5 +357,4 @@ class UpdateServer(object):
         create_info.setdefault('inspect', con.inspect)
         create_info.setdefault('containerName', container_name)
         return create_info
-
 

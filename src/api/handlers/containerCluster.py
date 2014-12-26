@@ -371,4 +371,3 @@ class GetIpsFromIpPool(APIHandler):
         result.setdefault('ips', ips)
         self.finish(result)
         
-        

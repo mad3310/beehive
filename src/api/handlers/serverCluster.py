@@ -220,3 +220,49 @@ class GetherServersContainersDiskLoadHandler(APIHandler):
         
         async_client.close()
         self.finish( servers_cons_disk_load )
+
+
+@require_basic_auth
+class AddServersMemoryHandler(APIHandler):
+    
+    zkOpers = ZkOpers('127.0.0.1', 2181)
+    
+    @asynchronous
+    @engine
+    def post(self):
+        args = self.get_all_arguments()
+        containers = args.get('containerNameList')
+        logging.info('get servers containers disk load method, containerNameList:%s' % str(containers) )
+        container_name_list = containers.split(',')
+        if not (container_name_list and isinstance(container_name_list, list)):
+            raise HTTPAPIError(status_code=400, error_detail="containerNameList is illegal!",\
+                                notification = "direct", \
+                                log_message= "containerNameList is illegal!",\
+                                response =  "please check params!")
+        
+        auth_username, auth_password = _retrieve_userName_passwd()
+        async_client = AsyncHTTPClient()
+        server_list = self.zkOpers.retrieve_servers_white_list()
+        
+        add_mem_result, ret = {}, {}
+        try:
+            for server in server_list:
+                requesturi = 'http://%s:%s/server/containers/memory/add' % (server, options.port)
+                logging.info('server requesturi: %s' % str(requesturi))
+                request = HTTPRequest(url=requesturi, method='POST', body=urllib.urlencode(args), connect_timeout=40, \
+                                      request_timeout=40, auth_username = auth_username, auth_password = auth_password)
+                
+                response = yield Task(async_client.fetch, request)
+                body = json.loads(response.body.strip())
+                logging.info('response body : %s' % str(body) )
+                ret = body.get('response')
+                add_mem_result.update(ret)
+        except:
+            logging.error( str(traceback.format_exc() ) )
+            raise HTTPAPIError(status_code=500, error_detail="add memory failed",\
+                                notification = "direct", \
+                                log_message= "add memory failed" ,\
+                                response =  "please check reasons")
+        
+        async_client.close()
+        self.finish( add_mem_result )
