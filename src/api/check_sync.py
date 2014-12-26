@@ -1,10 +1,12 @@
 #!/usr/bin/env python2.6.6
 
 import logging
-import socket
+import json
 
 from common.zkOpers import ZkOpers
 from common.configFileOpers import ConfigFileOpers
+from common.utils.autoutil import getHostIp
+from tornado.options import options
 
 
 class CheckSync():
@@ -21,15 +23,16 @@ class CheckSync():
 
     def sync_server_cluster(self):
         cluster_uuid = self.zkOpers.getClusterUUID() 
-        uuid_value = self.zkOpers.retrieveClusterProp(cluster_uuid) 
-        
+        uuid_value, stat = self.zkOpers.retrieveClusterProp(cluster_uuid) 
+        uuid_value = uuid_value.replace("'", "\"")
+        uuid_value = json.loads(uuid_value)
         if isinstance(uuid_value, dict):
             self.config_file_obj.setValue(options.server_cluster_property, uuid_value) 
         else:
             logging.error("sync server cluster property info failed!")
 
     def sync_data_node(self):
-        server_ip = socket.gethostbyname(socket.gethostname())
+        server_ip = getHostIp()
         server_ip_list = self.zkOpers.retrieve_data_node_list()
         if server_ip in server_ip_list:
             logging.info('')
