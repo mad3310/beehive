@@ -31,7 +31,10 @@ class IpOpers(object):
     
     def __init__(self):
         pass
-        
+    
+    def get_ips_from_ipPool(self):
+        return self.zkOper.get_ips_from_ipPool()
+    
     def write_into_ipPool(self, args_dict):
         ip_segment = args_dict.get('ipSegment')
         ip_count = int(args_dict.get('ipCount'))
@@ -133,6 +136,6 @@ class IpOpers(object):
 
         """
 
-        ip_list = self.zkOper.get_ips_from_ipPool()
+        ip_list = self.get_ips_from_ipPool()
         return len(ip_list)
 

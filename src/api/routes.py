@@ -47,6 +47,5 @@ handlers = [
     (r"/monitor/serverCluster/containers/under_oom", CheckServersContainersUnderOom),
     (r"/monitor/server/containers/memory", CheckServerContainersMemLoad),
     (r"/monitor/server/containers/under_oom", CheckServerContainersUnderOom),
-    
-    #(r"/containerCluster/ips/get", GetIpsFromIpPool),
+    (r"/containerCluster/ips/get", GetIpsFromIpPool),
 ]
