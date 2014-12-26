@@ -15,6 +15,7 @@ import logging.config
 from tornado.options import options
 from common.appdefine import appDefine
 from common.scedulerOpers import Sceduler_Opers
+from check_sync import CheckSync
 
 class Application(tornado.web.Application):
     def __init__(self):
@@ -28,6 +29,9 @@ class Application(tornado.web.Application):
 def main():
     config_path = os.path.join(options.base_dir, "config")
     logging.config.fileConfig(config_path + '/logging.conf')
+    
+    cs = CheckSync()
+    cs.sync()
     
     tornado.options.parse_command_line()
     http_server = tornado.httpserver.HTTPServer(Application())
