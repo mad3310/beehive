@@ -250,7 +250,7 @@ class UpdateServer(object):
         host_containers = self._get_containers_from_host()
         zk_containers = self._get_containers_from_zookeeper()
         add, delete, both = self._compare(host_containers, zk_containers)
-
+        
         for item in add:
             self.update_add_note(item)
         for item in delete:
@@ -302,11 +302,9 @@ class UpdateServer(object):
             container_ip_list = self.zkOper.retrieve_container_list(cluster)
             for container_ip in container_ip_list:
                 container_info = self.zkOper.retrieve_container_node_value(cluster, container_ip)
-                host_ip = container_info.get('host_ip')
+                host_ip = container_info.get('hostIp')
                 if self.host_ip == host_ip:
-                    inspect = container_info.get('inspect')
-                    con = Container(inspect=inspect)
-                    container_name = con.name()
+                    container_name = container_info.get('containerName')
                     container_name_list.append(container_name)
         return container_name_list
 

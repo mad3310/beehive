@@ -1,5 +1,8 @@
 #!/usr/bin/env python2.6.6
 
+import logging
+import socket
+
 from common.zkOpers import ZkOpers
 from common.configFileOpers import ConfigFileOpers
 
