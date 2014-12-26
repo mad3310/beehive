@@ -296,7 +296,7 @@ class UpdateServer(object):
         
         """
         
-        container_name_list = []
+        container_name_list, container_info= [], {}
         clusters = self.zkOper.retrieve_cluster_list()
         for cluster in clusters:
             container_ip_list = self.zkOper.retrieve_container_list(cluster)
@@ -304,7 +304,12 @@ class UpdateServer(object):
                 container_info = self.zkOper.retrieve_container_node_value(cluster, container_ip)
                 host_ip = container_info.get('hostIp')
                 if self.host_ip == host_ip:
-                    container_name = container_info.get('containerName')
+                    if container_info.has_key('containerName'):
+                        container_name = container_info.get('containerName')
+                    else:
+                        inspect = container_info.get('inspect')
+                        con = Container(inspect=inspect)
+                        container_name = con.name()
                     container_name_list.append(container_name)
         return container_name_list
 
