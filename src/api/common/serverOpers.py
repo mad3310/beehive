@@ -322,14 +322,14 @@ class UpdateServer(object):
         create_info = {}
         con = Container(container_name)
         
-        create_info.setdefault('host_ip', self.host_ip)
+        create_info.setdefault('hostIp', self.host_ip)
         image = con.image()
         if 'gbalancer' in image:
             create_info.setdefault('type', 'mclustervip')
         else:
             create_info.setdefault('type', 'mclusternode')
         create_info.setdefault('inspect', con.inspect)
-        create_info.setdefault('container_name', container_name)
+        create_info.setdefault('containerName', container_name)
         return create_info
 
 
