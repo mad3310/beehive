@@ -265,4 +265,7 @@ class AddServersMemoryHandler(APIHandler):
                                 response =  "please check reasons")
         
         async_client.close()
+        except_cons = list(set(container_name_list) - set(add_mem_result.keys()))
+        for con in except_cons:
+            add_mem_result.setdefault(con, 'no such container or code exception')
         self.finish( add_mem_result )
