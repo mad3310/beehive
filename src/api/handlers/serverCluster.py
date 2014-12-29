@@ -142,11 +142,12 @@ class SwitchServersUnderoomHandler(APIHandler):
                                 log_message= "switch params wrong!",\
                                 response =  "please check params!")
         
-        container_name_list = args.get('containerNameList')
-        if not container_name_list:
-            raise HTTPAPIError(status_code=400, error_detail="containerNameList params not given!",\
+        containers = args.get('containerNameList')
+        container_name_list = containers.split(',')
+        if not (container_name_list and isinstance(container_name_list, list)):
+            raise HTTPAPIError(status_code=400, error_detail="containerNameList params not given correct!",\
                                 notification = "direct", \
-                                log_message= "containerNameList params not given!",\
+                                log_message= "containerNameList params not given correct!",\
                                 response =  "please check params!")
         
         server_list = self.zkOper.retrieve_servers_white_list()
@@ -235,7 +236,7 @@ class AddServersMemoryHandler(APIHandler):
     def post(self):
         args = self.get_all_arguments()
         containers = args.get('containerNameList')
-        logging.info('get servers containers disk load method, containerNameList:%s' % str(containers) )
+        logging.info('get servers containers memory load method, containerNameList:%s' % str(containers) )
         container_name_list = containers.split(',')
         if not (container_name_list and isinstance(container_name_list, list)):
             raise HTTPAPIError(status_code=400, error_detail="containerNameList is illegal!",\
