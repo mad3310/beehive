@@ -432,8 +432,12 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
         logging.info('args_dict:%s' % args_dict)
         args_dict.setdefault('host_ip', host_ip)
         try:
-            fetch_ret = http_post(requesturi, args_dict, _connect_timeout=100.0, _request_timeout=100.0, auth_username=admin_user, auth_password=admin_passwd )
+            fetch_ret = http_post(requesturi, args_dict, _connect_timeout=100.0, _request_timeout=100.0, \
+                                  auth_username=admin_user, auth_password=admin_passwd )
             logging.info('POST result :%s' % str(fetch_ret))
+            if not isinstance(fetch_ret, dict):
+                logging.error('create container in server : %s failed or code exception! please check')
+                return False
             ret = fetch_ret.get('response').get('message')
             if ret == 'Success Create Container':
                 return True
