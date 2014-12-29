@@ -293,15 +293,15 @@ class ContainerCluster_Action(Abstract_Async_Thread):
             two containers may be with a host_ip
         """
         
-        params = {}
+        params, container_info = {}, {}
         
         container_ip_list = self.zkOper.retrieve_container_list(self.cluster)
         
         for contaier_ip in container_ip_list:
             container_name_list = []
             container_info = self.zkOper.retrieve_container_node_value(self.cluster, contaier_ip)
-            container_name = container_info.get('container_name')
-            host_ip = container_info.get('host_ip')
+            container_name = container_info.get('containerName')
+            host_ip = container_info.get('hostIp')
             if host_ip in params:
                 container_name_list.append(params[host_ip])
                 container_name_list.append(container_name)
@@ -444,9 +444,9 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
         except:
             logging.error(str(traceback.format_exc()))
             return False
-    
-    def _get_container_params(self, containerCount, containerClusterName, adminUser, adminPasswd):
 
+    def _get_container_params(self, containerCount, containerClusterName, adminUser, adminPasswd):
+        
         create_container_arg_list = []
         containerIPList = self.__retrieve_ip_resource(containerCount)
         volumes, binds = self.__get_normal_volumes_args()
