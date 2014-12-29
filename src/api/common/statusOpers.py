@@ -214,8 +214,9 @@ class CheckContainersMemLoad(CheckStatusBase):
             overload_containers = {}
             for container, mem_load_info in host_cons_mem_load.items():
                 mem_load_rate = mem_load_info.get('mem_load_rate')
-                if mem_load_rate > 0.75:
-                    logging.info('mem_load_rate bigger than 0.75: %s' % str(mem_load_rate) )
+                memsw_load_rate = mem_load_info.get('memsw_load_rate')
+                if mem_load_rate > 0.75 or memsw_load_rate > 0.75:
+                    logging.info('mem_load_rate or memsw_load_rate bigger than 0.75: %s' % str(mem_load_rate) )
                     overload_containers.setdefault(container, mem_load_info)
             ret.setdefault(host_ip, overload_containers)
         return ret

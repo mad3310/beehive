@@ -47,13 +47,17 @@ class Server_Opers(Abstract_Async_Thread):
 
     def get_all_containers_mem_load(self):
         try:
-            mem_load_dict = {}
+            load_dict = {}
             containers = get_all_containers()
             for container in containers:
+                load = {}
                 conl = ContainerLoad(container)
                 mem_load = conl.get_mem_load()
-                mem_load_dict.setdefault(container, mem_load)
-            return mem_load_dict
+                memsw_load = conl.get_memsw_load()
+                load.update(mem_load)
+                load.update(memsw_load)
+                load_dict.setdefault(container, load)
+            return load_dict
         except:
             logging.info( str(traceback.format_exc()) )
             self.threading_exception_queue.put(sys.exc_info())
@@ -149,9 +153,10 @@ class ContainerLoad(object):
             self.container_id = self.get_container_id()
         self.used_mem_path = '/cgroup/memory/lxc/%s/memory.usage_in_bytes' % self.container_id
         self.limit_mem_path = '/cgroup/memory/lxc/%s/memory.limit_in_bytes' % self.container_id
+        self.used_memsw_path = '/cgroup/memory/lxc/%s/memory.memsw.usage_in_bytes' % self.container_id
+        self.limit_memsw_path = '/cgroup/memory/lxc/%s/memory.memsw.limit_in_bytes' % self.container_id
         self.under_oom_path = '/cgroup/memory/lxc/%s/memory.oom_control' % self.container_id
         self.root_mnt_path = '/srv/docker/devicemapper/mnt/%s' % self.container_id
-        self.limit_memsw_path = '/cgroup/memory/lxc/%s/memory.memsw.limit_in_bytes' % self.container_id
 
     def get_container_id(self):
         con = Container(self.container_name)
@@ -182,6 +187,9 @@ class ContainerLoad(object):
 
     def get_con_used_mem(self):
         return float(self.get_file_value(self.used_mem_path) )
+
+    def get_con_used_memsw(self):
+        return float(self.get_file_value(self.used_memsw_path) )
 
     def get_con_limit_mem(self):
         return float(self.get_file_value(self.limit_mem_path))
@@ -219,13 +227,24 @@ class ContainerLoad(object):
         used_mem = self.get_con_used_mem()
         limit_mem = self.get_con_limit_mem()
         
-        logging.info('used_mem:%s, limit_mem: %s, mem_load_rate:%s ' % (used_mem, limit_mem, mem_load_rate) )
         if used_mem and limit_mem:
             mem_load_rate =  used_mem / limit_mem
             mem_load_dict.setdefault('used_mem', used_mem)
             mem_load_dict.setdefault('limit_mem', limit_mem)
             mem_load_dict.setdefault('mem_load_rate', mem_load_rate)
         return mem_load_dict
+
+    def get_memsw_load(self):
+        memsw_load_rate, memsw_load_dict = 0, {}
+        used_memsw = self.get_con_used_memsw()
+        limit_memsw = self.get_con_limit_memsw()
+        
+        if used_memsw and limit_memsw:
+            memsw_load_rate =  used_mem / limit_memsw
+            memsw_load_dict.setdefault('used_memsw', used_memsw)
+            memsw_load_dict.setdefault('limit_memsw', limit_memsw)
+            memsw_load_dict.setdefault('memsw_load_rate', memsw_load_rate)
+        return memsw_load_dict    
 
     def get_root_mnt_size(self):
         return self.get_dir_size(self.root_mnt_path)
