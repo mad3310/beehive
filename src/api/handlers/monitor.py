@@ -80,7 +80,6 @@ class CheckServersContainersMemLoad(APIHandler):
                 logging.info('server requesturi: %s' % str(requesturi))
                 response = yield Task(async_client.fetch, requesturi)
                 body = json.loads(response.body.strip())
-                logging.info('response body : %s' % str(body) )
                 con_mem_load = body.get('response')
                 server_cons_mem_load.setdefault(server, con_mem_load)
         except:

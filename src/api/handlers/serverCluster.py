@@ -261,7 +261,6 @@ class AddServersMemoryHandler(APIHandler):
                 
                 response = yield Task(async_client.fetch, request)
                 body = json.loads(response.body.strip())
-                logging.info('response body : %s' % str(body) )
                 ret = body.get('response')
                 add_mem_result.update(ret)
         except:
