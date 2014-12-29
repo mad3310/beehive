@@ -253,9 +253,13 @@ class ContainerLoad(object):
         mysql_mnt_path = ''
         con = Container(self.container_name)
         volumes = con.volumes()
+        type = con.type()
         if volumes:
             mysql_mnt_path = volumes.get('/srv/mcluster')
-        return self.get_dir_size(mysql_mnt_path)
+            return self.get_dir_size(mysql_mnt_path)
+        elif type == 'mclustervip':
+            logging.info('VIP node, no mysql mount~')
+            return 0
 
     def get_sum_disk_load(self):
         root_mnt_size = self.get_root_mnt_size()
