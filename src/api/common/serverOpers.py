@@ -240,7 +240,7 @@ class ContainerLoad(object):
         limit_memsw = self.get_con_limit_memsw()
         
         if used_memsw and limit_memsw:
-            memsw_load_rate =  used_mem / limit_memsw
+            memsw_load_rate =  used_memsw / limit_memsw
             memsw_load_dict.setdefault('used_memsw', used_memsw)
             memsw_load_dict.setdefault('limit_memsw', limit_memsw)
             memsw_load_dict.setdefault('memsw_load_rate', memsw_load_rate)

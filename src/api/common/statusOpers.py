@@ -185,9 +185,15 @@ class CheckContainersMemLoad(CheckStatusBase):
                     used_mem = mem_load_info.get('used_mem')
                     limit_mem = mem_load_info.get('limit_mem')
                     mem_load_rate = mem_load_info.get('mem_load_rate')
-                    error_record += 'host ip :%s, container : %s , used memory: %s, memory top limit: %s, '\
-                                    'memory load rate : %s; \n' % (host_ip, container, str(used_mem), str(limit_mem), mem_load_rate)
-            
+                    
+                    used_memsw = mem_load_info.get('used_memsw')
+                    limit_memsw = mem_load_info.get('limit_memsw')
+                    memsw_load_rate = mem_load_info.get('memsw_load_rate')
+                    error_record += 'host ip :%s, container : %s , used memory: %s, limit memory : %s, '\
+                                    'memory load rate : %s, used memsw : %s, limit memsw : %s, \n'\
+                                    'memsw load rate : %s' % (host_ip, container, str(used_mem), str(limit_mem), mem_load_rate,\
+                                                              str(used_memsw), str(limit_memsw), memsw_load_rate )
+        
         except:
             logging.error( str(traceback.format_exc()) )
             
