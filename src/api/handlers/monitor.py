@@ -90,7 +90,6 @@ class CheckServersContainersMemLoad(APIHandler):
         self.finish( server_cons_mem_load )
 
 
-@require_basic_auth
 class CheckServerContainersUnderOom(APIHandler):
     
     server_opers = Server_Opers()
