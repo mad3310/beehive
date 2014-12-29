@@ -53,7 +53,7 @@ class CheckServerContainersMemLoad(APIHandler):
         logging.info('server: %s' % self.request.remote_ip)
         cons_mem_load = {}
         try:
-            cons_mem_load = self.server_opers.get_containers_mem_load()
+            cons_mem_load = self.server_opers.get_all_containers_mem_load()
         except:
             logging.error( str( traceback.format_exc() ) )
         
@@ -100,7 +100,7 @@ class CheckServerContainersUnderOom(APIHandler):
         server_ip = self.request.remote_ip
         cons_under_oom = {}
         try:
-            illegal_containers = self.server_opers.get_containers_under_oom()
+            illegal_containers = self.server_opers.get_all_containers_under_oom()
             cons_under_oom.setdefault('illegal_containers', illegal_containers)
         except:
             logging.error( str( traceback.format_exc() ) )

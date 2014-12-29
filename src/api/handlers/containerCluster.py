@@ -352,9 +352,22 @@ class CheckClusterSyncHandler(APIHandler):
 
 
 @require_basic_auth
-class GatherContainersDiskLoadHandler(APIHandler):
+class GetIpsFromIpPool(APIHandler):
+    
+    ip_opers = IpOpers()
     
     @asynchronous
-    def get(self, container_name_list):
-        pass    
-
+    def get(self):
+        result, ips = {}, []
+        try:
+            ips = self.ip_opers.get_ips_from_ipPool()
+        except:
+            logging.error( str(traceback.format_exc()) )
+            raise HTTPAPIError(status_code=500, error_detail="code error!",\
+                            notification = "direct", \
+                            log_message= "code error!",\
+                            response =  "code error!")
+        
+        result.setdefault('ips', ips)
+        self.finish(result)
+        

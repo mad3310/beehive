@@ -117,7 +117,7 @@ class ZkOpers(object):
     def retrieve_container_node_value_from_containerName(self, container_name):
         cluster = get_containerClusterName_from_containerName(container_name)
         container_ip = self.get_containerIp(cluster, container_name)
-        self.retrieve_container_status_value(cluster, container_ip)
+        return self.retrieve_container_node_value(cluster, container_ip)
 
     def retrieve_container_status_value(self, containerClusterName, container_node):
         clusterUUID = self.getClusterUUID()
@@ -290,6 +290,12 @@ class ZkOpers(object):
         self.zk.ensure_path(path)
         self.zk.set(path, str(info))
 
+    def writeConfigVerify(self, info):
+        clusterUUID = self.getClusterUUID()
+        path = self.rootPath + '/' + clusterUUID + '/config'
+        self.zk.ensure_path(path)
+        self.zk.set(path, str(info))
+    
     def writeClusterVipConf(self, info):
         clusterUUID = self.getClusterUUID()
         path = self.rootPath + '/' + clusterUUID + '/config/vip'
@@ -380,8 +386,8 @@ class ZkOpers(object):
         container_ip_list = self.retrieve_container_list(containerClusterName)
         for container_ip in container_ip_list:
             container_info = self.retrieve_container_node_value(containerClusterName, container_ip)
-            con_inspect = container_info.get('inspect')
-            con = Container(inspect=con_inspect)
+            inspect = container_info.get('inspect')
+            con = Container(inspect=inspect)
             con_name = con.name()
             if container_name == con_name:
                 con_ip = container_ip

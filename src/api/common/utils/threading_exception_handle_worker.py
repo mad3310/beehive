@@ -3,10 +3,10 @@ import logging
 import traceback
 
 from tornado.options import options
-from common.utils.mail import send_email
+from mail import send_email
 from tornado.web import HTTPError
-from common.utils.exceptions import HTTPAPIError
-from common.utils.threading_exception_queue import Threading_Exception_Queue
+from exceptions import HTTPAPIError
+from threading_exception_queue import Threading_Exception_Queue
 
 class Thread_Exception_Handler_Worker(threading.Thread):
     
@@ -18,7 +18,7 @@ class Thread_Exception_Handler_Worker(threading.Thread):
     def run(self):
         exc_info = None
         try:
-            while not self.threading_exception_queue.empty(): 
+            while not self.threading_exception_queue.empty():
                 exc_info = self.threading_exception_queue.get(block=False)
                 
                 if exc_info is None:

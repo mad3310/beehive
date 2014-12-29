@@ -19,6 +19,7 @@ from utils.exceptions import MyError
 from abstractContainerOpers import Abstract_Container_Opers
 from resourceOpers import Res_Opers
 
+
 class IpOpers(object):
     '''
     classdocs
@@ -30,7 +31,10 @@ class IpOpers(object):
     
     def __init__(self):
         pass
-        
+    
+    def get_ips_from_ipPool(self):
+        return self.zkOper.get_ips_from_ipPool()
+    
     def write_into_ipPool(self, args_dict):
         ip_segment = args_dict.get('ipSegment')
         ip_count = int(args_dict.get('ipCount'))
@@ -114,7 +118,6 @@ class IpOpers(object):
         while thread_obj_list:
             succ = []
             for thread_obj in thread_obj_list:
-                logging.info('thread : %s, isAlive: %s' % (thread_obj, str(thread_obj.isAlive()) ) )
                 if not thread_obj.isAlive():
                     succ.append(thread_obj)
             for item in succ:
@@ -133,6 +136,6 @@ class IpOpers(object):
 
         """
 
-        ip_list = self.zkOper.get_ips_from_ipPool()
+        ip_list = self.get_ips_from_ipPool()
         return len(ip_list)
 

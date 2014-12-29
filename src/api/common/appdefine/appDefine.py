@@ -14,7 +14,7 @@ define('sitename', default = "container manager", help = 'site name')
 define('domain', default = "letv.com", help = 'domain name')
 
 define('send_email_switch', default = True, type = bool, help = 'the flag of if send error email')
-define('admins', default = ("Mcluster_Members <Mcluster_Members@letv.com>;,"), help = 'admin email address')
+define('admins', default = ("Mcluster_Members <Mcluster_Members@letv.com>;",), help = 'admin email address')
 define('smtp_host', default = "mail.letv.com", help = 'smtp host')
 define('smtp_port', default = 25, help = 'smtp port')
 define('smtp_user', default = "mcluster", help = 'smtp user')
@@ -32,5 +32,4 @@ define("server_cluster_property",default=join(base_dir,"config","serverCluster.p
 
 define("alarm_serious", default="tel:sms:email", help="alarm level is serious")
 define("alarm_general", default="sms:email", help="alarm level is general")
-
 define("alarm_nothing", default="nothing", help="no alarm")

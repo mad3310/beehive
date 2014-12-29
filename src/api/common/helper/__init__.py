@@ -209,7 +209,6 @@ def get_all_containers():
     container_name_list = []
     c = docker.Client('unix://var/run/docker.sock')
     container_info_list = c.containers(all=True)
-    flag = False
     for container_info in container_info_list:
         name = container_info.get('Names')[0]
         name = name.replace('/', '')

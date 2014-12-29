@@ -185,9 +185,15 @@ class CheckContainersMemLoad(CheckStatusBase):
                     used_mem = mem_load_info.get('used_mem')
                     limit_mem = mem_load_info.get('limit_mem')
                     mem_load_rate = mem_load_info.get('mem_load_rate')
-                    error_record += 'host ip :%s, container : %s , used memory: %s, memory top limit: %s, '\
-                                    'memory load rate : %s; \n' % (host_ip, container, str(used_mem), str(limit_mem), mem_load_rate)
-            
+                    
+                    used_memsw = mem_load_info.get('used_memsw')
+                    limit_memsw = mem_load_info.get('limit_memsw')
+                    memsw_load_rate = mem_load_info.get('memsw_load_rate')
+                    error_record += 'host ip :%s, container : %s , used memory: %s, limit memory : %s, '\
+                                    'memory load rate : %s, used memsw : %s, limit memsw : %s, \n'\
+                                    'memsw load rate : %s' % (host_ip, container, str(used_mem), str(limit_mem), mem_load_rate,\
+                                                              str(used_memsw), str(limit_memsw), memsw_load_rate )
+        
         except:
             logging.error( str(traceback.format_exc()) )
             
@@ -214,8 +220,9 @@ class CheckContainersMemLoad(CheckStatusBase):
             overload_containers = {}
             for container, mem_load_info in host_cons_mem_load.items():
                 mem_load_rate = mem_load_info.get('mem_load_rate')
-                if mem_load_rate > 0.75:
-                    logging.info('mem_load_rate bigger than 0.75: %s' % str(mem_load_rate) )
+                memsw_load_rate = mem_load_info.get('memsw_load_rate')
+                if mem_load_rate > 0.75 or memsw_load_rate > 0.75:
+                    logging.info('mem_load_rate or memsw_load_rate bigger than 0.75: %s' % str(mem_load_rate) )
                     overload_containers.setdefault(container, mem_load_info)
             ret.setdefault(host_ip, overload_containers)
         return ret
