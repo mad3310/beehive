@@ -173,6 +173,9 @@ class SwitchServersUnderoomHandler(APIHandler):
                                 response =  "please check reasons")
         
         async_client.close()
+        except_cons = list(set(container_name_list) - set(result.keys()))
+        for con in except_cons:
+            result.setdefault(con, 'no such container or code exception')
         self.finish( result )
     
 
