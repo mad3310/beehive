@@ -223,6 +223,9 @@ class GetherServersContainersDiskLoadHandler(APIHandler):
                                 response =  "please check reasons")
         
         async_client.close()
+        except_cons = list(set(container_name_list) - set(servers_cons_disk_load.keys()))
+        for con in except_cons:
+            servers_cons_disk_load.setdefault(con, 'no such container or code exception')
         self.finish( servers_cons_disk_load )
 
 
