@@ -127,3 +127,12 @@ class IpOpers(object):
             illegal_ips.append(illegal_ip)
         logging.info('illegal_ips :%s' % str(illegal_ips) )
         return illegal_ips
+    
+    def get_ip_num(self):
+        """monitor item: get ip num from ip Pool
+
+        """
+
+        ip_list = self.zkOper.get_ips_from_ipPool()
+        return len(ip_list)
+

@@ -7,13 +7,14 @@ import threading
 import time
 
 from common.zkOpers import ZkOpers
-from common.monitorOpers import ResInfoAsyncHandler
+from common.monitorOpers import ResInfoAsyncHandler, ContainerInfoAsyncHandler
 
 
 class Monitor_Backend_Handle_Worker(threading.Thread):
     
     zkOper = ZkOpers('127.0.0.1', 2181)
-    ip_handler = ResInfoAsyncHandler()
+    res_handler = ResInfoAsyncHandler()
+    con_handler = ContainerInfoAsyncHandler()
     
     def __init__(self, timeout=55):
         self.timeout = timeout
@@ -43,4 +44,5 @@ class Monitor_Backend_Handle_Worker(threading.Thread):
                 self.zkOper.unLock_aysnc_monitor_action(lock)
                 
     def __action_monitor_async(self):
-        db_status_dict = self.ip_handler.retrieve_info()
+        res_status_dict = self.res_handler.retrieve_info()
+        con_status_dict = self.con_handler.retrieve_info()

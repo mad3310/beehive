@@ -188,14 +188,11 @@ def _mask_to_num(netmask=None):
 
 def get_container_stat(container_name):
     """
-    0: started
-    1: stoped
-    2: deleted or not exist
     """
     
     exists = check_container_exists(container_name)
     if not exists:
-        return 2
+        return 'destroyed'
     c = docker.Client('unix://var/run/docker.sock')
     container_info_list =  c.containers(all=True)
     for container_info in container_info_list:
@@ -204,19 +201,35 @@ def get_container_stat(container_name):
         if name == container_name:
             stat = container_info.get('Status')
             if 'Up' in stat:
-                return 0
+                return 'started'
             elif 'Exited' in stat:
-                return 1
+                return 'stopped'
 
-def check_container_exists(container_name):
+def get_all_containers():
+    container_name_list = []
     c = docker.Client('unix://var/run/docker.sock')
     container_info_list = c.containers(all=True)
     flag = False
     for container_info in container_info_list:
         name = container_info.get('Names')[0]
         name = name.replace('/', '')
-        logging.info('name:%s; container_name:%s' %(name, container_name))
-        if name == container_name:
-            flag = True
-            break
-    return flag
+        container_name_list.append(name)
+    return container_name_list
+
+def check_container_exists(container_name):
+    container_name_list = []
+    container_name_list = get_all_containers()
+    return container_name in container_name_list
+
+# def check_container_exists(container_name):
+#     c = docker.Client('unix://var/run/docker.sock')
+#     container_info_list = c.containers(all=True)
+#     flag = False
+#     for container_info in container_info_list:
+#         name = container_info.get('Names')[0]
+#         name = name.replace('/', '')
+#         logging.info('name:%s; container_name:%s' %(name, container_name))
+#         if name == container_name:
+#             flag = True
+#             break
+#     return flag

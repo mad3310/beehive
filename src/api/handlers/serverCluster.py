@@ -6,19 +6,24 @@ Created on Sep 8, 2014
 
 @author: root
 '''
-import uuid, json, logging, traceback
+import uuid
+import json
+import logging
+import traceback
 
+from tornado.options import options
+from tornado.httpclient import HTTPRequest
+from tornado.web import asynchronous
+from tornado.gen import engine, Task
 from common.configFileOpers import ConfigFileOpers
 from common.serverOpers import Server_Opers
 from common.utils.exceptions import HTTPAPIError
 from common.tornado_basic_auth import require_basic_auth
-from tornado.options import options
-from handlers.base import APIHandler
-from tornado.httpclient import HTTPRequest
 from common.helper import _request_fetch
 from common.ipOpers import IpOpers
 from common.serverClusterOpers import ServerCluster_Opers
 from common.utils.autoutil import http_get
+from handlers.base import APIHandler
 
 
 @require_basic_auth
@@ -115,3 +120,34 @@ class UpdateServerClusterHandler(APIHandler):
         dict.setdefault("message", "serverCluster update successful")
         self.finish(dict)
         
+
+class AddServersMemoryHandler(APIHandler): pass
+
+
+class SwitchServersUnderoomHandler(APIHandler):
+    
+    @asynchronous
+    @engine
+    def post(self):
+        
+        async_client = AsyncHTTPClient()
+        server_list = self.zkOper.retrieve_servers_white_list()
+        
+        result = {}
+        try:
+            for server in server_list:
+                requesturi = 'http://%s:%s/server/containers/under_oom' % (server, options.port)
+                logging.info('server requesturi: %s' % str(requesturi))
+                response = yield Task(async_client.fetch, requesturi)
+                body = json.loads(response.body.strip())
+                logging.info('response body : %s' % str(body) )
+                ret = body.get('response')
+                result.update(ret)
+        except:
+            logging.error( str(traceback.format_exc() ) )
+        
+        async_client.close()
+        #self.zkOper.close()
+        self.finish( result )
+    
+    

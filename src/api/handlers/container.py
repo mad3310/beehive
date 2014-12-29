@@ -8,7 +8,8 @@ from base import APIHandler
 from common.containerOpers import *
 from common.utils.exceptions import HTTPAPIError
 from common.tornado_basic_auth import require_basic_auth
-from common.helper import check_container_exists, get_container_stat
+from common.helper import *
+from tornado.web import asynchronous
 
 
 @require_basic_auth
@@ -16,6 +17,7 @@ class ContainerHandler(APIHandler):
     
     container_opers = Container_Opers()
     
+    @asynchronous
     def post(self):
         args = self.get_all_arguments()
         create_failed_rst = self.container_opers.issue_create_action(args)
@@ -60,6 +62,7 @@ class StartContainerHandler(APIHandler):
      
     container_opers = Container_Opers()
     
+    @asynchronous
     def post(self):
         args = self.get_all_arguments()
         logging.info('all_arguments: %s' % str(args))
@@ -78,10 +81,10 @@ class StartContainerHandler(APIHandler):
                                 log_message= "container %s not exist!" % container_name,\
                                 response =  "please check!")
         
-        stat_flag = get_container_stat(container_name)
-        if not stat_flag:
+        stat = get_container_stat(container_name)
+        if stat == 'started':
             massage = {}
-            massage.setdefault("status", "started")
+            massage.setdefault("status", stat)
             massage.setdefault("message", "no need this operation, the container has been started!")
             self.finish(massage)
             return
@@ -105,6 +108,7 @@ class StopContainerHandler(APIHandler):
     
     container_opers = Container_Opers()
     
+    @asynchronous
     def post(self):
         args = self.get_all_arguments()
         logging.info('all_arguments: %s' % str(args))
@@ -122,10 +126,10 @@ class StopContainerHandler(APIHandler):
                                 log_message= "container %s not exist!" % container_name,\
                                 response =  "please check!")
         
-        stat_flag = get_container_stat(container_name)
-        if stat_flag == 1:
+        stat = get_container_stat(container_name)
+        if stat == 'stopped':
             massage = {}
-            massage.setdefault("status", "stopped")
+            massage.setdefault("status", stat)
             massage.setdefault("message", "no need this operation, the container has been stopped!")
             self.finish(massage)
             return
@@ -148,7 +152,8 @@ class StopContainerHandler(APIHandler):
 class RemoveContainerHandler(APIHandler):
         
     container_opers = Container_Opers()
-        
+    
+    @asynchronous    
     def post(self):
         args = self.get_all_arguments()
         logging.info('all_arguments: %s' % str(args))
@@ -189,6 +194,7 @@ class CheckContainerStatusHandler(APIHandler):
     '''
     container_opers = Container_Opers()
     
+    @asynchronous
     def get(self, container_name):
         
         exists = check_container_exists(container_name)
@@ -209,3 +215,43 @@ class CheckContainerStatusHandler(APIHandler):
                                 response =  "check method failed!")
         
         self.finish(status)
+
+
+@require_basic_auth
+class GetContainersDiskLoadHandler(APIHandler):
+    """get the disk container use server 
+    
+    """
+    
+    container_opers = Container_Opers()
+    
+    @asynchronous
+    def get(self, container_name_list):
+        container_disk_load = {}
+        containers = get_all_containers()
+        container_list = list ( set(containers) & set(container_name_list) )
+        logging.info('container_name_list: %s' % str(container_name_list))
+        logging.info('container_list: %s' % str(container_list))
+        try:
+            for container in container_list:
+                disk_load = self.container_opers.get_disk_load(container)
+                container_disk_load.setdefault(container, disk_load)
+        except:
+            logging.error( str( traceback.format_exc() ) )
+            raise HTTPAPIError(status_code=500, error_detail="server exceptions",\
+                                notification = "direct", \
+                                log_message= "server exception",\
+                                response =  "server exception!")
+        
+        self.finish(container_disk_load)
+
+
+
+        
+        
+        
+        
+        
+        
+        
+        

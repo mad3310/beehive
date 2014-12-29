@@ -6,11 +6,14 @@ Created on Sep 8, 2014
 import traceback
 import logging
 import socket
+import re
 
+from tornado.web import asynchronous
 from handlers.base import APIHandler
 from common.serverOpers import Server_Opers
 from common.resourceOpers import Res_Opers
 from common.utils.exceptions import HTTPAPIError
+from common.tornado_basic_auth import require_basic_auth
 
 
 class ServerHandler(APIHandler):
@@ -19,6 +22,7 @@ class ServerHandler(APIHandler):
     '''
     server_opers = Server_Opers()
 
+    @asynchronous
     def get(self):
         dict = self.server_opers.retrieveServerResource()
         return self.finish(dict)
@@ -31,6 +35,7 @@ class UpdateServerHandler(APIHandler):
     
     server_opers = Server_Opers()
     
+    @asynchronous
     def get(self):
         try:
            self.server_opers.update()
@@ -52,6 +57,7 @@ class CollectServerResHandler(APIHandler):
     _logger = logging.getLogger("process_info")
     res_opers = Res_Opers()
     
+    @asynchronous
     def get(self):
         
         try:
@@ -73,6 +79,7 @@ class CollectContainerResHandler(APIHandler):
     """
     _logger = logging.getLogger("process_info")
     
+    @asynchronous
     def get(self):
         
         try:
@@ -87,3 +94,47 @@ class CollectContainerResHandler(APIHandler):
         
         self._logger.setLevel(logging.INFO)
         self.finish(container_res)
+
+
+class AddServerMemoryHandler(APIHandler): pass
+
+
+@require_basic_auth
+class SwitchServerUnderoomHandler(APIHandler):
+
+    server_opers = Server_Opers()
+
+    def post(self):
+        args = self.get_all_arguments()
+        switch = args.get('switch')
+        
+        if not switch or switch != ('on' and 'off'):
+            raise HTTPAPIError(status_code=400, error_detail="switch params wrong!",\
+                                notification = "direct", \
+                                log_message= "switch params wrong!",\
+                                response =  "please check params!")
+        
+        containerNameList = args.get('containerNameList')
+        if not containerNameList:
+            raise HTTPAPIError(status_code=400, error_detail="switch params not given!",\
+                                notification = "direct", \
+                                log_message= "switch params not given!",\
+                                response =  "please check params!")
+        
+        if ',' in containerNameList:
+            containerNameList = containerNameList.split(',')
+        else:
+            containerNameList = [containerNameList]
+        
+        value, result = 0, {}
+        try:
+            if switch == 'on':
+                result = self.server_opers.open_containers_under_oom(containerNameList)
+            elif switch == 'off':
+                result = self.server_opers.shut_containers_under_oom(containerNameList)
+        except:
+            logging.error( str(traceback.format_exc()) )
+        
+        logging.info('under_oom result: %s' % str(result))   
+        self.finish(result)
+

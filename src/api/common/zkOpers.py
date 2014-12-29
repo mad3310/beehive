@@ -14,6 +14,7 @@ import re
 from utils.autoutil import *
 from resourceOpers import Res_Opers
 from kazoo.client import KazooClient
+from container_module import Container
 
 class ZkOpers(object):
     
@@ -31,7 +32,10 @@ class ZkOpers(object):
         logging.info("start zk")
         self.zk = KazooClient(hosts=zkAddress+':'+str(zkPort))
         self.zk.start()
-        
+    
+    def close(self):
+        self.zk.close()
+       
     def existCluster(self):
         self.zk.ensure_path(self.rootPath)
         clusters = self.zk.get_children(self.rootPath)
@@ -110,13 +114,18 @@ class ZkOpers(object):
         path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + containerClusterName + '/' + container_node
         return self._retrieveSpecialPathProp(path)
 
+    def retrieve_container_node_value_from_containerName(self, container_name):
+        cluster = get_containerClusterName_from_containerName(container_name)
+        container_ip = self.get_containerIp(cluster, container_name)
+        self.retrieve_container_status_value(cluster, container_ip)
+
     def retrieve_container_status_value(self, containerClusterName, container_node):
         clusterUUID = self.getClusterUUID()
         path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + containerClusterName + '/' + container_node + '/status'
         return self._retrieveSpecialPathProp(path)
     
     def retrieve_container_status_from_containerName(self, container_name):
-        containerClusterName = self.get_containerClusterName_from_containerName(container_name)
+        containerClusterName = get_containerClusterName_from_containerName(container_name)
         container_ip = self.get_containerIp(containerClusterName, container_name)
         return self.retrieve_container_status_value(containerClusterName, container_ip)
         
@@ -304,47 +313,64 @@ class ZkOpers(object):
         path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + containerClusterName
         self.zk.ensure_path(path)
         self.zk.set(path, str(containerClusterProps))
-            
-    def write_container_node_info(self, containerProps):
-        containerClusterName = containerProps['containerClusterName']
-        containerNodeIp = containerProps['ipAddr']
+
+    def write_container_node_value(self, cluster, container_ip, containerProps):
+        """write container value
+        
+        """
+        
         clusterUUID = self.getClusterUUID()
-        path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + containerClusterName + "/" + containerNodeIp
+        path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + cluster + "/" + container_ip
         self.zk.ensure_path(path)
         self.zk.set(path, str(containerProps))
-        container_name = containerProps.get('containerName')
-        self.write_container_status(container_name, "{'status':'started', 'message':''}")
+
+    def write_container_node_value_by_containerName(self, container_name, containerProps):
+        """only write container value and not write status value
+        
+        """
+        
+        cluster = get_containerClusterName_from_containerName(container_name)
+        container_ip = self.get_containerIp(cluster, container_name)
+        self.write_container_node_value(cluster, container_ip, containerProps)
+
+            
+    def write_container_node_info(self, status, containerProps):
+        """write container value and status value
+        
+        """
+        
+        inspect = containerProps.get('inspect')
+        con = Container(inspect=inspect)
+        container_name = con.name()
+        cluster = con.cluster(container_name)
+        logging.info('get container cluster :%s' % cluster)
+        container_ip = con.ip()
+        logging.info('get container ip :%s' % container_ip)
+        clusterUUID = self.getClusterUUID()
+        path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + cluster + "/" + container_ip
+        self.zk.ensure_path(path)
+        self.zk.set(path, str(containerProps))
+        stat = {}
+        stat.setdefault('status', status)
+        stat.setdefault('message', '')
+        self.write_container_status(cluster, container_ip, stat)
     
     def write_started_node(self, data_node_ip):
         clusterUUID = self.getClusterUUID()
         path = self.rootPath + "/" + clusterUUID + "/monitor_status/node/started/" + data_node_ip
         self.logger.debug("the started data node:" + data_node_ip)
         self.zk.ensure_path(path)
-    
-    def write_container_status(self, container_name, record):
-        containerClusterName = self.get_containerClusterName_from_containerName(container_name)
-        container_ip = self.get_containerIp(containerClusterName, container_name)
+
+    def write_container_status(self, cluster, container_ip, record):
         clusterUUID = self.getClusterUUID()
-        path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + containerClusterName + "/" + container_ip +"/status"
+        path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + cluster + "/" + container_ip +"/status"
         self.zk.ensure_path(path)
         self.zk.set(path, str(record))
-        
-    def get_containerClusterName_from_containerName(self, container_name):
-        try:
-            containerClusterName = ''
-            if 'd-mcl' in container_name:
-                containerClusterName = re.findall('d-mcl-(.*)-n-\d', container_name)[0]
-            elif 'd_mcl' in container_name:
-                containerClusterName = re.findall('d_mcl_(.*)_node_\d', container_name)[0]
-            elif 'vip' in container_name:
-                containerClusterName = re.findall('d-vip-(.*)', container_name)[0]
-            elif 'doc-mcl' in container_name:
-                containerClusterName = re.findall('doc-mcl-(.*)-n-\d', container_name)[0]
-            else:
-                containerClusterName = container_name
-            return containerClusterName
-        except:
-            logging.error( str(traceback.format_exc()) )
+    
+    def write_container_status_by_containerName(self, container_name, record):
+        containerClusterName = get_containerClusterName_from_containerName(container_name)
+        container_ip = self.get_containerIp(containerClusterName, container_name)
+        self.write_container_status(containerClusterName, container_ip, record)
     
     def get_containerIp(self, containerClusterName, container_name):
         con_ip = ''
@@ -354,8 +380,10 @@ class ZkOpers(object):
         container_ip_list = self.retrieve_container_list(containerClusterName)
         for container_ip in container_ip_list:
             container_info = self.retrieve_container_node_value(containerClusterName, container_ip)
-            containerName = container_info.get('containerName')
-            if container_name == containerName:
+            con_inspect = container_info.get('inspect')
+            con = Container(inspect=con_inspect)
+            con_name = con.name()
+            if container_name == con_name:
                 con_ip = container_ip
                 break
         return con_ip
