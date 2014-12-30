@@ -94,15 +94,15 @@ class CheckResIpUsable(CheckStatusBase):
     ip_opers = IpOpers()
     
     def check(self):
-        monitor_type, monitor_key, error_record = 'res', 'ip_usable', ''
+        monitor_type, monitor_key, error_record = 'res', 'ip_usable', []
         failed_count = 0
         try:
             logging.info('do get_illegal_ips')
-            unusable_ip_list = self.ip_opers.get_illegal_ips(20)
-            failed_count = len(unusable_ip_list)
-            if failed_count:
-                for ip in unusable_ip_list:
-                    error_record += 'ip: %s,' % str(ip)
+            error_record = self.ip_opers.get_illegal_ips(20)
+            failed_count = len(error_record)
+#            if failed_count:
+#                 for ip in unusable_ip_list:
+#                     error_record += 'ip: %s,' % str(ip)
             logging.info('check ip res resutl failed_count : %s' % failed_count)
         except:
             logging.error( str(traceback.format_exc()) )
@@ -125,7 +125,7 @@ class CheckContainersUnderOom(CheckStatusBase):
     server_opers = Server_Opers()
     
     def check(self):
-        monitor_type, monitor_key, error_record = 'container', 'under_oom', ''
+        monitor_type, monitor_key, error_record = 'container', 'under_oom', []
         failed_count, containers_mem_load = 0, {}
         try:
             logging.info('do check under_oom')
@@ -133,10 +133,13 @@ class CheckContainersUnderOom(CheckStatusBase):
             logging.info('containers_under_oom:%s' % str(containers_under_oom) )
             
             for host_ip, host_cons_under_oom in containers_under_oom.items():
+                each = {}
+                each.setdefault(host_ip, host_cons_under_oom)
+                error_record.append(each)
                 for key, illegal_cons in host_cons_under_oom.items():
                     if illegal_cons:
                         failed_count += len(illegal_cons)
-                        error_record += 'host ip :%s, illegal containers: %s' % (host_ip, str(illegal_cons) )            
+                        #error_record += 'host ip :%s, illegal containers: %s' % (host_ip, str(illegal_cons) )            
             
         except:
             logging.error( str(traceback.format_exc()) )
@@ -170,7 +173,7 @@ class CheckContainersMemLoad(CheckStatusBase):
     server_opers = Server_Opers()
 
     def check(self):
-        monitor_type, monitor_key, error_record = 'container', 'mem_load', ''
+        monitor_type, monitor_key, error_record = 'container', 'mem_load', []
         failed_count, containers_mem_load = 0, {}
         try:
             logging.info('do monitor memory load')
@@ -179,20 +182,25 @@ class CheckContainersMemLoad(CheckStatusBase):
             overload_containers = self.__get_host_overload_containers(containers_mem_load)
             
             logging.info('load memory:%s' % str(overload_containers) )
+            
             for host_ip, host_cons_mem_load in overload_containers.items():
+                each = {}
+                each.setdefault(host_ip, host_cons_mem_load)
+                error_record.append(each)
                 for container, mem_load_info in host_cons_mem_load.items():
                     failed_count += 1
-                    used_mem = mem_load_info.get('used_mem')
-                    limit_mem = mem_load_info.get('limit_mem')
-                    mem_load_rate = mem_load_info.get('mem_load_rate')
-                    
-                    used_memsw = mem_load_info.get('used_memsw')
-                    limit_memsw = mem_load_info.get('limit_memsw')
-                    memsw_load_rate = mem_load_info.get('memsw_load_rate')
-                    error_record += 'host ip :%s, container : %s , used memory: %s, limit memory : %s, '\
-                                    'memory load rate : %s, used memsw : %s, limit memsw : %s, \n'\
-                                    'memsw load rate : %s' % (host_ip, container, str(used_mem), str(limit_mem), mem_load_rate,\
-                                                              str(used_memsw), str(limit_memsw), memsw_load_rate )
+
+#                     used_mem = mem_load_info.get('used_mem')
+#                     limit_mem = mem_load_info.get('limit_mem')
+#                     mem_load_rate = mem_load_info.get('mem_load_rate')
+#                     
+#                     used_memsw = mem_load_info.get('used_memsw')
+#                     limit_memsw = mem_load_info.get('limit_memsw')
+#                     memsw_load_rate = mem_load_info.get('memsw_load_rate')
+#                     error_record += 'host ip :%s, container : %s , used memory: %s, limit memory : %s, '\
+#                                     'memory load rate : %s, used memsw : %s, limit memsw : %s, \n'\
+#                                     'memsw load rate : %s' % (host_ip, container, str(used_mem), str(limit_mem), mem_load_rate,\
+#                                                               str(used_memsw), str(limit_memsw), memsw_load_rate )
         
         except:
             logging.error( str(traceback.format_exc()) )

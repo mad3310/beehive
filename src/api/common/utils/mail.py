@@ -114,7 +114,7 @@ class _SMTPSession(object):
             self.renew()
 
         try:
-            logging.info('Send email from %s to %s' % (fr, to))
+            logging.info('Send email from %s to %s message:%s' % (fr, to, str(message)))
             self.session.sendmail(fr, to, message)
         except Exception, e:
             err = "Send email from %s to %s failed!\n Exception: %s!" \
