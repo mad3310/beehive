@@ -125,14 +125,6 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         create_info.setdefault('ipAddr', con.ip() )
         create_info.setdefault('containerName', con.name() )
         return create_info
-#     
-#     def check_create_status(self, containerClusterName):
-#         try:
-#             logging.info('create create result status!')
-#             return self.__check_create_status(containerClusterName)
-#         except:
-#             logging.info( str(traceback.format_exc()) )
-#             self.threading_exception_queue.put(sys.exc_info())
 
     def check_create_status(self, containerClusterName):
         failed_rst = {'code':"000001"}
@@ -258,12 +250,9 @@ class ContainerCluster_Action(Abstract_Async_Thread):
             self.threading_exception_queue.put(sys.exc_info())
     
     def _issue_action(self):
-        try:
-            params = self.get_params()
-            adminUser, adminPasswd = _retrieve_userName_passwd()
-            self.dispatch_container_tasks(params, adminUser, adminPasswd)
-        except:
-            logging.error(str(traceback.format_exc()))
+        params = self.get_params()
+        adminUser, adminPasswd = _retrieve_userName_passwd()
+        self.dispatch_container_tasks(params, adminUser, adminPasswd)
    
     def dispatch_container_tasks(self, params, admin_user, admin_passwd):
         logging.info('params: %s' % str(params))
@@ -436,7 +425,7 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
                                   auth_username=admin_user, auth_password=admin_passwd )
             logging.info('POST result :%s' % str(fetch_ret))
             if not isinstance(fetch_ret, dict):
-                logging.error('create container in server : %s failed or code exception! please check')
+                logging.error('create container in server : %s failed or code exception! please check' % host_ip)
                 return False
             ret = fetch_ret.get('response').get('message')
             if ret == 'Success Create Container':
