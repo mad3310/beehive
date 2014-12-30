@@ -250,12 +250,9 @@ class ContainerCluster_Action(Abstract_Async_Thread):
             self.threading_exception_queue.put(sys.exc_info())
     
     def _issue_action(self):
-        try:
-            params = self.get_params()
-            adminUser, adminPasswd = _retrieve_userName_passwd()
-            self.dispatch_container_tasks(params, adminUser, adminPasswd)
-        except:
-            logging.error(str(traceback.format_exc()))
+        params = self.get_params()
+        adminUser, adminPasswd = _retrieve_userName_passwd()
+        self.dispatch_container_tasks(params, adminUser, adminPasswd)
    
     def dispatch_container_tasks(self, params, admin_user, admin_passwd):
         logging.info('params: %s' % str(params))

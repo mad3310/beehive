@@ -20,7 +20,7 @@ class Thread_Exception_Handler_Worker(threading.Thread):
         try:
             while not self.threading_exception_queue.empty():
                 exc_info = self.threading_exception_queue.get(block=False)
-                
+                logging.info('get exc_info: %s' % str(exc_info))
                 if exc_info is None:
                     continue
                 
