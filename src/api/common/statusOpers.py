@@ -133,13 +133,10 @@ class CheckContainersUnderOom(CheckStatusBase):
             logging.info('containers_under_oom:%s' % str(containers_under_oom) )
             
             for host_ip, host_cons_under_oom in containers_under_oom.items():
-                each = {}
-                each.setdefault(host_ip, host_cons_under_oom)
-                error_record.append(each)
                 for key, illegal_cons in host_cons_under_oom.items():
                     if illegal_cons:
                         failed_count += len(illegal_cons)
-                        #error_record += 'host ip :%s, illegal containers: %s' % (host_ip, str(illegal_cons) )            
+                        error_record += 'host ip :%s, illegal containers: %s' % (host_ip, str(illegal_cons) )            
             
         except:
             logging.error( str(traceback.format_exc()) )
