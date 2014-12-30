@@ -18,6 +18,7 @@ from tornado.options import options
 from common.tornado_basic_auth import require_basic_auth
 from common.serverOpers import Server_Opers
 from common.zkOpers import ZkOpers
+from common.utils.exceptions import HTTPAPIError
 
 
 # retrieve the status value of all monitor type 
@@ -56,6 +57,10 @@ class CheckServerContainersMemLoad(APIHandler):
             cons_mem_load = self.server_opers.get_all_containers_mem_load()
         except:
             logging.error( str( traceback.format_exc() ) )
+            raise HTTPAPIError(status_code=500, error_detail="code error!",\
+                               notification = "direct", \
+                               log_message= "code error!",\
+                               response =  "code error!")
         
         logging.info('get server %s containers memory load :%s' % (self.request.remote_ip, str(cons_mem_load) ) )
         self.finish( cons_mem_load )
@@ -84,7 +89,11 @@ class CheckServersContainersMemLoad(APIHandler):
                 server_cons_mem_load.setdefault(server, con_mem_load)
         except:
             logging.error( str(traceback.format_exc() ) )
-            
+            raise HTTPAPIError(status_code=500, error_detail="code error!",\
+                               notification = "direct", \
+                               log_message= "code error!",\
+                               response =  "code error!")
+        
         async_client.close()
         self.finish( server_cons_mem_load )
 
@@ -103,6 +112,10 @@ class CheckServerContainersUnderOom(APIHandler):
             cons_under_oom.setdefault('illegal_containers', illegal_containers)
         except:
             logging.error( str( traceback.format_exc() ) )
+            raise HTTPAPIError(status_code=500, error_detail="code error!",\
+                               notification = "direct", \
+                               log_message= "code error!",\
+                               response =  "code error!")
         
         logging.info('get server %s containers memory load :%s' % (server_ip, str(cons_under_oom) ) )
         self.finish( cons_under_oom )
@@ -132,7 +145,10 @@ class CheckServersContainersUnderOom(APIHandler):
                 server_cons_under_oom.setdefault(server, under_oom)
         except:
             logging.error( str(traceback.format_exc() ) )
+            raise HTTPAPIError(status_code=500, error_detail="code error!",\
+                               notification = "direct", \
+                               log_message= "code error!",\
+                               response =  "code error!")
         
         async_client.close()
-        #self.zkOper.close()
         self.finish( server_cons_under_oom )
