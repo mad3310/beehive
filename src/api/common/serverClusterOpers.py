@@ -69,3 +69,7 @@ class ServerCluster_Opers(Abstract_Async_Thread):
         http_client.close()
         logging.info('succ:%s' % str(succ))
         logging.info('fail:%s' % str(fail))
+
+
+
+

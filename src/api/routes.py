@@ -38,6 +38,7 @@ handlers = [
     (r"/containerCluster/ips/add", AddIpsIntoIpPoolHandler),
     (r"/containerCluster/ips/get", GetIpsFromIpPool),
     (r"/inner/container", ContainerHandler),
+    (r"/container/resource/disk/([.*])", GetContainersDiskLoadHandler),
     (r"/container/start", StartContainerHandler),
     (r"/container/stop", StopContainerHandler),
     (r"/container/remove", RemoveContainerHandler),
