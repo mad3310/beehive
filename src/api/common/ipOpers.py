@@ -19,6 +19,7 @@ from utils.exceptions import MyError
 from abstractContainerOpers import Abstract_Container_Opers
 from resourceOpers import Res_Opers
 
+
 class IpOpers(object):
     '''
     classdocs
@@ -30,7 +31,10 @@ class IpOpers(object):
     
     def __init__(self):
         pass
-        
+    
+    def get_ips_from_ipPool(self):
+        return self.zkOper.get_ips_from_ipPool()
+    
     def write_into_ipPool(self, args_dict):
         ip_segment = args_dict.get('ipSegment')
         ip_count = int(args_dict.get('ipCount'))
@@ -126,3 +130,12 @@ class IpOpers(object):
             illegal_ips.append(illegal_ip)
         logging.info('illegal_ips :%s' % str(illegal_ips) )
         return illegal_ips
+    
+    def get_ip_num(self):
+        """monitor item: get ip num from ip Pool
+
+        """
+
+        ip_list = self.get_ips_from_ipPool()
+        return len(ip_list)
+

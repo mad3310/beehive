@@ -7,15 +7,19 @@ Created on Sep 8, 2014
 @author: root
 '''
 
+
+import os
+import sys
 import logging
 import traceback
 import docker
-import os, sys
 
 from abstractContainerOpers import Abstract_Container_Opers
 from abstractAsyncThread import Abstract_Async_Thread
 from dockerOpers import Docker_Opers
+from container_module import Container
 from helper import *
+from resourceOpers import Res_Opers
 
 class Container_Opers(Abstract_Container_Opers):
     
@@ -28,14 +32,9 @@ class Container_Opers(Abstract_Container_Opers):
     
     def issue_create_action(self, arg_dict):
         
-        container_node_info = self._get_container_info(arg_dict)
-        logging.info('get container info: %s' % str(container_node_info))
-        
         create_result = self.create(arg_dict)
-        
         if create_result:
             logging.info('create container successful, write info!')
-            self.zkOper.write_container_node_info(container_node_info)
             return
         failed_container_name = arg_dict.get('container_name')
         return failed_container_name
@@ -46,6 +45,7 @@ class Container_Opers(Abstract_Container_Opers):
         container_name = arg_dict.get('container_name')
         container_type = arg_dict.get('container_type')
         containerClusterName = arg_dict.get('containerClusterName')
+        container_ip = arg_dict.get('container_ip')
         env = eval(arg_dict.get('env'))
         
         logging.info('container_name: %s' % container_name)
@@ -97,8 +97,11 @@ class Container_Opers(Abstract_Container_Opers):
         if not result:
             logging.error('the exception of creating container')
             return False
+        container_node_info = self._get_container_info(container_name, arg_dict)
+        logging.info('get container info: %s' % str(container_node_info))
+        self.zkOper.write_container_node_info('started', container_node_info)
         return True
-    
+
     def init(self, n, container_name):
         ret = False
         while n:
@@ -107,9 +110,8 @@ class Container_Opers(Abstract_Container_Opers):
             if ret:
                 break
             n -= 1
-            
         return ret
-        
+   
     def stop(self, container_name):
         container_stop_action = Container_stop_action(container_name)
         container_stop_action.start()
@@ -130,20 +132,14 @@ class Container_Opers(Abstract_Container_Opers):
         result.setdefault('status', status)
         result.setdefault('message', message)
         return result
-    
-    def _get_container_info(self, arg_dict):
-        env = eval(arg_dict.get('env'))
+   
+    def _get_container_info(self, container_name, arg_dict):
+        con = Container(container_name)
         container_node_info= {}
-        container_node_info.setdefault('containerClusterName', arg_dict.get('containerClusterName'))
-        container_node_info.setdefault('containerNodeIP', arg_dict.get('container_ip'))
+        container_node_info.setdefault('containerName', container_name)
+        container_node_info.setdefault('inspect', con.inspect)
         container_node_info.setdefault('hostIp', arg_dict.get('host_ip'))
-        container_node_info.setdefault('ipAddr', arg_dict.get('container_ip'))
-        container_node_info.setdefault('containerName', arg_dict.get('container_name'))
-        container_node_info.setdefault('mountDir', arg_dict.get('volumes'))
         container_node_info.setdefault('type', arg_dict.get('container_type'))
-        container_node_info.setdefault('zookeeperId', env.get('ZKID'))
-        container_node_info.setdefault('netMask', env.get('NETMASK'))
-        container_node_info.setdefault('gateAddr', env.get('GATEWAY'))
         return container_node_info
     
     def _log_docker_run_command(self, env, _mem_limit, _volumes, container_name, image_name):
@@ -184,8 +180,8 @@ class Container_Opers(Abstract_Container_Opers):
         logging.info(cmd)
         
     def _check_create_status(self, container_name):
-        flag = get_container_stat(container_name)
-        if flag == 0:
+        stat = get_container_stat(container_name)
+        if stat == 'started':
             return True
         else:
             return False
@@ -201,6 +197,10 @@ class Container_Opers(Abstract_Container_Opers):
             else:
                 re_bind_arg.setdefault(k, v)
         return re_bind_arg
+
+    def get_disk_load(self, container_name):
+        res_opers = Res_Opers(container_name)
+        return res_opers.get_container_disk_load()
 
 
 class Container_start_action(Abstract_Async_Thread):
@@ -223,19 +223,17 @@ class Container_start_action(Abstract_Async_Thread):
         start_rst, start_flag = {}, {}
         logging.info('write start flag')
         start_flag = {'status':'starting', 'message':''}
-        self.zkOper.write_container_status(self.container_name, start_flag)
+        self.zkOper.write_container_status_by_containerName(self.container_name, start_flag)
         self.docker_opers.start(self.container_name)
-        flag = get_container_stat(self.container_name)
-        if flag == 1:
-            status = 'failed'
+        stat = get_container_stat(self.container_name)
+        if stat == 'stopped':
             message = 'start container %s failed' % self.container_name
         else:
-            status = 'started'
             message = ''
-        start_rst.setdefault('status', status)
+        start_rst.setdefault('status', stat)
         start_rst.setdefault('message', message)
         logging.info('write start result')
-        self.zkOper.write_container_status(self.container_name, start_rst)
+        self.zkOper.write_container_status_by_containerName(self.container_name, start_rst)
 
         
 class Container_stop_action(Abstract_Async_Thread):
@@ -258,11 +256,11 @@ class Container_stop_action(Abstract_Async_Thread):
         stop_rst, stop_flag = {}, {}
         logging.info('write stop flag')
         stop_flag = {'status':'stopping', 'message':''}
-        self.zkOper.write_container_status(self.container_name, stop_flag)
+        self.zkOper.write_container_status_by_containerName(self.container_name, stop_flag)
         
         self.docker_opers.stop(self.container_name, 30)
-        flag = get_container_stat(self.container_name)
-        if flag == 0:
+        stat = get_container_stat(self.container_name)
+        if stat == 'started':
             status = 'failed'
             message = 'stop container %s failed' % self.container_name
         else:
@@ -271,7 +269,7 @@ class Container_stop_action(Abstract_Async_Thread):
         stop_rst.setdefault('status', status)
         stop_rst.setdefault('message', message)
         logging.info('write stop result')
-        self.zkOper.write_container_status(self.container_name, stop_rst)
+        self.zkOper.write_container_status_by_containerName(self.container_name, stop_rst)
 
 
 class Container_destroy_action(Abstract_Async_Thread):
@@ -291,11 +289,14 @@ class Container_destroy_action(Abstract_Async_Thread):
             self.threading_exception_queue.put(sys.exc_info())
 
     def _issue_destroy_action(self):
+        """destroy container and remove docker mount dir data
+        
+        """
 
         destroy_rst, destroy_flag = {}, {}
         logging.info('write destroy flag')
         destroy_flag = {'status':'destroying', 'message':''}
-        self.zkOper.write_container_status(self.container_name, destroy_flag)
+        self.zkOper.write_container_status_by_containerName(self.container_name, destroy_flag)
         mount_dir = ''
         mount_dir = self._get_normal_node_mount_dir()
         self.docker_opers.destroy(self.container_name)
@@ -313,7 +314,7 @@ class Container_destroy_action(Abstract_Async_Thread):
             destroy_rst.setdefault('status', 'destroyed')
             destroy_rst.setdefault('message', '')
 
-        self.zkOper.write_container_status(self.container_name, destroy_rst)
+        self.zkOper.write_container_status_by_containerName(self.container_name, destroy_rst)
     
     def _get_normal_node_mount_dir(self):
         mount_dir = ''

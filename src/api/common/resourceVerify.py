@@ -52,7 +52,7 @@ class ResourceVerify():
     def get_host_ip_list(self, host_ip_list, container_num):
 
         hostip_num_dict, ip_list = {}, []
-         
+        
         for i in range(container_num):
             for index,(host_ip, available_host_num) in enumerate(host_ip_list):
                 if available_host_num > 0:
@@ -126,4 +126,3 @@ class ElectServer(Abstract_Container_Opers):
             weighted_value = mem_usable
             num = int(mem_usable/mem_limit)
         return weighted_value, num
-

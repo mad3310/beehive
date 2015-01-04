@@ -109,6 +109,7 @@ class CheckCreateClusterStatusHandler(APIHandler):
     @asynchronous
     def get(self, containerClusterName):        
         try:
+            check_result = ''
             check_result =  self.containerClusterOpers.check_create_status(containerClusterName)
         except:
             logging.error( str(traceback.format_exc()) )
@@ -348,3 +349,25 @@ class CheckClusterSyncHandler(APIHandler):
         logging.info('data:%s' % str(res_info))
         dict.setdefault('data', res_info)
         self.finish(dict)
+
+
+@require_basic_auth
+class GetIpsFromIpPool(APIHandler):
+    
+    ip_opers = IpOpers()
+    
+    @asynchronous
+    def get(self):
+        result, ips = {}, []
+        try:
+            ips = self.ip_opers.get_ips_from_ipPool()
+        except:
+            logging.error( str(traceback.format_exc()) )
+            raise HTTPAPIError(status_code=500, error_detail="code error!",\
+                            notification = "direct", \
+                            log_message= "code error!",\
+                            response =  "code error!")
+        
+        result.setdefault('ips', ips)
+        self.finish(result)
+        

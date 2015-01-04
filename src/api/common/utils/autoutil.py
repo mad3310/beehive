@@ -4,6 +4,7 @@
 import urllib
 import time
 import logging
+import traceback
 import threading
 import json
 import socket
@@ -98,8 +99,9 @@ def http_post(url, body={}, _connect_timeout=40.0, _request_timeout=40.0, auth_u
         request = HTTPRequest(url=url, method='POST', body=urllib.urlencode(body), connect_timeout=_connect_timeout, \
                               request_timeout=_request_timeout, auth_username = auth_username, auth_password = auth_password)
         fetch_ret = _request_fetch(request)
-        logging.info('POST result :%s' % str(fetch_ret))
-        return fetch_ret
+        return_dict = json.loads(fetch_ret)
+        logging.info('POST result :%s' % str(return_dict))
+        return return_dict
     except Exception, e:
         logging.error(str(e))
         return e
@@ -129,5 +131,19 @@ def http_get(url, _connect_timeout=30.0, _request_timeout=30.0, auth_username=No
 #         logging.error(str(e))
 #         return e
 
-
-
+def get_containerClusterName_from_containerName(container_name):
+    try:
+        containerClusterName = ''
+        if 'd-mcl' in container_name:
+            containerClusterName = re.findall('d-mcl-(.*)-n-\d', container_name)[0]
+        elif 'd_mcl' in container_name:
+            containerClusterName = re.findall('d_mcl_(.*)_node_\d', container_name)[0]
+        elif 'vip' in container_name:
+            containerClusterName = re.findall('d-vip-(.*)', container_name)[0]
+        elif 'doc-mcl' in container_name:
+            containerClusterName = re.findall('doc-mcl-(.*)-n-\d', container_name)[0]
+        else:
+            containerClusterName = container_name
+        return containerClusterName
+    except:
+        logging.error( str(traceback.format_exc()) )

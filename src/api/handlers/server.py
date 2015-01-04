@@ -6,11 +6,14 @@ Created on Sep 8, 2014
 import traceback
 import logging
 import socket
+import re
 
+from tornado.web import asynchronous
 from handlers.base import APIHandler
 from common.serverOpers import Server_Opers
 from common.resourceOpers import Res_Opers
 from common.utils.exceptions import HTTPAPIError
+from common.tornado_basic_auth import require_basic_auth
 
 
 class ServerHandler(APIHandler):
@@ -19,6 +22,7 @@ class ServerHandler(APIHandler):
     '''
     server_opers = Server_Opers()
 
+    @asynchronous
     def get(self):
         dict = self.server_opers.retrieveServerResource()
         return self.finish(dict)
@@ -31,6 +35,7 @@ class UpdateServerHandler(APIHandler):
     
     server_opers = Server_Opers()
     
+    @asynchronous
     def get(self):
         try:
            self.server_opers.update()
@@ -52,6 +57,7 @@ class CollectServerResHandler(APIHandler):
     _logger = logging.getLogger("process_info")
     res_opers = Res_Opers()
     
+    @asynchronous
     def get(self):
         
         try:
@@ -73,6 +79,7 @@ class CollectContainerResHandler(APIHandler):
     """
     _logger = logging.getLogger("process_info")
     
+    @asynchronous
     def get(self):
         
         try:
@@ -85,5 +92,110 @@ class CollectContainerResHandler(APIHandler):
                                 log_message= "get container resource failed!",\
                                 response =  "please check!")
         
-        self._logger.setLevel(logging.INFO)
         self.finish(container_res)
+
+
+@require_basic_auth
+class SwitchServerUnderoomHandler(APIHandler):
+
+    server_opers = Server_Opers()
+
+    def post(self):
+        args = self.get_all_arguments()
+        switch = args.get('switch')
+        
+        if not switch or (switch!='on' and switch!='off'):
+            raise HTTPAPIError(status_code=400, error_detail="switch params wrong!",\
+                                notification = "direct", \
+                                log_message= "switch params wrong!",\
+                                response =  "please check params!")
+        
+        containerNameList = args.get('containerNameList')
+        if not containerNameList:
+            raise HTTPAPIError(status_code=400, error_detail="containerNameList params not given!",\
+                                notification = "direct", \
+                                log_message= "containerNameList params not given!",\
+                                response =  "please check params!")
+        
+        if ',' in containerNameList:
+            containerNameList = containerNameList.split(',')
+        else:
+            containerNameList = [containerNameList]
+        
+        value, result = 0, {}
+        try:
+            if switch == 'on':
+                result = self.server_opers.open_containers_under_oom(containerNameList)
+            elif switch == 'off':
+                result = self.server_opers.shut_containers_under_oom(containerNameList)
+        except:
+            logging.error( str(traceback.format_exc()) )
+        
+        logging.info('under_oom result: %s' % str(result))   
+        self.finish(result)
+
+
+@require_basic_auth
+class GetherServerContainersDiskLoadHandler(APIHandler):
+    """get the disk container use server 
+    
+    """
+    
+    server_opers = Server_Opers()
+    
+    @asynchronous
+    def post(self):
+        args = self.get_all_arguments()
+        containers = args.get('containerNameList')
+        container_name_list = containers.split(',')
+        if not (container_name_list and isinstance(container_name_list, list)):
+            raise HTTPAPIError(status_code=400, error_detail="containerNameList is illegal!",\
+                                notification = "direct", \
+                                log_message= "containerNameList is illegal!",\
+                                response =  "please check params!")
+        
+        host_ip = self.request.remote_ip
+        container_disk_load = {}
+        try:
+            container_disk_load = self.server_opers.get_containers_disk_load(container_name_list)
+        except:
+            logging.error( str( traceback.format_exc() ) )
+            raise HTTPAPIError(status_code=500, error_detail="server exceptions",\
+                                notification = "direct", \
+                                log_message= "server exception",\
+                                response =  "server exception!")
+        
+        logging.info('get disk load on this server:%s, result:%s' %( host_ip, str(container_disk_load)) )
+        self.finish(container_disk_load)
+
+
+@require_basic_auth
+class AddServerMemoryHandler(APIHandler):
+    
+    server_opers = Server_Opers()
+    
+    @asynchronous
+    def post(self):
+        args = self.get_all_arguments()
+        containers = args.get('containerNameList')
+        container_name_list = containers.split(',')
+        if not (container_name_list and isinstance(container_name_list, list)):
+            raise HTTPAPIError(status_code=400, error_detail="containerNameList is illegal!",\
+                                notification = "direct", \
+                                log_message= "containerNameList is illegal!",\
+                                response =  "please check params!")
+        
+        host_ip = self.request.remote_ip
+        mem_add_result = {}
+        try:
+            mem_add_result = self.server_opers.add_containers_memory(container_name_list)
+        except:
+            logging.error( str( traceback.format_exc() ) )
+            raise HTTPAPIError(status_code=500, error_detail="server exceptions",\
+                                notification = "direct", \
+                                log_message= "server exception",\
+                                response =  "server exception!")
+        
+        logging.info('add containers :%s memory on this server:%s, result:%s' % ( str(container_name_list), host_ip, str(mem_add_result)) )
+        self.finish(mem_add_result)
+        
