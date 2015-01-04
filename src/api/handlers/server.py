@@ -92,7 +92,6 @@ class CollectContainerResHandler(APIHandler):
                                 log_message= "get container resource failed!",\
                                 response =  "please check!")
         
-        self._logger.setLevel(logging.INFO)
         self.finish(container_res)
 
 

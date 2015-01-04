@@ -296,17 +296,18 @@ class UpdateServer(object):
         add, delete, both = self._compare(host_containers, zk_containers)
         
         for item in add:
-            self.update_add_note(item)
+            self.update_add_node(item)
         for item in delete:
-            self.update_del_note(item)
+            self.update_del_node(item)
         for item in both:
-            self.update_both_note(item)
+            self.update_both_node(item)
 
-    def update_both_note(self, container_name):
+    def update_both_node(self, container_name):
         status = {}
         server_info = self._get_container_info_as_zk(container_name)
         zk_con_info = self.zkOper.retrieve_container_node_value_from_containerName(container_name)
         if server_info != zk_con_info:
+            logging.info('update both node zookeeper info')
             self.zkOper.write_container_node_value_by_containerName(container_name, server_info)
         
         server_con_stat = get_container_stat(container_name)
@@ -316,13 +317,13 @@ class UpdateServer(object):
             status.setdefault('message',  '')
             self.zkOper.write_container_status_by_containerName(container_name, status)
 
-    def update_add_note(self, container_name):
+    def update_add_node(self, container_name):
         status = {}
         create_info = self._get_container_info_as_zk(container_name)
         logging.info('create_info as zk: \n%s' % str( create_info ) )
         self._write_container_into_zk(container_name, create_info)
 
-    def update_del_note(self, container_name):
+    def update_del_node(self, container_name):
         status = {'status': 'destroyed', 'message': ''}
         self.zkOper.write_container_status_by_containerName(container_name, status)
 
