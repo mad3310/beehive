@@ -121,9 +121,6 @@ class UpdateServerClusterHandler(APIHandler):
         dict = {}
         dict.setdefault("message", "serverCluster update successful")
         self.finish(dict)
-        
-
-class AddServersMemoryHandler(APIHandler): pass
 
 
 @require_basic_auth
