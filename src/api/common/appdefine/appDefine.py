@@ -21,7 +21,7 @@ define('smtp_user', default = "mcluster", help = 'smtp user')
 define('smtp_password', default = "Mcl_20140903!", help = 'smtp password')
 define('smtp_from_address', default='mcluster@letv.com', help = 'smtp from address')
 define('smtp_duration', default = 10000, type = int, help = 'smtp duration')
-define('smtp_tls', default = True, type = bool, help = 'smtp tls')
+define('smtp_tls', default = False, type = bool, help = 'smtp tls')
 
 
 define("base_dir", default=base_dir, help="project base dir")

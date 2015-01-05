@@ -321,7 +321,7 @@ class ZkOpers(object):
         self.zk.set(path, str(containerClusterProps))
 
     def write_container_node_value(self, cluster, container_ip, containerProps):
-        """write container value
+        """write container node value not write status value
         
         """
         
@@ -339,7 +339,6 @@ class ZkOpers(object):
         container_ip = self.get_containerIp(cluster, container_name)
         self.write_container_node_value(cluster, container_ip, containerProps)
 
-            
     def write_container_node_info(self, status, containerProps):
         """write container value and status value
         
@@ -352,6 +351,9 @@ class ZkOpers(object):
         logging.info('get container cluster :%s' % cluster)
         container_ip = con.ip()
         logging.info('get container ip :%s' % container_ip)
+        if not (container_ip and cluster):
+            logging.error('get container ip or cluster name failed, not write this info')
+            return
         clusterUUID = self.getClusterUUID()
         path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + cluster + "/" + container_ip
         self.zk.ensure_path(path)

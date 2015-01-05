@@ -315,13 +315,16 @@ class Container_destroy_action(Abstract_Async_Thread):
             destroy_rst.setdefault('message', '')
 
         self.zkOper.write_container_status_by_containerName(self.container_name, destroy_rst)
-    
+
     def _get_normal_node_mount_dir(self):
         mount_dir = ''
-        if 'vip' not in self.container_name: 
-            con_inspect = self.docker_opers.inspect_container(self.container_name)
-            logging.info('inspect:%s, type:%s' % (con_inspect, type(con_inspect)) )
-            mount_dir = con_inspect.get('Volumes').get('/srv/mcluster')
+        con = Container(self.container_name)
+        type = con.type()
+        if 'vip' in type:
+            logging.info('vip node, no need to remove mount dir!')
+        else:
+            volumes = con.volumes()
+            mount_dir = volumes.get('/srv/mcluster')
             if not mount_dir:
                 mount_dir = ''
         return mount_dir
