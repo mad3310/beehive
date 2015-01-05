@@ -502,7 +502,7 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
         
     def __dispatch_create_container_task(self, create_container_node_ip_list,  create_container_arg_list, 
                                          container_count, admin_user, admin_passwd):
-        logging.info('create_container_arg_list :%s' % str(create_container_arg_list))
+        #logging.info('create_container_arg_list :%s' % str(create_container_arg_list))
         container_finished_flag_dict = {}
         for i in range(container_count):
             args_dict = create_container_arg_list[i]
