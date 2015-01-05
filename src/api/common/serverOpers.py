@@ -48,7 +48,7 @@ class Server_Opers(Abstract_Async_Thread):
     def get_all_containers_mem_load(self):
         try:
             load_dict = {}
-            containers = get_all_containers()
+            containers = get_all_containers(False)
             for container in containers:
                 load = {}
                 conl = ContainerLoad(container)
@@ -63,7 +63,7 @@ class Server_Opers(Abstract_Async_Thread):
             self.threading_exception_queue.put(sys.exc_info())
 
     def get_all_containers_under_oom(self):
-        containers = get_all_containers()
+        containers = get_all_containers(False)
         alarm_item = []
         for container in containers:
             con = Container(container)
@@ -75,7 +75,7 @@ class Server_Opers(Abstract_Async_Thread):
         return alarm_item
 
     def _get_containers(self, container_name_list):
-        host_cons = get_all_containers()
+        host_cons = get_all_containers(False)
         return list ( set(host_cons) & set(container_name_list) )
 
     def open_containers_under_oom(self, container_name_list):

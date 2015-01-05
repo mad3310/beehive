@@ -142,6 +142,8 @@ class CheckServersContainersUnderOom(APIHandler):
                 body = json.loads(response.body.strip())
                 logging.info('response body : %s' % str(body) )
                 under_oom = body.get('response')
+                if not isinstance(under_oom, dict):
+                    under_oom = {'serverError': ['code error']}
                 server_cons_under_oom.setdefault(server, under_oom)
         except:
             logging.error( str(traceback.format_exc() ) )
