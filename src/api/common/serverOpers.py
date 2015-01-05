@@ -307,7 +307,7 @@ class UpdateServer(object):
         server_info = self._get_container_info_as_zk(container_name)
         zk_con_info = self.zkOper.retrieve_container_node_value_from_containerName(container_name)
         if server_info != zk_con_info:
-            logging.info('update both node zookeeper info')
+            logging.info('update both node zookeeper info, container name :%s' % container_name)
             self.zkOper.write_container_node_value_by_containerName(container_name, server_info)
         
         server_con_stat = get_container_stat(container_name)

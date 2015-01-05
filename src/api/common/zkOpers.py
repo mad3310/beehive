@@ -353,6 +353,7 @@ class ZkOpers(object):
         logging.info('get container ip :%s' % container_ip)
         if not (container_ip and cluster):
             logging.error('get container ip or cluster name failed, not write this info')
+            logging.info('inspect : %s' % str(inspect) )
             return
         clusterUUID = self.getClusterUUID()
         path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + cluster + "/" + container_ip
