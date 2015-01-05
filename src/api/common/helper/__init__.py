@@ -205,10 +205,15 @@ def get_container_stat(container_name):
             elif 'Exited' in stat:
                 return 'stopped'
 
-def get_all_containers():
+def get_all_containers(all=True):
+    """get all containers on some server
+    
+    all -> True  all containers on such server
+    all -> False  started containers on such server
+    """
     container_name_list = []
     c = docker.Client('unix://var/run/docker.sock')
-    container_info_list = c.containers(all=True)
+    container_info_list = c.containers(all=all)
     for container_info in container_info_list:
         name = container_info.get('Names')[0]
         name = name.replace('/', '')

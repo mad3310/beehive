@@ -122,6 +122,7 @@ class UpdateServerClusterHandler(APIHandler):
         dict.setdefault("message", "serverCluster update successful")
         self.finish(dict)
 
+
 @require_basic_auth
 class SwitchServersUnderoomHandler(APIHandler):
     
