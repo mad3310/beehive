@@ -289,8 +289,8 @@ class ContainerCluster_Action(Abstract_Async_Thread):
         for contaier_ip in container_ip_list:
             container_name_list = []
             container_info = self.zkOper.retrieve_container_node_value(self.cluster, contaier_ip)
-            container_name = container_info.get('container_name')
-            host_ip = container_info.get('host_ip')
+            container_name = container_info.get('containerName')
+            host_ip = container_info.get('hostIp')
             if host_ip in params:
                 container_name_list.append(params[host_ip])
                 container_name_list.append(container_name)
