@@ -84,7 +84,7 @@ class Container():
         create_info = {}
         if isinstance(container_node_value, dict):
             self.inspect = container_node_value.get('inspect')
-            create_info.setdefault('hostIp', container_node_value.get('host_ip') )
+            create_info.setdefault('hostIp', container_node_value.get('hostIp') )
             create_info.setdefault('type', container_node_value.get('type') )
             container_name = self.name()
             create_info.setdefault('containerClusterName', self.cluster(container_name) )
