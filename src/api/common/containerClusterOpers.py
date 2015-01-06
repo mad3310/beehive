@@ -673,6 +673,8 @@ class GetClustersChanges(Abstract_Container_Opers):
             cluster.setdefault('clusterName', cluster_name)
             for node_ip,node_value in nodes.items():
                 create_info = node_value.get('create_info')
+                con = Container()
+                create_info = con.create_info(create_info)
                 nodeInfo.append(create_info)
             cluster.setdefault('nodeInfo', nodeInfo)
             clusters.append(cluster)
