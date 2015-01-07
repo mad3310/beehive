@@ -84,15 +84,17 @@ class CheckServersContainersMemLoad(APIHandler):
                 requesturi = 'http://%s:%s/monitor/server/containers/memory' % (server, options.port)
                 logging.info('server requesturi: %s' % str(requesturi))
                 response = yield Task(async_client.fetch, requesturi)
+                logging.info('mem response body: %s' % str(response.body) )
                 body = json.loads(response.body.strip())
                 con_mem_load = body.get('response')
                 server_cons_mem_load.setdefault(server, con_mem_load)
         except:
-            logging.error( str(traceback.format_exc() ) )
+            error_msg = str(traceback.format_exc() )
+            logging.error(error_msg)
             raise HTTPAPIError(status_code=500, error_detail="code error!",\
                                notification = "direct", \
                                log_message= "code error!",\
-                               response =  "code error!")
+                               response =  {"code error":error_msg} )
         
         async_client.close()
         self.finish( server_cons_mem_load )
@@ -146,11 +148,12 @@ class CheckServersContainersUnderOom(APIHandler):
                     under_oom = {'serverError': ['code error']}
                 server_cons_under_oom.setdefault(server, under_oom)
         except:
-            logging.error( str(traceback.format_exc() ) )
+            error_msg = str(traceback.format_exc() )
+            logging.error(error_msg)
             raise HTTPAPIError(status_code=500, error_detail="code error!",\
                                notification = "direct", \
                                log_message= "code error!",\
-                               response =  "code error!")
+                               response = {"code error":error_msg} )
         
         async_client.close()
         self.finish( server_cons_under_oom )
