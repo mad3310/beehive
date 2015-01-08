@@ -373,7 +373,10 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
         
         create_container_arg_list = self._get_container_params(containerCount, containerClusterName, adminUser, adminPasswd)
 
-        create_container_node_ip_list = select_ip_list
+        if select_ip_list:
+            create_container_node_ip_list = select_ip_list
+        else:
+            create_container_node_ip_list = self.__choose_host()
         
         logging.info('choose host iplist: %s' % str(create_container_node_ip_list) )
         
