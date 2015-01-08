@@ -163,7 +163,7 @@ class CheckContainersUnderOom(CheckStatusBase):
             adminUser, adminPasswd = _retrieve_userName_passwd()
             uri = 'http://%s:%s/monitor/serverCluster/containers/under_oom' % (host_ip, options.port)
             logging.info('get uri :%s' % uri)
-            ret = http_get(uri, auth_username = adminUser, auth_password = adminPasswd)
+            ret = http_get(uri, _connect_timeout=40.0, _request_timeout=40.0, auth_username = adminUser, auth_password = adminPasswd)
             rst = ret.get('response')
         except:
             error_msg = str(traceback.format_exc())
@@ -205,15 +205,20 @@ class CheckContainersMemLoad(CheckStatusBase):
 
     def _get(self):
         try:
+            rst = {}
             host_ip = getHostIp()
             logging.info('host ip :%s' % host_ip)
             adminUser, adminPasswd = _retrieve_userName_passwd()
             uri = 'http://%s:%s/monitor/serverCluster/containers/memory' % (host_ip, options.port)
             logging.info('get uri :%s' % uri)
-            ret = http_get(uri, auth_username = adminUser, auth_password = adminPasswd)
-            return ret.get('response')
+            ret = http_get(uri, _connect_timeout=40.0, _request_timeout=40.0, auth_username = adminUser, auth_password = adminPasswd)
+            rst = ret.get('response')
         except:
-            logging.error( str(traceback.format_exc()) )
+            error_msg = str(traceback.format_exc())
+            logging.error(error_msg)
+            rst.setdefault('code error', error_msg)
+        finally:
+            return rst
 
     def __get_host_overload_containers(self, containers_mem_load):
         ret = {}
