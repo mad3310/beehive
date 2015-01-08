@@ -25,7 +25,7 @@ class MclusterManager(Abstract_Container_Opers):
         child.expect(["bash", pexpect.EOF, pexpect.TIMEOUT], timeout=self.timeout)
         child.sendline("""[[ $(grep -c "GRANT ALL PRIVILEGES ON *.* TO 'root'@'127.0.0.1' IDENTIFIED BY 'Mcluster' WITH GRANT OPTION;" /usr/share/mysql/mcluster-bootstrap) -eq 0 ]] && sed -i "/DROP DATABASE test/i\GRANT ALL PRIVILEGES ON *.* TO 'root'@'127.0.0.1' IDENTIFIED BY 'Mcluster' WITH GRANT OPTION;" /usr/share/mysql/mcluster-bootstrap""")
         child.expect(["bash",pexpect.EOF, pexpect.TIMEOUT], timeout=self.timeout)
-        child.sendline("""[[ $(grep -c "GRANT RELOAD, LOCK TABLES, REPLICATION CLIENT, CREATE TABLESPACE, SUPER ON *.* TO 'backup'@'%' IDENTIFIED BY 'bakcup';" /usr/share/mysql/mcluster-bootstrap) -eq 0 ]] && sed -i "/DROP DATABASE test/i\GRANT RELOAD, LOCK TABLES, REPLICATION CLIENT, CREATE TABLESPACE, SUPER ON *.* TO 'backup'@'%' IDENTIFIED BY 'bakcup';" /usr/share/mysql/mcluster-bootstrap""")
+        child.sendline("""[[ $(grep -c "GRANT RELOAD, LOCK TABLES, REPLICATION CLIENT, CREATE TABLESPACE, SUPER ON *.* TO 'backup'@'%' IDENTIFIED BY 'backup';" /usr/share/mysql/mcluster-bootstrap) -eq 0 ]] && sed -i "/DROP DATABASE test/i\GRANT RELOAD, LOCK TABLES, REPLICATION CLIENT, CREATE TABLESPACE, SUPER ON *.* TO 'backup'@'%' IDENTIFIED BY 'backup';" /usr/share/mysql/mcluster-bootstrap""")
         child.expect(["bash",pexpect.EOF, pexpect.TIMEOUT], timeout=self.timeout)
         child.sendline("service mcluster-manager restart")
         child.expect(["OK", pexpect.EOF, pexpect.TIMEOUT], timeout=self.timeout)

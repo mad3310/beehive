@@ -45,9 +45,24 @@ class ResourceVerify():
             error_msg = 'server nums are not enough, two data node can not be on a server!'
         
         logging.info('select_ip_list:%s' % str(select_ip_list))
+        if not self.check_hosts_illegal(select_ip_list, nodeCount):
+            error_msg += 'two mcluster data nodes are on a server, illegal!'
         result_dict.setdefault('error_msg', error_msg)
         result_dict.setdefault('select_ip_list', select_ip_list)
         return result_dict
+
+    def check_hosts_illegal(self, select_ip_list, node_count):
+        """mcluster data nodes can't be on a server 
+        
+        """
+        data_node_count = node_count - 1
+        is_illegal = True
+        if len(select_ip_list) <= (data_node_count -1):
+            is_illegal = False
+        data_hosts = select_ip_list[:data_node_count]
+        if len( set(data_hosts) ) != data_node_count:
+            is_illegal = False
+        return is_illegal
 
     def get_host_ip_list(self, host_ip_list, container_num):
 

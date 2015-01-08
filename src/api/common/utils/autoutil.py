@@ -106,7 +106,7 @@ def http_post(url, body={}, _connect_timeout=40.0, _request_timeout=40.0, auth_u
         logging.error(str(e))
         return e
 
-def http_get(url, _connect_timeout=30.0, _request_timeout=30.0, auth_username=None, auth_password=None):   
+def http_get(url, _connect_timeout=40.0, _request_timeout=40.0, auth_username=None, auth_password=None):   
     try:
         request = HTTPRequest(url=url, method='GET', connect_timeout=_connect_timeout, request_timeout=_request_timeout,\
                               auth_username = auth_username, auth_password = auth_password)

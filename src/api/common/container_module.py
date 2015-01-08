@@ -80,3 +80,18 @@ class Container():
     def id(self):
         return self.inspect.get('Id')
         
+    def create_info(self, container_node_value):
+        create_info = {}
+        if isinstance(container_node_value, dict):
+            self.inspect = container_node_value.get('inspect')
+            create_info.setdefault('hostIp', container_node_value.get('hostIp') )
+            create_info.setdefault('type', container_node_value.get('type') )
+            container_name = self.name()
+            create_info.setdefault('containerClusterName', self.cluster(container_name) )
+            create_info.setdefault('zookeeperId', self.zookeeper_id() )
+            create_info.setdefault('gateAddr', self.gateway() )
+            create_info.setdefault('netMask', self.netmask() )
+            create_info.setdefault('mountDir', str(self.volumes()) )
+            create_info.setdefault('ipAddr', self.ip() )
+            create_info.setdefault('containerName', self.name() )
+        return create_info    

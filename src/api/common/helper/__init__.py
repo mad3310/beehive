@@ -225,15 +225,3 @@ def check_container_exists(container_name):
     container_name_list = get_all_containers()
     return container_name in container_name_list
 
-# def check_container_exists(container_name):
-#     c = docker.Client('unix://var/run/docker.sock')
-#     container_info_list = c.containers(all=True)
-#     flag = False
-#     for container_info in container_info_list:
-#         name = container_info.get('Names')[0]
-#         name = name.replace('/', '')
-#         logging.info('name:%s; container_name:%s' %(name, container_name))
-#         if name == container_name:
-#             flag = True
-#             break
-#     return flag
