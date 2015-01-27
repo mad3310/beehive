@@ -36,7 +36,7 @@ class ServerCluster_Opers(Abstract_Async_Thread):
 
         http_client = tornado.httpclient.AsyncHTTPClient()
           
-        succ, fail = [], []
+        succ, fail, return_result  = [], [], ''
         key_sets = set()
         server_list = self.zkOper.retrieve_data_node_list()
          

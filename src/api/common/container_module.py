@@ -6,9 +6,7 @@ from dockerOpers import Docker_Opers
 
 class Container():
     def __init__(self, container=None, inspect={}, inspect_file=None):
-        self.inspect = {}
-        if not self.inspect:
-            self.init_inspect(container, inspect, inspect_file)
+        self.init_inspect(container, inspect, inspect_file)
 
     def init_inspect(self, container=None, inspect={}, inspect_file=None):
         if container:

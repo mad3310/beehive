@@ -32,7 +32,7 @@ class ContainerInfoAsyncHandler:
         self._action()
     
     def _action(self):
-        self.check_cons_mem_load.check()
+        #self.check_cons_mem_load.check()
         self.check_cons_under_oom.check()
 
 
