@@ -3,7 +3,7 @@
 # container-manager
 # Author: 	zhoubingzheng <zhoubingzheng@letv.com>
 #
-# chkconfig: 2345 09 91
+# chkconfig: 2345 09 92
 # description: container manager
 
 ### BEGIN INIT INFO
