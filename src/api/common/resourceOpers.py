@@ -539,7 +539,7 @@ class Res_Opers():
     def get_container_children_pid(self, ppid = 1):
         invokeCmd = InvokeCommand()
        # _shell = options.pid_children + " " + str(ppid)
-        _shell = '/root/workspace1/Container_manager/src/api/shell/list_children.sh %s' % ppid
+        _shell = 'shell/list_children.sh %s' % ppid
         ret = invokeCmd._runSysCmd(_shell)
         pid_str = ret[0]
         pid_list =pid_str.strip().split()
