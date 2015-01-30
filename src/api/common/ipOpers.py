@@ -16,7 +16,6 @@ import Queue
 from zkOpers import ZkOpers
 from utils.autoutil import doInThread
 from utils.exceptions import MyError
-from abstractContainerOpers import Abstract_Container_Opers
 from resourceOpers import Res_Opers
 
 
