@@ -6,12 +6,14 @@ from handlers.server import *
 from handlers.containerCluster import *
 from handlers.container import *
 from handlers.monitor import *
+from handlers.ip import *
 from handlers.admin import AdminConf, AdminUser, AdminReset
 
 handlers = [
     (r"/admin/conf", AdminConf),
     (r"/admin/user", AdminUser),
     (r"/admin/reset", AdminReset),
+    (r"/admin/ips", IPHandler),
     (r"/serverCluster", ServerClusterHandler),
     (r"/serverCluster/update", UpdateServerClusterHandler),
     (r"/serverCluster/resource", GetServersInfoHandler),
@@ -35,8 +37,6 @@ handlers = [
     (r"/containerCluster/createStatus/(.*)", CheckCreateClusterStatusHandler),
     (r"/containerCluster/status/(.*)", CheckContainerClusterStatusHandler),
     (r"/containerCluster/conf", ClusterConfigHandler),
-    (r"/containerCluster/ips/add", AddIpsIntoIpPoolHandler),
-    (r"/containerCluster/ips/get", GetIpsFromIpPool),
     (r"/inner/container", ContainerHandler),
     (r"/container/start", StartContainerHandler),
     (r"/container/stop", StopContainerHandler),
