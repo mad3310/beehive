@@ -27,8 +27,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         super(ContainerCluster_Opers, self).__init__()
     
     def create(self, dict):
-        logging.info('create msg: %s' % dict)
-        containerCluster_create_action = ContainerCluster_Create_Action(dict)
+        containerCluster_create_action = ContainerCluster_create_Action(dict)
         containerCluster_create_action.start()
     
     def start(self, containerClusterName):
@@ -114,24 +113,6 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         con = Container()
         create_info = con.create_info(container_node_value)
         return create_info
-
-#     def __get_create_info(self, containerClusterName, container_node):
-#         create_info = {}
-#         container_node_value = self.zkOper.retrieve_container_node_value(containerClusterName, container_node)
-#         inspect = container_node_value.get('inspect')
-#         
-#         create_info.setdefault('hostIp', container_node_value.get('hostIp') )
-#         create_info.setdefault('type', container_node_value.get('type') )
-#         con = Container(inspect=inspect)
-#         container_name = con.name()
-#         create_info.setdefault('containerClusterName', con.cluster(container_name) )
-#         create_info.setdefault('zookeeperId', con.zookeeper_id() )
-#         create_info.setdefault('gateAddr', con.gateway() )
-#         create_info.setdefault('netMask', con.netmask() )
-#         create_info.setdefault('mountDir', str(con.volumes()) )
-#         create_info.setdefault('ipAddr', con.ip() )
-#         create_info.setdefault('containerName', con.name() )
-#         return create_info
 
     def check_create_status(self, containerClusterName):
         failed_rst = {'code':"000001"}
@@ -326,11 +307,11 @@ class ContainerCluster_destroy_Action(ContainerCluster_Action):
         super(ContainerCluster_destroy_Action, self).__init__(containerClusterName, 'remove')
 
 
-class ContainerCluster_Create_Action(Abstract_Async_Thread): 
+class ContainerCluster_create_Action(Abstract_Async_Thread): 
     _dict = {}
     
     def __init__(self, _dict):
-        super(ContainerCluster_Create_Action, self).__init__()
+        super(ContainerCluster_create_Action, self).__init__()
         self.dict = _dict
         
     def run(self):
@@ -617,8 +598,10 @@ class ContainerCluster_Create_Action(Abstract_Async_Thread):
 class ClusterInfoCollector(Abstract_Container_Opers):
     
     def __init__(self):
-        pass
-    
+        '''
+        Constructor
+        '''
+            
     def get_clusters_zk(self):
         clusters_zk_info = {}
         cluster_name_list = self.zkOper.retrieve_cluster_list()
