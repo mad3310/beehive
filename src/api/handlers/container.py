@@ -69,14 +69,14 @@ class StartContainerHandler(APIHandler):
         
         container_name = args.get('containerName')
         if not container_name:
-            raise HTTPAPIError(status_code=400, error_detail="no container_name argument!",\
+            raise HTTPAPIError(status_code=417, error_detail="no container_name argument!",\
                                 notification = "direct", \
                                 log_message= "no container_name argument!",\
                                 response =  "please check params!")
         
         exists = check_container_exists(container_name)
         if not exists:
-            raise HTTPAPIError(status_code=400, error_detail="container %s not exist!" % container_name,\
+            raise HTTPAPIError(status_code=417, error_detail="container %s not exist!" % container_name,\
                                 notification = "direct", \
                                 log_message= "container %s not exist!" % container_name,\
                                 response =  "please check!")
@@ -173,7 +173,6 @@ class RemoveContainerHandler(APIHandler):
             return
           
         try:
-            logging.info( container_name )
             self.container_opers.destroy(container_name)
         except:
             logging.error( str(traceback.format_exc()) )
