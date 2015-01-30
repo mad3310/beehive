@@ -15,7 +15,6 @@ from handlers.base import APIHandler
 from common.tornado_basic_auth import require_basic_auth
 from common.utils.exceptions import HTTPAPIError
 from common.containerClusterOpers import * 
-from common.ipOpers import IpOpers
 from common.helper import *
 from common.mclusterOper import MclusterManager
 
@@ -228,28 +227,6 @@ class ContainerClusterStopHandler(APIHandler):
         massage.setdefault("message", "due to stop a container cluster need a lot time, please wait and check the result~")
         self.finish(massage)
 
-
-@require_basic_auth
-class AddIpsIntoIpPoolHandler(APIHandler):
-
-    ip_opers = IpOpers()
-    
-    #curl --user root:root -d"ipSegment=10.200.85.xxx&&ipCount=50" http://localhost:8888/containerCluster/ips
-    @asynchronous
-    def post(self):
-        args = self.get_all_arguments()
-        try:
-            self.ip_opers.write_into_ipPool(args)
-        except:
-            logging.error( str(traceback.format_exc()) )
-            raise HTTPAPIError(status_code=500, error_detail="lock by other thread on assign ip processing",\
-                                response =  "check if the zookeeper ensure the path!")
-        
-        dict = {}
-        dict.setdefault("message", "write ip to ip pools successfully!")
-        self.finish(dict)
-
-
 class StartMclusterManagerHandler(APIHandler):
 
     mcluster_manager = MclusterManager()
@@ -339,7 +316,6 @@ class CheckClusterSyncHandler(APIHandler):
             get_cluster_changes = GetClustersChanges()
             res_info =  get_cluster_changes.get_res()      
         except:
-            logging.error( str(traceback.format_exc()) )
             raise HTTPAPIError(status_code=500, error_detail="code error!",\
                             notification = "direct", \
                             log_message= "code error!",\
@@ -349,25 +325,3 @@ class CheckClusterSyncHandler(APIHandler):
         logging.info('data:%s' % str(res_info))
         dict.setdefault('data', res_info)
         self.finish(dict)
-
-
-@require_basic_auth
-class GetIpsFromIpPool(APIHandler):
-    
-    ip_opers = IpOpers()
-    
-    @asynchronous
-    def get(self):
-        result, ips = {}, []
-        try:
-            ips = self.ip_opers.get_ips_from_ipPool()
-        except:
-            logging.error( str(traceback.format_exc()) )
-            raise HTTPAPIError(status_code=500, error_detail="code error!",\
-                            notification = "direct", \
-                            log_message= "code error!",\
-                            response =  "code error!")
-        
-        result.setdefault('ips', ips)
-        self.finish(result)
-        
