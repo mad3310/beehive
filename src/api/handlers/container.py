@@ -6,6 +6,7 @@ import traceback
 
 from base import APIHandler
 from common.containerOpers import *
+from common.serverOpers import *
 from common.utils.exceptions import HTTPAPIError
 from common.tornado_basic_auth import require_basic_auth
 from common.helper import *
@@ -187,6 +188,30 @@ class RemoveContainerHandler(APIHandler):
         self.finish(dict)
 
 
+@require_basic_auth
+class GetherContainerMemeoyHandler(APIHandler):
+    
+    @asynchronous
+    def get(self, container_name):
+        result = {}
+        logging.info('container_name:%s' % container_name)
+        conl = ContainerLoad(container_name)
+        result = conl.get_memory_stat_item()
+        self.finish(result)
+
+
+@require_basic_auth
+class GetherContainerCpuacctHandler(APIHandler):
+    
+    @asynchronous
+    def get(self, container_name):
+        result = {}
+        logging.info('container_name:%s' % container_name)
+        conl = ContainerLoad(container_name)
+        result = conl.get_cpuacct_stat_item()
+        self.finish(result)
+
+    
 @require_basic_auth
 class CheckContainerStatusHandler(APIHandler):
     '''
