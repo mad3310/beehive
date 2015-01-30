@@ -16,7 +16,7 @@ from common.tornado_basic_auth import require_basic_auth
 from common.utils.exceptions import HTTPAPIError
 from common.containerClusterOpers import * 
 from common.ipOpers import IpOpers
-from common.helper import *
+from common.helper import _retrieve_userName_passwd
 from common.mclusterOper import MclusterManager
 from tornado.gen import engine, Task
 from tornado.options import options
@@ -32,7 +32,7 @@ class GetherClusterMemeoyHandler(APIHandler):
     @asynchronous
     @engine
     def get(self, cluster):
-        cluster = logging.info(cluster)
+        logging.info(cluster)
         container_dict, result = {}, {}
         container_ip_list = self.zkOper.retrieve_container_list(cluster)
         for container_ip in container_ip_list:
@@ -40,6 +40,7 @@ class GetherClusterMemeoyHandler(APIHandler):
             host_ip = self.zkOper.get_hostIp(cluster, container_ip)
             container_dict.setdefault(host_ip, container_name)
         
+        auth_username, auth_password = _retrieve_userName_passwd()
         async_client = AsyncHTTPClient()
         for host_ip, container_name in container_dict.items():
             requesturi = 'http://%s:%s/container/stat/%s/memory' % (host_ip, options.port, container_name)
@@ -64,7 +65,7 @@ class GetherClusterCpuacctHandler(APIHandler):
     @asynchronous
     @engine
     def get(self, cluster):
-        cluster = logging.info(cluster)
+        logging.info(cluster)
         container_dict, result = {}, {}
         container_ip_list = self.zkOper.retrieve_container_list(cluster)
         for container_ip in container_ip_list:
@@ -72,6 +73,7 @@ class GetherClusterCpuacctHandler(APIHandler):
             host_ip = self.zkOper.get_hostIp(cluster, container_ip)
             container_dict.setdefault(host_ip, container_name)
         
+        auth_username, auth_password = _retrieve_userName_passwd()
         async_client = AsyncHTTPClient()
         for host_ip, container_name in container_dict.items():
             requesturi = 'http://%s:%s/container/stat/%s/cpuacct' % (host_ip, options.port, container_name)

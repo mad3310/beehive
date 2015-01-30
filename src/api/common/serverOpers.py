@@ -251,7 +251,7 @@ class ContainerLoad(object):
                 user = item.split(' ')[1]
                 cpuacct_stat_dict.setdefault('user', user)
             elif 'system ' in item:
-                total_swap = item.split(' ')[1]
+                system = item.split(' ')[1]
                 cpuacct_stat_dict.setdefault('system', system)
         return cpuacct_stat_dict  
 

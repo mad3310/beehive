@@ -38,7 +38,7 @@ handlers = [
     (r"/containerCluster/ips/add", AddIpsIntoIpPoolHandler),
     (r"/containerCluster/ips/get", GetIpsFromIpPool),
     (r"/containerCluster/stat/(.*)/memory", GetherClusterMemeoyHandler),
-    (r"/containerCluster/stat/(.*)/cpu", GetherClusterCpuacctHandler),
+    (r"/containerCluster/stat/(.*)/cpuacct", GetherClusterCpuacctHandler),
     (r"/inner/container", ContainerHandler),
     (r"/container/start", StartContainerHandler),
     (r"/container/stop", StopContainerHandler),

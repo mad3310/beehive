@@ -399,6 +399,7 @@ class ZkOpers(object):
     
     def get_containerName(self, cluster, container_ip):
         container_name = ''
+        clusterUUID = self.getClusterUUID()
         path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + cluster + '/' + container_ip
         container_info = self.retrieve_container_node_value(cluster, container_ip)
         inspect = container_info.get('inspect')
@@ -407,6 +408,7 @@ class ZkOpers(object):
 
     def get_hostIp(self, cluster, container_ip):
         container_name = ''
+        clusterUUID = self.getClusterUUID()
         path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + cluster + '/' + container_ip
         container_info = self.retrieve_container_node_value(cluster, container_ip)
         return container_info.get('hostIp')
