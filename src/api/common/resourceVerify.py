@@ -77,22 +77,6 @@ class ResourceVerify():
         return ip_list
 
     
-#    def get_host_ip_list(self, host_ip_list, container_num):
-#         hostip_num_dict, ip_list = {}, []
-#     
-#         for host_ip, available_host_num in host_ip_list:
-#             hostip_num_dict.setdefault(host_ip, available_host_num)
-#         
-#         for i in range(container_num):
-#             for host_ip, available_host_num in host_ip_list:
-#                 if hostip_num_dict.get(host_ip) > 0:
-#                     ip_list.append(host_ip)
-#                     hostip_num_dict[host_ip] = hostip_num_dict.get(host_ip) - 1
-#                 if len(ip_list) == container_num:
-#                     return ip_list
-#         return ip_list
-
-
 class ElectServer(object):
     
     
