@@ -193,8 +193,15 @@ class GetherContainerMemeoyHandler(APIHandler):
     
     @asynchronous
     def get(self, container_name):
+
+        exists = check_container_exists(container_name)
+        if not exists:
+            massage = {}
+            massage.setdefault("message", "container %s not exists" % container_name)
+            self.finish(massage)
+            return
+
         result, memory_stat_item = {}, {}
-        logging.info('container_name:%s' % container_name)
         conl = ContainerLoad(container_name)
         memory_stat_item = conl.get_memory_stat_item()
         current_time = get_current_time()
@@ -209,8 +216,15 @@ class GetherContainerCpuacctHandler(APIHandler):
     
     @asynchronous
     def get(self, container_name):
+
+        exists = check_container_exists(container_name)
+        if not exists:
+            massage = {}
+            massage.setdefault("message", "container %s not exists" % container_name)
+            self.finish(massage)
+            return
+
         result, cpuacct_stat_item = {}, {}
-        logging.info('container_name:%s' % container_name)
         conl = ContainerLoad(container_name)
         cpuacct_stat_item = conl.get_cpuacct_stat_item()
         current_time = get_current_time()
