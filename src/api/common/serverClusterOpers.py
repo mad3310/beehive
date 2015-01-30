@@ -18,8 +18,6 @@ class ServerCluster_Opers(Abstract_Async_Thread):
     '''
     classdocs
     '''
-    zkOper = ZkOpers('127.0.0.1', 2181)
-    
     def __init__(self):
         pass
     
