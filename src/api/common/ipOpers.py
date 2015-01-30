@@ -7,7 +7,6 @@ Created on Sep 17, 2014
 @author: root
 '''
 
-import logging
 import os
 import traceback
 import time
@@ -29,7 +28,9 @@ class IpOpers(object):
     zkOper = ZkOpers('127.0.0.1', 2181)
     
     def __init__(self):
-        pass
+        '''
+        constructor
+        '''
     
     def get_ips_from_ipPool(self):
         return self.zkOper.get_ips_from_ipPool()
@@ -67,22 +68,19 @@ class IpOpers(object):
         return all_ips       
 
     def ip_legal(self, ip):
-        try:
-            cmd = 'ping -w 2 %s' % str(ip)
-            ret = os.system(cmd)
-            if not ret:
-                logging.info('ping ip: %s result :%s' % (ip, str(ret)) )
-                return False
-            res_opers = Res_Opers()
-            host_con_ip_list = res_opers.get_containers_ip()
-            if ip in host_con_ip_list:
-                return False
-            return True
+        cmd = 'ping -w 2 %s' % str(ip)
+        ret = os.system(cmd)
+        if not ret:
+            logging.info('ping ip: %s result :%s' % (ip, str(ret)) )
+            return False
+        res_opers = Res_Opers()
+        host_con_ip_list = res_opers.get_containers_ip()
+        if ip in host_con_ip_list:
+            return False
+        return True
 
-        except:
-            logging.error( str(traceback.format_exc()) )
         
-    def ips_legal(self):
+    def __ips_legal(self):
         """
         """
         while not self.store_all_ips_queue.empty():
@@ -111,7 +109,7 @@ class IpOpers(object):
         
         logging.info('queue size :%s' % str(self.store_all_ips_queue.qsize()) )
         for i in range(thread_num):
-            thread_obj = doInThread(self.ips_legal)
+            thread_obj = doInThread(self.__ips_legal)
             thread_obj_list.append(thread_obj)
         
         while thread_obj_list:
@@ -131,8 +129,8 @@ class IpOpers(object):
         return illegal_ips
     
     def get_ip_num(self):
-        """monitor item: get ip num from ip Pool
-
+        """
+            monitor item: get ip num from ip Pool
         """
 
         ip_list = self.get_ips_from_ipPool()
