@@ -35,7 +35,7 @@ class GetherClusterMemeoyHandler(APIHandler):
         logging.info(cluster)
         exists = self.zkOper.check_containerCluster_exists(cluster)
         if not exists:
-            content = 'container cluster %s not existed, please check your cluster name' % cluster
+            content = 'container cluster %s not exist, please check your cluster name' % cluster
             message = {'message' : content}
             self.finish(message)
             return
@@ -76,7 +76,7 @@ class GetherClusterCpuacctHandler(APIHandler):
 
         exists = self.zkOper.check_containerCluster_exists(cluster)
         if not exists:
-            content = 'container cluster %s not existed, please check your cluster name' % cluster
+            content = 'container cluster %s not exist, please check your cluster name' % cluster
             message = {'message' : content}
             self.finish(message)
             return

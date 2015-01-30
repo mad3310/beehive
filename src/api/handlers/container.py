@@ -208,6 +208,7 @@ class GetherContainerMemeoyHandler(APIHandler):
         
         result.setdefault('memory', memory_stat_item)
         result.setdefault('time', current_time)
+        result.setdefault('containerName', container_name)
         self.finish(result)
 
 
@@ -230,7 +231,8 @@ class GetherContainerCpuacctHandler(APIHandler):
         current_time = get_current_time()
         
         result.setdefault('cpuacct', cpuacct_stat_item)
-        result.setdefault('time', current_time)        
+        result.setdefault('time', current_time)
+        result.setdefault('containerName', container_name)
         self.finish(result)
 
     
