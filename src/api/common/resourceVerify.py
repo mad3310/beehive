@@ -9,7 +9,6 @@ Created on Sep 8, 2014
 
 import logging
 
-from abstractContainerOpers import Abstract_Container_Opers
 from zkOpers import ZkOpers
 from tornado.options import options
 from utils.autoutil import *
@@ -94,7 +93,7 @@ class ResourceVerify():
 #         return ip_list
 
 
-class ElectServer(Abstract_Container_Opers):
+class ElectServer(object):
     
     
     def elect_server_list(self, verify_item):
@@ -102,7 +101,7 @@ class ElectServer(Abstract_Container_Opers):
         host_ip_list = self.zkOper.retrieve_servers_white_list()
         available_dict = {}
         for host_ip in host_ip_list:
-            host_score, available_host_num = self.get_score(host_ip, verify_item)
+            host_score, available_host_num = self.__get_score(host_ip, verify_item)
             if host_score != 0 :
                 score_dict.setdefault(host_ip, host_score)
                 available_dict.setdefault(host_ip, available_host_num)
@@ -117,7 +116,7 @@ class ElectServer(Abstract_Container_Opers):
                     break
         return ips_result
     
-    def get_score(self, host_ip, verify_item={}):
+    def __get_score(self, host_ip, verify_item={}):
         """
         return score and the num of avaliable hosts
         """
