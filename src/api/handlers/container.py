@@ -193,10 +193,14 @@ class GetherContainerMemeoyHandler(APIHandler):
     
     @asynchronous
     def get(self, container_name):
-        result = {}
+        result, memory_stat_item = {}, {}
         logging.info('container_name:%s' % container_name)
         conl = ContainerLoad(container_name)
-        result = conl.get_memory_stat_item()
+        memory_stat_item = conl.get_memory_stat_item()
+        current_time = get_current_time()
+        
+        result.setdefault('memory', memory_stat_item)
+        result.setdefault('time', current_time)
         self.finish(result)
 
 
@@ -205,10 +209,14 @@ class GetherContainerCpuacctHandler(APIHandler):
     
     @asynchronous
     def get(self, container_name):
-        result = {}
+        result, cpuacct_stat_item = {}, {}
         logging.info('container_name:%s' % container_name)
         conl = ContainerLoad(container_name)
-        result = conl.get_cpuacct_stat_item()
+        cpuacct_stat_item = conl.get_cpuacct_stat_item()
+        current_time = get_current_time()
+        
+        result.setdefault('cpuacct', cpuacct_stat_item)
+        result.setdefault('time', current_time)        
         self.finish(result)
 
     

@@ -3,6 +3,7 @@ import logging
 import docker
 import re, traceback
 import pexpect
+import datetime
 
 from tornado.options import options
 from tornado.httpclient import HTTPClient
@@ -10,6 +11,8 @@ from tornado.httpclient import HTTPError
 from common.configFileOpers import ConfigFileOpers
 
 confOpers = ConfigFileOpers()
+
+TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 
 def _request_fetch(request):
     #access to the target ip machine to retrieve the dict,then modify the config
@@ -225,3 +228,6 @@ def check_container_exists(container_name):
     container_name_list = get_all_containers()
     return container_name in container_name_list
 
+def get_current_time():
+    dt = datetime.datetime.now()
+    return dt.strftime(TIME_FORMAT)
