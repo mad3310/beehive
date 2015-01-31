@@ -112,7 +112,6 @@ class UpdateServerClusterHandler(APIHandler):
         try:
             self.serverCluster_opers.update()
         except:
-            logging.error( str(traceback.format_exc()) )
             raise HTTPAPIError(status_code=500, error_detail="update server failed!",\
                                 notification = "direct", \
                                 log_message= 'update  server cluster failed' ,\
@@ -169,8 +168,9 @@ class SwitchServersUnderoomHandler(APIHandler):
                                 notification = "direct", \
                                 log_message= "switch server under_oom failed, action:%s!" % switch ,\
                                 response =  "please check reasons")
-        
-        async_client.close()
+        finally:
+            async_client.close()
+            
         except_cons = list(set(container_name_list) - set(result.keys()))
         for con in except_cons:
             result.setdefault(con, 'no such container or code exception')
@@ -179,8 +179,6 @@ class SwitchServersUnderoomHandler(APIHandler):
 
 @require_basic_auth
 class GetherServersContainersDiskLoadHandler(APIHandler):
-    
-    zkOpers = ZkOpers('127.0.0.1', 2181)
     
     @asynchronous
     @engine
@@ -218,8 +216,9 @@ class GetherServersContainersDiskLoadHandler(APIHandler):
                                 notification = "direct", \
                                 log_message= "get servers containers disk load fails" ,\
                                 response =  "please check reasons")
+        finally:
+            async_client.close()
         
-        async_client.close()
         except_cons = list(set(container_name_list) - set(servers_cons_disk_load.keys()))
         for con in except_cons:
             servers_cons_disk_load.setdefault(con, 'no such container or code exception')
@@ -228,8 +227,6 @@ class GetherServersContainersDiskLoadHandler(APIHandler):
 
 @require_basic_auth
 class AddServersMemoryHandler(APIHandler):
-    
-    zkOpers = ZkOpers('127.0.0.1', 2181)
     
     @asynchronous
     @engine
@@ -261,13 +258,13 @@ class AddServersMemoryHandler(APIHandler):
                 ret = body.get('response')
                 add_mem_result.update(ret)
         except:
-            logging.error( str(traceback.format_exc() ) )
             raise HTTPAPIError(status_code=500, error_detail="add memory failed",\
                                 notification = "direct", \
                                 log_message= "add memory failed" ,\
                                 response =  "please check reasons")
-        
-        async_client.close()
+        finally:
+            async_client.close()
+            
         except_cons = list(set(container_name_list) - set(add_mem_result.keys()))
         for con in except_cons:
             add_mem_result.setdefault(con, 'no such container or code exception')
