@@ -263,17 +263,17 @@ class ClusterConfigHandler(APIHandler):
 @require_basic_auth
 class ContainerClustersInfoHandler(APIHandler):
     
+    container_cluster_opers = ContainerCluster_Opers()
     
     #curl "http://localhost:8888/clusters/info?cluster_name="""
     #curl "http://localhost:8888/clusters/info?cluster_name="abc""
     @asynchronous
     def get(self):
         
-        cluster_info_collector = ClusterInfoCollector()
-        clusters_zk_info =  cluster_info_collector.get_clusters_zk()
+        clusters_zk_info =  self.container_cluster_opers.get_clusters_zk()
         
         if not clusters_zk_info:
-            raise HTTPAPIError(status_code=-1, error_detail="There is not cluster in zookeeper",\
+            raise HTTPAPIError(status_code=417, error_detail="There is not cluster in zookeeper",\
                                notification = "direct", \
                                log_message= "There is not cluster in zookeeper",\
                                response =  "There is not cluster in zookeeper")
@@ -284,22 +284,23 @@ class ContainerClustersInfoHandler(APIHandler):
 @require_basic_auth
 class ContainerClusterInfoHandler(APIHandler):
     
+    container_cluster_opers = ContainerCluster_Opers()
     #curl "http://localhost:8888/clusters/info?cluster_name="""
     #curl "http://localhost:8888/clusters/info?cluster_name="abc""
     @asynchronous
     def get(self, containerClusterName):
         
         if not containerClusterName:
-            raise HTTPAPIError(status_code=400, error_detail="no containerClusterName argument!",\
+            raise HTTPAPIError(status_code=417, error_detail="no containerClusterName argument!",\
                                 notification = "direct", \
                                 log_message= "no containerClusterName argument!",\
                                 response =  "please check params!")
         
-        cluster_info_collector = ClusterInfoCollector()
-        cluster_zk_info =  cluster_info_collector.get_cluster_zk(containerClusterName)      
+        
+        cluster_zk_info =  self.container_cluster_opers.get_cluster_zk(containerClusterName)      
         
         if not cluster_zk_info:
-            raise HTTPAPIError(status_code=500, error_detail="There is no cluster info in zookeeper",\
+            raise HTTPAPIError(status_code=417, error_detail="There is no cluster info in zookeeper",\
                             notification = "direct", \
                             log_message= "There is  no cluster info in zookeeper",\
                             response =  "There is no cluster info in zookeeper")
@@ -310,11 +311,11 @@ class ContainerClusterInfoHandler(APIHandler):
 @require_basic_auth
 class CheckClusterSyncHandler(APIHandler):
 
+    get_cluster_changes = GetClustersChanges()
     @asynchronous
     def get(self):
         try:
-            get_cluster_changes = GetClustersChanges()
-            res_info =  get_cluster_changes.get_res()      
+            res_info =  self.get_cluster_changes.get_res()      
         except:
             raise HTTPAPIError(status_code=500, error_detail="code error!",\
                             notification = "direct", \
