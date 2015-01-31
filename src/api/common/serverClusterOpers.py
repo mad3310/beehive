@@ -14,23 +14,17 @@ from abstractAsyncThread import Abstract_Async_Thread
 from utils.autoutil import *
 
 
-class ServerCluster_Opers(Abstract_Async_Thread):
+class ServerCluster_Opers(object):
     '''
     classdocs
     '''
     def __init__(self):
-        pass
-    
-    def update(self):
-        try:
-            logging.info('do update server!')
-            self._update()
-        except:
-            logging.error( str(traceback.format_exc()) )
-            self.threading_exception_queue.put(sys.exc_info())
+        '''
+            constructor
+        '''
     
     @tornado.gen.engine
-    def _update(self):
+    def update(self):
 
         http_client = tornado.httpclient.AsyncHTTPClient()
           
