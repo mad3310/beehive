@@ -221,6 +221,30 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
             else:
                 conf_record.setdefault(key, value)
         return conf_record
+    
+    def get_clusters_zk(self):
+        clusters_zk_info = {}
+        cluster_name_list = self.zkOper.retrieve_cluster_list()
+        for cluster_name in cluster_name_list:
+            cluster_info_dict = self.get_cluster_zk(cluster_name)
+            clusters_zk_info.setdefault(cluster_name, cluster_info_dict)
+        return clusters_zk_info
+    
+    def get_cluster_zk(self, cluster_name):
+        cluster_zk_info = {}
+        container_ip_list = self.zkOper.retrieve_container_list(cluster_name)
+        
+        if None == cluster_zk_info or {} == cluster_zk_info:
+            return cluster_zk_info
+        
+        for container_ip in container_ip_list:
+            container_node = {}
+            create_info = self.zkOper.retrieve_container_node_value(cluster_name, container_ip)
+            status = self.zkOper.retrieve_container_status_value(cluster_name, container_ip)
+            container_node.setdefault('create_info', create_info)
+            container_node.setdefault('status', status)
+            cluster_zk_info.setdefault(container_ip, container_node)
+        return cluster_zk_info
 
 
 class ContainerCluster_Action(Abstract_Async_Thread):
@@ -235,7 +259,6 @@ class ContainerCluster_Action(Abstract_Async_Thread):
             logging.info('do cluster %s ' % self.action)
             self._issue_action()
         except:
-            logging.error( str(traceback.format_exc()) )
             self.threading_exception_queue.put(sys.exc_info())
     
     def _issue_action(self):
@@ -595,39 +618,12 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
             return False
 
 
-class ClusterInfoCollector(Abstract_Container_Opers):
+class GetClustersChanges(object):
     
     def __init__(self):
         '''
         Constructor
         '''
-            
-    def get_clusters_zk(self):
-        clusters_zk_info = {}
-        cluster_name_list = self.zkOper.retrieve_cluster_list()
-        for cluster_name in cluster_name_list:
-            cluster_info_dict = self.get_cluster_zk(cluster_name)
-            clusters_zk_info.setdefault(cluster_name, cluster_info_dict)
-        return clusters_zk_info
-    
-    def get_cluster_zk(self, cluster_name):
-        cluster_zk_info = {}
-        container_ip_list = self.zkOper.retrieve_container_list(cluster_name)
-        if len(container_ip_list) != 0:
-            for container_ip in container_ip_list:
-                container_node = {}
-                create_info = self.zkOper.retrieve_container_node_value(cluster_name, container_ip)
-                status = self.zkOper.retrieve_container_status_value(cluster_name, container_ip)
-                container_node.setdefault('create_info', create_info)
-                container_node.setdefault('status', status)
-                cluster_zk_info.setdefault(container_ip, container_node)
-        return cluster_zk_info
-
-
-class GetClustersChanges(Abstract_Container_Opers):
-    
-    def __init__(self):
-        pass
     
     def get_res(self):
         host_ip = self.random_host_ip()
@@ -645,14 +641,11 @@ class GetClustersChanges(Abstract_Container_Opers):
         return host_ip
     
     def _get(self, host_ip, url_get):
-        try:
-            adminUser, adminPasswd = _retrieve_userName_passwd()
-            uri = 'http://%s:%s%s' % (host_ip, options.port, url_get)
-            logging.info('get uri :%s' % uri)
-            ret = http_get(uri, auth_username = adminUser, auth_password = adminPasswd)
-            return ret.get('response')
-        except:
-            logging.error( str(traceback.format_exc()) )
+        adminUser, adminPasswd = _retrieve_userName_passwd()
+        uri = 'http://%s:%s%s' % (host_ip, options.port, url_get)
+        logging.info('get uri :%s' % uri)
+        ret = http_get(uri, auth_username = adminUser, auth_password = adminPasswd)
+        return ret.get('response')
 
     def __reget_res(self, res):
         
