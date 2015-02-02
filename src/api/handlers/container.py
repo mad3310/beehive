@@ -5,11 +5,10 @@ import logging
 import traceback
 
 from base import APIHandler
-from common.containerOpers import *
-from common.utils.exceptions import HTTPAPIError
-from common.tornado_basic_auth import require_basic_auth
-from common.helper import *
+from utils.exceptions import HTTPAPIError
+from tornado.tornado_basic_auth import require_basic_auth
 from tornado.web import asynchronous
+from container.containerOpers import Container_Opers
 
 
 @require_basic_auth
@@ -17,25 +16,31 @@ class ContainerHandler(APIHandler):
     
     container_opers = Container_Opers()
     
+    '''
+    @todo: 
+    1. should be modify to async way to issue this process and 
+    2. check the create's process exception rethrow problem
+    '''
     @asynchronous
     def post(self):
         args = self.get_all_arguments()
-        create_failed_rst = self.container_opers.issue_create_action(args)
-        if create_failed_rst:
-            logging.error('container %s create failed' % create_failed_rst)
-            raise HTTPAPIError(status_code=417, error_detail="container created failed!",\
+        try:
+            self.container_opers.create(args)
+        except:
+            raise HTTPAPIError(status_code=500, error_detail="container created failed!",\
                                 notification = "direct", \
                                 log_message= "container created failed!",\
                                 response =  "container created failed!")
-        dict = {}
-        dict.setdefault("message", "Success Create Container")
-        self.finish(dict)
+            
+        return_message = {}
+        return_message.setdefault("message", "Success Create Container")
+        self.finish(return_message)
         
 #     def delete(self, container_name):
 # #         args = self.get_all_arguments()
 # #         container_name = args.get('containerName')
 #         logging.info('container_name: %s' % container_name)
-#         exists = check_container_exists(container_name)
+#         exists = self.container_opers.check_container_exists(container_name)
 #         if not exists:
 #             massage = {}
 #             massage.setdefault("status", "not exist")
@@ -48,10 +53,10 @@ class ContainerHandler(APIHandler):
 #             self.container_opers.destroy(container_name)
 #         except:
 #             logging.error( str(traceback.format_exc()) )
-#             raise HTTPAPIError(status_code=500, error_detail="container start raise exception!",\
+#             raise HTTPAPIError(status_code=500, error_detail="container __start raise exception!",\
 #                                 notification = "direct", \
-#                                 log_message= "container start raise exception",\
-#                                 response =  "container start raise exception, please check!!")
+#                                 log_message= "container __start raise exception",\
+#                                 response =  "container __start raise exception, please check!!")
 #          
 #         dict = {}
 #         dict.setdefault("message", "remove container has been done but need some time, please wait a moment and check the result!")
@@ -74,14 +79,14 @@ class StartContainerHandler(APIHandler):
                                 log_message= "no container_name argument!",\
                                 response =  "please check params!")
         
-        exists = check_container_exists(container_name)
+        exists = self.container_opers.check_container_exists(container_name)
         if not exists:
             raise HTTPAPIError(status_code=417, error_detail="container %s not exist!" % container_name,\
                                 notification = "direct", \
                                 log_message= "container %s not exist!" % container_name,\
                                 response =  "please check!")
         
-        stat = get_container_stat(container_name)
+        stat = self.container_opers.get_container_stat(container_name)
         if stat == 'started':
             massage = {}
             massage.setdefault("status", stat)
@@ -90,17 +95,17 @@ class StartContainerHandler(APIHandler):
             return
         
         try: 
-            self.container_opers.start(container_name)
+            self.container_opers.__start(container_name)
         except:
             logging.error( str(traceback.format_exc()) )
-            raise HTTPAPIError(status_code=500, error_detail="container start raise exception!",\
+            raise HTTPAPIError(status_code=500, error_detail="container __start raise exception!",\
                                 notification = "direct", \
-                                log_message= "container start raise exception",\
-                                response =  "container start raise exception, please check!!")
+                                log_message= "container __start raise exception",\
+                                response =  "container __start raise exception, please check!!")
         
-        massage = {}
-        massage.setdefault("message", "due to start a container need a little time, please wait and check the result~")
-        self.finish(massage)
+        return_message = {}
+        return_message.setdefault("message", "due to __start a container need a little time, please wait and check the result~")
+        self.finish(return_message)
 
 
 @require_basic_auth
@@ -119,14 +124,14 @@ class StopContainerHandler(APIHandler):
                                 log_message= "no container_name argument!",\
                                 response =  "please check params!")
         
-        exists = check_container_exists(container_name)
+        exists = self.container_opers.check_container_exists(container_name)
         if not exists:
             raise HTTPAPIError(status_code=400, error_detail="container %s not exist!" % container_name,\
                                 notification = "direct", \
                                 log_message= "container %s not exist!" % container_name,\
                                 response =  "please check!")
         
-        stat = get_container_stat(container_name)
+        stat = self.container_opers.get_container_stat(container_name)
         if stat == 'stopped':
             massage = {}
             massage.setdefault("status", stat)
@@ -143,9 +148,9 @@ class StopContainerHandler(APIHandler):
                                 log_message= "container stop raise exception",\
                                 response =  "container stop raise exception, please check!!")
         
-        massage = {}
-        massage.setdefault("message", "due to stop a container need a little time, please wait and check the result~")
-        self.finish(massage)
+        return_message = {}
+        return_message.setdefault("message", "due to stop a container need a little time, please wait and check the result~")
+        self.finish(return_message)
 
 
 @require_basic_auth
@@ -164,7 +169,7 @@ class RemoveContainerHandler(APIHandler):
                                 log_message= "no container_name argument!",\
                                 response =  "please check params!")            
         
-        exists = check_container_exists(container_name)
+        exists = self.container_opers.check_container_exists(container_name)
         if not exists:
             massage = {}
             massage.setdefault("status", "not exist")
@@ -176,14 +181,14 @@ class RemoveContainerHandler(APIHandler):
             self.container_opers.destroy(container_name)
         except:
             logging.error( str(traceback.format_exc()) )
-            raise HTTPAPIError(status_code=500, error_detail="container start raise exception!",\
+            raise HTTPAPIError(status_code=500, error_detail="container __start raise exception!",\
                                 notification = "direct", \
-                                log_message= "container start raise exception",\
-                                response =  "container start raise exception, please check!!")
+                                log_message= "container __start raise exception",\
+                                response =  "container __start raise exception, please check!!")
           
-        dict = {}
-        dict.setdefault("message", "remove container has been done but need some time, please wait a moment and check the result!")
-        self.finish(dict)
+        return_message = {}
+        return_message.setdefault("message", "remove container has been done but need some time, please wait a moment and check the result!")
+        self.finish(return_message)
 
 
 @require_basic_auth
@@ -196,7 +201,7 @@ class CheckContainerStatusHandler(APIHandler):
     @asynchronous
     def get(self, container_name):
         
-        exists = check_container_exists(container_name)
+        exists = self.container_opers.check_container_exists(container_name)
         if not exists:
             massage = {}
             massage.setdefault("status", "not exist")

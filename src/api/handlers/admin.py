@@ -24,9 +24,9 @@ class AdminConf(APIHandler):
         if requestParam != {}:
             self.confOpers.setValue(options.container_manager_property, requestParam)
         
-        dict = {}
-        dict.setdefault("message", "admin conf successful!")
-        self.finish(dict)
+        return_message = {}
+        return_message.setdefault("message", "admin conf successful!")
+        self.finish(return_message)
         
 # admin reset
 # eg. curl --user root:root "http://localhost:8888/admin/reset"
@@ -54,9 +54,9 @@ class AdminReset(APIHandler):
         shutil.copyfile(dataNodePropTemFileName, dataNodePropFileName)
         shutil.copyfile(mclusterManagerCnfTemFileName, mclusterManagerCnfFileName)
         
-        dict = {}
-        dict.setdefault("message", "admin reset successful!")
-        self.finish(dict)
+        return_message = {}
+        return_message.setdefault("message", "admin reset successful!")
+        self.finish(return_message)
         
         
         
@@ -79,6 +79,6 @@ class AdminUser(APIHandler):
         if requestParam != {}:
             self.confOpers.setValue(options.server_cluster_property, requestParam)
         
-        dict = {}
-        dict.setdefault("message", "creating admin user successful!")
-        self.finish(dict)
+        return_message = {}
+        return_message.setdefault("message", "creating admin user successful!")
+        self.finish(return_message)

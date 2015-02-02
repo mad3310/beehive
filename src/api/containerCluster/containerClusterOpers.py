@@ -6,18 +6,18 @@ Created on Sep 8, 2014
 
 @author: root
 '''
-import sys, time, copy, random, re
+import sys, time, random, re
 import logging, traceback
 
 from tornado.options import options
 from abstractAsyncThread import Abstract_Async_Thread
 from abstractContainerOpers import Abstract_Container_Opers
-from helper import _request_fetch, _retrieve_userName_passwd
+from utils import _request_fetch, _retrieve_userName_passwd
 from utils.exceptions import MyError
 from utils.autoutil import *
 from zkOpers import ZkOpers
 from resourceVerify import ResourceVerify
-from container_module import Container
+from container.container_module import Container
 from utils.threading_exception_queue import Threading_Exception_Queue
 
 
@@ -59,7 +59,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
                     vip.append(status.get('status'))
                     nodes_stat.setdefault('vip', vip)
             
-            ret = self._get_cluster_status(nodes_stat)
+            ret = self.__get_cluster_status(nodes_stat)
             cluster_status.setdefault('status', ret)
             
             if ret == 'destroyed':
@@ -70,7 +70,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         except:
             logging.error(str( traceback.format_exc()) )
     
-    def _get_cluster_status(self, nodes_stat):
+    def __get_cluster_status(self, nodes_stat):
         
         stat_set = ['starting', 'started', 'stopping', 'stopped', 'destroying', 'destroyed']
         normal_nodes_stat, all_nodes_stat = [], []
@@ -340,12 +340,12 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
     def run(self):
         try:
             logging.info('begin create')
-            self._issue_create_action(self.dict)
+            self.__issue_create_action(self.dict)
         except:
             logging.info( str(traceback.format_exc()) )
             self.threading_exception_queue.put(sys.exc_info())
   
-    def _issue_create_action(self, args={}):
+    def __issue_create_action(self, args={}):
         logging.info('args:%s' % str(args))
         containerClusterName = args.get('containerClusterName')
         logging.info('containerClusterName : %s' % str(containerClusterName))
@@ -372,10 +372,10 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
                 logging.info('select_ip_list:%s' % str(select_ip_list))
         
         containerCount = verify_item.get('nodeCount')
-        self.create_container_cluser_info(containerCount, containerClusterName)
+        self.__create_container_cluser_info(containerCount, containerClusterName)
         adminUser, adminPasswd = _retrieve_userName_passwd()
         
-        create_container_arg_list = self._get_container_params(containerCount, containerClusterName, adminUser, adminPasswd)
+        create_container_arg_list = self.__get_container_params(containerCount, containerClusterName, adminUser, adminPasswd)
 
         if select_ip_list:
             create_container_node_ip_list = select_ip_list
@@ -396,7 +396,8 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         flag = True
         check_mcluster = verify_item.get('check_mcluster')
         if check_mcluster:
-            flag = self._check_mcluster_manager_stat(create_container_node_ip_list, create_container_arg_list, 6)
+            flag = self.__check_mcluster_manager_stat(create_container_node_ip_list, create_container_arg_list, 6)
+        
         if flag:
             container_cluster_info = self.zkOper.retrieve_container_cluster_info(containerClusterName)
             container_cluster_info.setdefault('start_flag', 'succeed')
@@ -420,13 +421,13 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
                 self.zkOper.unLock_assign_ip(lock)
         return containerIPList
     
-    def create_container_cluser_info(self, containerCount, containerClusterName):
+    def __create_container_cluser_info(self, containerCount, containerClusterName):
         containerClusterProps = {}
         containerClusterProps.setdefault('containerCount', containerCount)
         containerClusterProps.setdefault('containerClusterName', containerClusterName)
         self.zkOper.write_container_cluster_info(containerClusterProps)
      
-    def issue_create_container_request(self, host_ip,  args_dict, admin_user, admin_passwd):
+    def __issue_create_container_request(self, host_ip,  args_dict, admin_user, admin_passwd):
         url_post = "/inner/container" 
         requesturi = "http://%s:%s%s" % (host_ip, options.port, url_post)
         logging.info('requesturi:%s' % requesturi)
@@ -446,7 +447,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
             logging.error(str(traceback.format_exc()))
             return False
 
-    def _get_container_params(self, containerCount, containerClusterName, adminUser, adminPasswd):
+    def __get_container_params(self, containerCount, containerClusterName, adminUser, adminPasswd):
         
         create_container_arg_list = []
         containerIPList = self.__retrieve_ip_resource(containerCount)
@@ -510,20 +511,19 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
                 return_dict = http_get(requesturi)
                 resource_dict.setdefault(data_node_ip, return_dict['response'])
             logging.info("Before sort, all server the resource info, the resource value is %s" % str(resource_dict))
-            create_container_node_ip_list = self._sort_server_resource(resource_dict)
+            create_container_node_ip_list = self.__sort_server_resource(resource_dict)
             logging.info("After sort, the resource list is %s" % str(create_container_node_ip_list))
         return create_container_node_ip_list
         
     def __dispatch_create_container_task(self, create_container_node_ip_list,  create_container_arg_list, 
                                          container_count, admin_user, admin_passwd):
-        #logging.info('create_container_arg_list :%s' % str(create_container_arg_list))
         container_finished_flag_dict = {}
         for i in range(container_count):
             args_dict = create_container_arg_list[i]
             host_ip = create_container_node_ip_list[i]
             container_name = args_dict.get('container_name')
             container_ip = args_dict.get('container_ip')
-            create_finished = self.issue_create_container_request(host_ip,  args_dict, admin_user, admin_passwd)
+            create_finished = self.__issue_create_container_request(host_ip,  args_dict, admin_user, admin_passwd)
             container_finished_flag_dict.setdefault(host_ip, create_finished)
         return container_finished_flag_dict
             
@@ -542,7 +542,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         ip_item_list[-2] = '0'
         return '.'.join(ip_item_list)
     
-    def _sort_server_resource(self, dict):
+    def __sort_server_resource(self, dict):
         resource_list = []
         create_node_ip_list = []
         for (data_node_ip, resource_sub_dict) in dict.items():
@@ -562,7 +562,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
                     break
         return create_node_ip_list
     
-    def _check_mcluster_manager_stat(self, create_container_node_ip_list, create_container_arg_list, num):
+    def __check_mcluster_manager_stat(self, create_container_node_ip_list, create_container_arg_list, num):
         container_name_list = []
         check_container_node_ip_list = []
         for index, create_container_arg in enumerate(create_container_arg_list):

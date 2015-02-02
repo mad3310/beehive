@@ -5,15 +5,13 @@ Created on Sep 8, 2014
 '''
 import traceback
 import logging
-import socket
-import re
 
 from tornado.web import asynchronous
 from handlers.base import APIHandler
-from common.serverOpers import Server_Opers
-from common.resourceOpers import Res_Opers
-from common.utils.exceptions import HTTPAPIError
-from common.tornado_basic_auth import require_basic_auth
+from server.serverOpers import Server_Opers
+from resource.resourceOpers import Res_Opers
+from utils.exceptions import HTTPAPIError
+from tornado.tornado_basic_auth import require_basic_auth
 
 
 class ServerHandler(APIHandler):
@@ -24,8 +22,8 @@ class ServerHandler(APIHandler):
 
     @asynchronous
     def get(self):
-        dict = self.server_opers.retrieveServerResource()
-        return self.finish(dict)
+        return_message = self.server_opers.retrieveServerResource()
+        return self.finish(return_message)
 
 
 class UpdateServerHandler(APIHandler):
@@ -38,16 +36,16 @@ class UpdateServerHandler(APIHandler):
     @asynchronous
     def get(self):
         try:
-           self.server_opers.update()
+            self.server_opers.update()
         except:
-            logging.error( str(traceback.format_exc()) )
+            error_message = str(traceback.format_exc())
             raise HTTPAPIError(status_code=500, error_detail="update server failed!",\
                                 notification = "direct", \
                                 log_message= "update server failed!",\
-                                response =  "update server failed!")
-        dict = {}
-        dict.setdefault("message", "update server successful")
-        self.finish(dict)
+                                response =  "update server failed! %s" % (error_message))
+        return_message = {}
+        return_message.setdefault("message", "update server successful")
+        self.finish(return_message)
 
 
 class CollectServerResHandler(APIHandler):
@@ -61,15 +59,14 @@ class CollectServerResHandler(APIHandler):
     def get(self):
         
         try:
-           server_res = self.res_opers.retrieve_host_stat()
+            server_res = self.res_opers.retrieve_host_stat()
         except:
-            logging.error( str(traceback.format_exc()) )
+            error_message = str(traceback.format_exc())
             raise HTTPAPIError(status_code=500, error_detail="get server resource failed!",\
                                 notification = "direct", \
                                 log_message= "get server resource failed!",\
-                                response =  "please check!")
+                                response =  "please check! %s" % (error_message))
         
-        self._logger.setLevel(logging.INFO)
         self.finish(server_res)
 
 
@@ -77,20 +74,19 @@ class CollectContainerResHandler(APIHandler):
     """
     update server container 
     """
-    _logger = logging.getLogger("process_info")
+    res_opers = Res_Opers()
     
     @asynchronous
     def get(self):
         
         try:
-            res_opers = Res_Opers()
-            container_res = res_opers.retrieve_container_stat()
+            container_res = self.res_opers.retrieve_container_stat()
         except:
-            logging.error( str(traceback.format_exc()) )
+            error_message = str(traceback.format_exc())
             raise HTTPAPIError(status_code=500, error_detail="get container resource failed!",\
                                 notification = "direct", \
                                 log_message= "get container resource failed!",\
-                                response =  "please check!")
+                                response =  "please check! %s" % (error_message))
         
         self.finish(container_res)
 
@@ -122,16 +118,20 @@ class SwitchServerUnderoomHandler(APIHandler):
         else:
             containerNameList = [containerNameList]
         
-        value, result = 0, {}
+        result = {}
         try:
             if switch == 'on':
                 result = self.server_opers.open_containers_under_oom(containerNameList)
             elif switch == 'off':
                 result = self.server_opers.shut_containers_under_oom(containerNameList)
         except:
-            logging.error( str(traceback.format_exc()) )
+            error_message = str(traceback.format_exc())
+            raise HTTPAPIError(status_code=500, error_detail="switch oom failed!",\
+                                notification = "direct", \
+                                log_message= "switch oom failed!",\
+                                response =  "please check! %s" % (error_message))
         
-        logging.info('under_oom result: %s' % str(result))   
+        logging.debug('under_oom result: %s' % str(result))
         self.finish(result)
 
 
@@ -159,13 +159,13 @@ class GetherServerContainersDiskLoadHandler(APIHandler):
         try:
             container_disk_load = self.server_opers.get_containers_disk_load(container_name_list)
         except:
-            logging.error( str( traceback.format_exc() ) )
+            error_message = str( traceback.format_exc() )
             raise HTTPAPIError(status_code=500, error_detail="server exceptions",\
                                 notification = "direct", \
                                 log_message= "server exception",\
-                                response =  "server exception!")
+                                response =  "server exception! %s" % (error_message))
         
-        logging.info('get disk load on this server:%s, result:%s' %( host_ip, str(container_disk_load)) )
+        logging.debug('get disk load on this server:%s, result:%s' %( host_ip, str(container_disk_load)) )
         self.finish(container_disk_load)
 
 
@@ -190,11 +190,11 @@ class AddServerMemoryHandler(APIHandler):
         try:
             mem_add_result = self.server_opers.add_containers_memory(container_name_list)
         except:
-            logging.error( str( traceback.format_exc() ) )
+            error_message = str( traceback.format_exc() )
             raise HTTPAPIError(status_code=500, error_detail="server exceptions",\
                                 notification = "direct", \
                                 log_message= "server exception",\
-                                response =  "server exception!")
+                                response =  "server exception! %s" % (error_message))
         
-        logging.info('add containers :%s memory on this server:%s, result:%s' % ( str(container_name_list), host_ip, str(mem_add_result)) )
+        logging.debug('add containers :%s memory on this server:%s, result:%s' % ( str(container_name_list), host_ip, str(mem_add_result)) )
         self.finish(mem_add_result)

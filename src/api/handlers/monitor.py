@@ -15,10 +15,10 @@ from tornado.web import asynchronous
 from tornado.gen import Task, engine
 from tornado.httpclient import AsyncHTTPClient
 from tornado.options import options
-from common.tornado_basic_auth import require_basic_auth
-from common.serverOpers import Server_Opers
-from common.zkOpers import ZkOpers
-from common.utils.exceptions import HTTPAPIError
+from tornado.tornado_basic_auth import require_basic_auth
+from server.serverOpers import Server_Opers
+from zk.zkOpers import ZkOpers
+from utils.exceptions import HTTPAPIError
 
 
 # retrieve the status value of all monitor type 
@@ -69,8 +69,6 @@ class CheckServerContainersMemLoad(APIHandler):
 @require_basic_auth
 class CheckServersContainersMemLoad(APIHandler):
     
-    zkOpers = ZkOpers('127.0.0.1', 2181)
-    
     @asynchronous
     @engine
     def get(self):
@@ -89,14 +87,14 @@ class CheckServersContainersMemLoad(APIHandler):
                 con_mem_load = body.get('response')
                 server_cons_mem_load.setdefault(server, con_mem_load)
         except:
-            error_msg = str(traceback.format_exc() )
-            logging.error(error_msg)
+            error_msg = str(traceback.format_exc())
             raise HTTPAPIError(status_code=500, error_detail="code error!",\
                                notification = "direct", \
                                log_message= "code error!",\
                                response =  {"code error":error_msg} )
-        
-        async_client.close()
+        finally:
+            async_client.close()
+            
         self.finish( server_cons_mem_load )
 
 
@@ -106,7 +104,6 @@ class CheckServerContainersUnderOom(APIHandler):
     
     @asynchronous
     def get(self):
-        
         server_ip = self.request.remote_ip
         cons_under_oom = {}
         try:
@@ -119,14 +116,15 @@ class CheckServerContainersUnderOom(APIHandler):
                                log_message= "code error!",\
                                response =  "code error!")
         
-        logging.info('get server %s containers memory load :%s' % (server_ip, str(cons_under_oom) ) )
+        logging.debug('get server %s containers memory load :%s' % (server_ip, str(cons_under_oom) ) )
         self.finish( cons_under_oom )
 
-
+'''
+@todo: 
+1. the different with above logic?
+'''
 @require_basic_auth
 class CheckServersContainersUnderOom(APIHandler):
-    
-    zkOper = ZkOpers('127.0.0.1', 2181)
     
     @asynchronous
     @engine
@@ -139,7 +137,7 @@ class CheckServersContainersUnderOom(APIHandler):
         try:
             for server in server_list:
                 requesturi = 'http://%s:%s/monitor/server/containers/under_oom' % (server, options.port)
-                logging.info('server requesturi: %s' % str(requesturi))
+                logging.debug('server requesturi: %s' % str(requesturi))
                 response = yield Task(async_client.fetch, requesturi)
                 body = json.loads(response.body.strip())
                 logging.info('response body : %s' % str(body) )
@@ -148,12 +146,12 @@ class CheckServersContainersUnderOom(APIHandler):
                     under_oom = {'serverError': ['code error']}
                 server_cons_under_oom.setdefault(server, under_oom)
         except:
-            error_msg = str(traceback.format_exc() )
-            logging.error(error_msg)
+            error_msg = str(traceback.format_exc())
             raise HTTPAPIError(status_code=500, error_detail="code error!",\
                                notification = "direct", \
                                log_message= "code error!",\
                                response = {"code error":error_msg} )
+        finally:
+            async_client.close()
         
-        async_client.close()
         self.finish( server_cons_under_oom )

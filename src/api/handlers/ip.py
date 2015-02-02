@@ -1,8 +1,11 @@
 #-*- coding: utf-8 -*-
 from base import APIHandler
-from common.ipOpers import IpOpers
+from resource.ipOpers import IpOpers
+from tornado.tornado_basic_auth import require_basic_auth
+
 # ip management
-# eg. ？？？
+# eg. curl ???
+
 @require_basic_auth
 class IPHandler(APIHandler):
     
@@ -17,12 +20,12 @@ class IPHandler(APIHandler):
             raise HTTPAPIError(status_code=500, error_detail="lock by other thread on assign ip processing",\
                                 response =  "check if the zookeeper ensure the path!")
         
-        dict = {}
-        dict.setdefault("message", "write ip to ip pools successfully!")
-        self.finish(dict)        
+        return_message = {}
+        return_message.setdefault("message", "write ip to ip pools successfully!")
+        self.finish(return_message)        
         
     def get(self):
-        result, ips = {}, []
+        return_message, ips = {}, []
         try:
             ips = self.ip_opers.get_ips_from_ipPool()
         except:
@@ -31,5 +34,5 @@ class IPHandler(APIHandler):
                             log_message= "code error!",\
                             response =  "code error!")
         
-        result.setdefault('ips', ips)
-        self.finish(result)
+        return_message.setdefault('ips', ips)
+        self.finish(return_message)

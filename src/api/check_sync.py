@@ -3,8 +3,8 @@
 import logging
 import json
 
-from common.zkOpers import ZkOpers
-from common.configFileOpers import ConfigFileOpers
+from zk.zkOpers import ZkOpers
+from utils.configFileOpers import ConfigFileOpers
 from common.utils.autoutil import getHostIp
 from tornado.options import options
 

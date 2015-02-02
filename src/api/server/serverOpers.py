@@ -15,20 +15,22 @@ import docker
 import traceback
 import commands
 
-from dockerOpers import Docker_Opers
-from common.utils.autoutil import *
-from helper import *
-from zkOpers import ZkOpers
-from invokeCommand import InvokeCommand
+from docker.dockerOpers import Docker_Opers
+from utils.autoutil import *
+from zk.zkOpers import ZkOpers
+from utils.invokeCommand import InvokeCommand
 from tornado.options import options
-from container_module import Container
-from abstractAsyncThread import Abstract_Async_Thread
+from container.container_module import Container
+from container.ContainerOpers import Container_Opers
+from common.abstractAsyncThread import Abstract_Async_Thread
 
 
 class Server_Opers(Abstract_Async_Thread):
     '''
     classdocs
     '''
+    
+    container_opers = Container_Opers()
     
     def retrieveServerResource(self):
         resource = {'memoryCount':3,'diskCount':500}
@@ -48,7 +50,7 @@ class Server_Opers(Abstract_Async_Thread):
     def get_all_containers_mem_load(self):
         try:
             load_dict = {}
-            containers = get_all_containers(False)
+            containers = self.container_opers.get_all_containers(False)
             for container in containers:
                 load = {}
                 conl = ContainerLoad(container)
@@ -63,7 +65,7 @@ class Server_Opers(Abstract_Async_Thread):
             self.threading_exception_queue.put(sys.exc_info())
 
     def get_all_containers_under_oom(self):
-        containers = get_all_containers(False)
+        containers = self.container_opers.get_all_containers(False)
         alarm_item = []
         for container in containers:
             con = Container(container)
@@ -75,7 +77,7 @@ class Server_Opers(Abstract_Async_Thread):
         return alarm_item
 
     def _get_containers(self, container_name_list):
-        host_cons = get_all_containers(False)
+        host_cons = self.container_opers.get_all_containers(False)
         return list ( set(host_cons) & set(container_name_list) )
 
     def open_containers_under_oom(self, container_name_list):
@@ -286,6 +288,7 @@ class UpdateServer(object):
 
     zkOper = ZkOpers('127.0.0.1',2181)
     docker_opers = Docker_Opers()
+    container_opers = Container_Opers()
 
     def __init__(self, host_ip):
         self.host_ip = host_ip
@@ -310,7 +313,7 @@ class UpdateServer(object):
             logging.info('update both node zookeeper info, container name :%s' % container_name)
             self.zkOper.write_container_node_value_by_containerName(container_name, server_info)
         
-        server_con_stat = get_container_stat(container_name)
+        server_con_stat = self.container_opers.get_container_stat(container_name)
         zk_con_stat = self.zkOper.retrieve_container_status_from_containerName(container_name)
         if server_con_stat != zk_con_stat:
             status.setdefault('status',  server_con_stat)
@@ -365,7 +368,7 @@ class UpdateServer(object):
         return add, delete, both
 
     def _write_container_into_zk(self, container_name, create_info):
-        container_stat = get_container_stat(container_name)
+        container_stat = self.container_opers.get_container_stat(container_name)
         self.zkOper.write_container_node_info(container_stat, create_info)
 
     def _get_container_info_as_zk(self, container_name):

@@ -9,7 +9,7 @@ Created on Sep 8, 2014
 
 import logging
 
-from zkOpers import ZkOpers
+from api.common.zk.zkOpers import ZkOpers
 from tornado.options import options
 from utils.autoutil import *
 

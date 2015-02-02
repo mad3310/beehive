@@ -1,7 +1,9 @@
 #!/usr/bin/env python 2.6.6
+import re
+import logging
 
 from utils.autoutil import *
-from dockerOpers import Docker_Opers
+from docker.dockerOpers import Docker_Opers
 
 
 class Container():
@@ -23,8 +25,8 @@ class Container():
     def volumes(self):
         return self.inspect.get('Volumes')
 
-    def cluster(self, container):
-        return get_containerClusterName_from_containerName(container)
+    def cluster(self, container_name):
+        return get_containerClusterName_from_containerName(container_name)
 
     def zookeeper_id(self):
         Env = self.inspect.get('Config').get('Env')

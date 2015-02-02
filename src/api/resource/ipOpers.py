@@ -8,14 +8,14 @@ Created on Sep 17, 2014
 '''
 
 import os
-import traceback
 import time
 import Queue
+import logging
 
-from zkOpers import ZkOpers
+from api.common.zk.zkOpers import ZkOpers
 from utils.autoutil import doInThread
-from utils.exceptions import MyError
-from resourceOpers import Res_Opers
+from utils.exceptions import CommonException
+from api.common.resource.resourceOpers import Res_Opers
 
 
 class IpOpers(object):
@@ -49,7 +49,7 @@ class IpOpers(object):
         ips = list( set(all_ips) - set(ip_list) )
         num = 0
         if len(ips) < ip_count:
-            raise MyError('the ips of this segment is less the the number you need, please apply less ips')
+            raise CommonException('the ips of this segment is less the the number you need, please apply less ips')
         for ip in ips:
             if self.ip_legal(ip):
                 choosed_ip.append(ip)

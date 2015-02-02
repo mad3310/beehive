@@ -13,8 +13,8 @@ import logging.config
 
 
 from tornado.options import options
-from common.appdefine import appDefine
-from common.scedulerOpers import Sceduler_Opers
+from appdefine import appDefine
+from sceduler.scedulerOpers import Sceduler_Opers
 from check_sync import CheckSync
 
 class Application(tornado.web.Application):

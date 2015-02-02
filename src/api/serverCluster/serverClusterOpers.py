@@ -1,18 +1,12 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
 
-import os
-import sys
 import logging
-import traceback
-import tornado.httpclient
 
-from zkOpers import ZkOpers
+from zk.zkOpers import ZkOpers
 from tornado.options import options
-from tornado.gen import Callback, Wait
-from abstractAsyncThread import Abstract_Async_Thread
-from utils.autoutil import *
-
+from tornado.gen import Callback, Wait, engine
+from tornado.httpclient import AsyncHTTPClient
 
 class ServerCluster_Opers(object):
     '''
@@ -23,10 +17,10 @@ class ServerCluster_Opers(object):
             constructor
         '''
     
-    @tornado.gen.engine
+    @engine
     def update(self):
 
-        http_client = tornado.httpclient.AsyncHTTPClient()
+        http_client = AsyncHTTPClient()
           
         succ, fail, return_result  = [], [], ''
         key_sets = set()
@@ -39,7 +33,7 @@ class ServerCluster_Opers(object):
             key_sets.add(callback_key)
             http_client.fetch(requesturi, callback=(yield Callback(callback_key)))
         
-        logging.info('key_sets:%s' % str(key_sets) )
+        logging.debug('key_sets:%s' % str(key_sets) )
         
         error_record = ''
         for i in range(len(key_sets)):
@@ -53,14 +47,14 @@ class ServerCluster_Opers(object):
                 return_result = response.body.strip()
             
             if return_result:
-                logging.info('return_result : %s' % str(return_result) )
+                logging.debug('return_result : %s' % str(return_result) )
                 succ.append(callback_key)
             else:
                 fail.append(callback_key)
         
         http_client.close()
-        logging.info('succ:%s' % str(succ))
-        logging.info('fail:%s' % str(fail))
+        logging.debug('succ:%s' % str(succ))
+        logging.debug('fail:%s' % str(fail))
 
 
 

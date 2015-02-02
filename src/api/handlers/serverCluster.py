@@ -16,16 +16,16 @@ from tornado.options import options
 from tornado.httpclient import HTTPRequest, AsyncHTTPClient
 from tornado.web import asynchronous
 from tornado.gen import engine, Task
-from common.configFileOpers import ConfigFileOpers
-from common.serverOpers import Server_Opers
-from common.tornado_basic_auth import require_basic_auth
-from common.helper import _request_fetch, _retrieve_userName_passwd
-from common.ipOpers import IpOpers
-from common.serverClusterOpers import ServerCluster_Opers
-from common.utils.autoutil import http_get
-from common.utils.exceptions import HTTPAPIError
+from utils.configFileOpers import ConfigFileOpers
+from server.serverOpers import Server_Opers
+from tornado.tornado_basic_auth import require_basic_auth
+from utils import _request_fetch, _retrieve_userName_passwd
+from resource.ipOpers import IpOpers
+from serverCluster.serverClusterOpers import ServerCluster_Opers
+from utils.autoutil import http_get
+from utils.exceptions import HTTPAPIError
 from handlers.base import APIHandler
-from common.zkOpers import ZkOpers
+from zk.zkOpers import ZkOpers
 
 
 @require_basic_auth
@@ -64,18 +64,18 @@ class ServerClusterHandler(APIHandler):
                                 log_message= "Machine has been regedited!",\
                                 response =  "This machine has been regedited!")
         
-        dict = {}
-        dict.setdefault("message", "creating server cluster successful!")
-        self.finish(dict)
+        return_message = {}
+        return_message.setdefault("message", "creating server cluster successful!")
+        self.finish(return_message)
         
     def get(self):
         clusterUUID = self.zkOper.getClusterUUID()
         data, stat = self.zkOper.retrieveClusterProp(clusterUUID)
         self.confOpers.setValue(options.server_cluster_property, eval(data))
         
-        dict = {}
-        dict.setdefault("message", "sync server cluster info to local successful!")
-        self.finish(dict)
+        return_message = {}
+        return_message.setdefault("message", "sync server cluster info to local successful!")
+        self.finish(return_message)
 
 
 @require_basic_auth
@@ -83,11 +83,7 @@ class GetServersInfoHandler(APIHandler):
     '''
     classdocs
     '''
-    serverOpers = Server_Opers()
-    
-    
     def get(self):
-        
         data_nodes_ip_list = self.zkOper.retrieve_data_node_list()
         uri = "/server"
         resource_dict = {}
@@ -117,9 +113,9 @@ class UpdateServerClusterHandler(APIHandler):
                                 log_message= 'update  server cluster failed' ,\
                                 response =  "please check and notice related person")
         
-        dict = {}
-        dict.setdefault("message", "serverCluster update successful")
-        self.finish(dict)
+        return_message = {}
+        return_message.setdefault("message", "serverCluster update successful")
+        self.finish(return_message)
 
 
 @require_basic_auth
@@ -163,11 +159,11 @@ class SwitchServersUnderoomHandler(APIHandler):
                 ret =  body.get('response')
                 result.update(ret)
         except:
-            logging.error( str(traceback.format_exc() ) )
+            error_message = str(traceback.format_exc() )
             raise HTTPAPIError(status_code=500, error_detail="switch server under_oom failed, action:%s!" % switch,\
                                 notification = "direct", \
                                 log_message= "switch server under_oom failed, action:%s!" % switch ,\
-                                response =  "please check reasons")
+                                response =  "please check reasons %s" % (error_message))
         finally:
             async_client.close()
             
@@ -207,15 +203,15 @@ class GetherServersContainersDiskLoadHandler(APIHandler):
                 
                 response = yield Task(async_client.fetch, request)
                 body = json.loads(response.body.strip())
-                logging.info('response body : %s' % str(body) )
+                logging.info('response body : %s' % str(body))
                 cons_disk_load = body.get('response')
                 servers_cons_disk_load.update(cons_disk_load)
         except:
-            logging.error( str(traceback.format_exc() ) )
+            error_message = str(traceback.format_exc() )
             raise HTTPAPIError(status_code=500, error_detail="get servers containers disk load fails",\
                                 notification = "direct", \
                                 log_message= "get servers containers disk load fails" ,\
-                                response =  "please check reasons")
+                                response =  "please check reasons %s" % (error_message))
         finally:
             async_client.close()
         
@@ -258,10 +254,11 @@ class AddServersMemoryHandler(APIHandler):
                 ret = body.get('response')
                 add_mem_result.update(ret)
         except:
+            error_message = str(traceback.format_exc() )
             raise HTTPAPIError(status_code=500, error_detail="add memory failed",\
                                 notification = "direct", \
                                 log_message= "add memory failed" ,\
-                                response =  "please check reasons")
+                                response =  "please check reasons %s" % (error_message))
         finally:
             async_client.close()
             

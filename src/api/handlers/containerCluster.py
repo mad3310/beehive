@@ -12,11 +12,10 @@ import traceback
 
 from tornado.web import asynchronous
 from handlers.base import APIHandler
-from common.tornado_basic_auth import require_basic_auth
-from common.utils.exceptions import HTTPAPIError
-from common.containerClusterOpers import * 
-from common.helper import *
-from common.mclusterOper import MclusterManager
+from tornado.tornado_basic_auth import require_basic_auth
+from utils.exceptions import HTTPAPIError
+from containerCluster.containerClusterOpers import ContainerCluster_Opers, GetClustersChanges
+from componentProxy.db.mysql.mclusterOper import MclusterManager
 
 
 @require_basic_auth
@@ -55,9 +54,9 @@ class ContainerClusterHandler(APIHandler):
                                 notification = "direct", \
                                 log_message= "lock by other thread on assign ip processing",\
                                 response =  "current operation is using by other people, please wait a moment to try again!")
-        dict = {} 
-        dict.setdefault("message", "due to create container cluster need a little more times, please wait to finished and email to you, when cluster have started!")
-        self.finish(dict)
+        return_message = {} 
+        return_message.setdefault("message", "due to create container cluster need a little more times, please wait to finished and email to you, when cluster have started!")
+        self.finish(return_message)
     
     def delete(self):
         args = self.get_all_arguments()
@@ -71,9 +70,9 @@ class ContainerClusterHandler(APIHandler):
         
         exists = self.zkOper.check_containerCluster_exists(containerClusterName)
         if not exists:
-            dict = {}
-            dict.setdefault("message", "cluster has not existed, no need do this operation!")
-            self.finish(dict)
+            return_message = {}
+            return_message.setdefault("message", "cluster has not existed, no need do this operation!")
+            self.finish(return_message)
             return
 
         try:
@@ -83,9 +82,9 @@ class ContainerClusterHandler(APIHandler):
             raise HTTPAPIError(status_code=417, error_detail="containerCluster removed failed!",\
                                 response =  "check if the containerCluster removed!")
         
-        dict = {}
-        dict.setdefault("message", "remove container has been done but need some time, please wait a moment and check the result!")
-        self.finish(dict)
+        return_message = {}
+        return_message.setdefault("message", "remove container has been done but need some time, please wait a moment and check the result!")
+        self.finish(return_message)
     
     def check_resource(self):
         
@@ -233,12 +232,18 @@ class StartMclusterManagerHandler(APIHandler):
     
     @asynchronous
     def get(self, container_name):
-        ret = self.mcluster_manager.mcluster_manager_status(container_name)
+        ret = ''
+        try:
+            ret = self.mcluster_manager.mcluster_manager_status(container_name)
+        except:
+            raise HTTPAPIError(status_code=500, error_detail="__start mcluster-manager failed",\
+                                notification = "direct", \
+                                log_message= "__start mcluster-manager failed",\
+                                response =  "__start mcluster-manager failed, please check!")   
         
-        dict = {}
-        dict.setdefault("message", ret)
-        logging.info('handles status :  %s' % str(dict))
-        self.finish(dict)
+        return_message = {}
+        return_message.setdefault("message", ret)
+        self.finish(return_message)
 
 
 @require_basic_auth
@@ -255,9 +260,9 @@ class ClusterConfigHandler(APIHandler):
             raise HTTPAPIError(status_code=500, error_detail=error_msg,\
                                response =  "please check if params correct")
         
-        dict = {}
-        dict.setdefault("message", "write config infomation successfully!")
-        self.finish(dict)
+        return_message = {}
+        return_message.setdefault("message", "write config infomation successfully!")
+        self.finish(return_message)
 
 
 @require_basic_auth
@@ -322,7 +327,7 @@ class CheckClusterSyncHandler(APIHandler):
                             log_message= "code error!",\
                             response =  "code error!")
         
-        dict = {}
+        return_message = {}
         logging.info('data:%s' % str(res_info))
-        dict.setdefault('data', res_info)
-        self.finish(dict)
+        return_message.setdefault('data', res_info)
+        self.finish(return_message)

@@ -9,12 +9,11 @@ Created on 2013-7-11
 
 import logging
 import threading
-import traceback
-import re
+
 from utils.autoutil import *
-from resourceOpers import Res_Opers
+from resource.resourceOpers import Res_Opers
 from kazoo.client import KazooClient
-from container_module import Container
+from container.container_module import Container
 
 class ZkOpers(object):
     
@@ -157,12 +156,18 @@ class ZkOpers(object):
         for ip in ip_list:
             path = self.rootPath + "/" + clusterUUID + "/ipPool" + "/" + ip
             self.zk.ensure_path(path)
-
+    
+    '''
+    @todo: remove?
+    '''
     def retrieve_mcluster_info_from_config(self):
         clusterUUID = self.getClusterUUID()
         path = self.rootPath + "/" + clusterUUID + '/config/normal'
         return self._retrieveSpecialPathProp(path)
     
+    '''
+    @todo: remove?
+    '''
     def retrieve_mclustervip_info_from_config(self):
         clusterUUID = self.getClusterUUID()
         path = self.rootPath + "/" + clusterUUID + '/config/vip'

@@ -1,10 +1,10 @@
 import threading
 import logging
 
-from zkOpers import ZkOpers
+from zk.zkOpers import ZkOpers
 from utils.threading_exception_queue import Threading_Exception_Queue
 from utils.mail import send_email
-from configFileOpers import ConfigFileOpers
+from utils.configFileOpers import ConfigFileOpers
 from tornado.options import options
 
 class Abstract_Async_Thread(threading.Thread):

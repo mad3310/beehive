@@ -13,7 +13,6 @@ import docker
 import threading
 
 from utils.autoutil import *
-from helper import *
 from invokeCommand import InvokeCommand
 from tornado.options import options
 
