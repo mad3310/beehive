@@ -258,7 +258,8 @@ class ContainerLoad(object):
     def get_network_io(self):
         network_io_dict, RX_SUM, TX_SUM = {}, 0, 0
         ivk_cmd = InvokeCommand()
-        content = ivk_cmd._runSysCmd("sh shell/network_io.sh %s" % self.container_id)[0]
+        cmd = "sh %s %s" % (options.network_io_sh, self.container_id)
+        content = ivk_cmd._runSysCmd(cmd)[0]
         RTX_list = re.findall('.*peth0\s+\d+\s+\d+\s+(\d+)\s+\d+\s+\d+\s+\d+\s+(\d+).*', content)
         for RX, TX in RTX_list:
             RX_SUM += int(RX)

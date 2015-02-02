@@ -67,7 +67,7 @@ class GetherClusterMonitorInfoHandler(APIHandler):
 
 
 @require_basic_auth
-class GetherClusterNetworkioHandler(APIHandler):
+class GetherClusterNetworkioHandler(GetherClusterMonitorInfoHandler):
     '''
     classdocs
     '''
