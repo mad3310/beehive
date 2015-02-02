@@ -235,7 +235,30 @@ class GetherContainerCpuacctHandler(APIHandler):
         result.setdefault('containerName', container_name)
         self.finish(result)
 
+
+@require_basic_auth
+class GetherContainerNetworkioHandler(APIHandler):
     
+    def get(self, container_name):
+
+        exists = check_container_exists(container_name)
+        if not exists:
+            massage = {}
+            massage.setdefault("message", "container %s not exists" % container_name)
+            self.finish(massage)
+            return
+
+        result, network_io_item = {}, {}
+        conl = ContainerLoad(container_name)
+        network_io_item = conl.get_network_io()
+        current_time = get_current_time()
+        
+        result.setdefault('networkio', network_io_item)
+        result.setdefault('time', current_time)
+        result.setdefault('containerName', container_name)
+        self.finish(result)
+
+
 @require_basic_auth
 class CheckContainerStatusHandler(APIHandler):
     '''

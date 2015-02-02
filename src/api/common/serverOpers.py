@@ -253,7 +253,19 @@ class ContainerLoad(object):
             elif 'system ' in item:
                 system = item.split(' ')[1]
                 cpuacct_stat_dict.setdefault('system', system)
-        return cpuacct_stat_dict  
+        return cpuacct_stat_dict
+
+    def get_network_io(self):
+        network_io_dict, RX_SUM, TX_SUM = {}, 0, 0
+        ivk_cmd = InvokeCommand()
+        content = ivk_cmd._runSysCmd("sh shell/network_io.sh %s" % self.container_id)[0]
+        RTX_list = re.findall('.*peth0\s+\d+\s+\d+\s+(\d+)\s+\d+\s+\d+\s+\d+\s+(\d+).*', content)
+        for RX, TX in RTX_list:
+            RX_SUM += int(RX)
+            TX_SUM += int(TX)
+        network_io_dict.setdefault('RX', int(RX_SUM/1024/1024))
+        network_io_dict.setdefault('TX', int(TX_SUM/1024/1024))
+        return network_io_dict
 
     def get_oom_kill_disable_value(self): 
         value = self.get_file_value(self.under_oom_path)
