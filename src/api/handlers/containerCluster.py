@@ -23,77 +23,12 @@ from tornado.options import options
 from tornado.httpclient import HTTPRequest, AsyncHTTPClient
 
 
-# @require_basic_auth
-# class GetherClusterMonitorInfoHandler(APIHandler):
-#     '''
-#     classdocs
-#     '''
-#     
-# #     @asynchronous
-# #     @engine
-# #     def get(self, cluster):
-# #         result = {}
-# #         self.handler_get(cluster, monitor_item, result)
-# #         logging.info('result:%s' % str(result) )
-# #         self.finish(result)
-# 
-#     def handler_get(self, cluster, monitor_item, result):
-#         try:
-#             logging.info(cluster)
-#             exists = self.zkOper.check_containerCluster_exists(cluster)
-#             if not exists:
-#                 content = 'container cluster %s not exist, please check your cluster name' % cluster
-#                 message = {'message' : content}
-#                 self.finish(message)
-#                 return
-#             
-#             container_dict = {}
-#             container_ip_list = self.zkOper.retrieve_container_list(cluster)
-#             for container_ip in container_ip_list:
-#                 container_name = self.zkOper.get_containerName(cluster, container_ip)
-#                 host_ip = self.zkOper.get_hostIp(cluster, container_ip)
-#                 container_dict.setdefault(host_ip, container_name)
-#             
-#             auth_username, auth_password = _retrieve_userName_passwd()
-#             async_client = AsyncHTTPClient()
-#             for host_ip, container_name in container_dict.items():
-#                 requesturi = 'http://%s:%s/container/stat/%s/%s' % (host_ip, options.port, container_name, monitor_item)
-#                 request = HTTPRequest(url=requesturi, method='GET', connect_timeout=40, request_timeout=40, \
-#                                       auth_username = auth_username, auth_password = auth_password)
-#                 
-#                 response = yield Task(async_client.fetch, request)
-#                 body = json.loads(response.body.strip())
-#                 ret = body.get('response')
-#                 result.update({host_ip:ret})
-#             
-#             logging.info('result in func:%s' % str(result) )
-#             async_client.close()
-#         except:
-#             logging.error(str(traceback.format_exc()))
-# 
-# 
-# @require_basic_auth
-# class GetherClusterNetworkioHandler(GetherClusterMonitorInfoHandler):
-#     '''
-#     classdocs
-#     '''
-# 
-#     @asynchronous
-#     @engine
-#     def get(self, cluster):
-#         result = {}
-#         logging.info('cluster:%s' % str(cluster) )
-#         self.handler_get(cluster, 'networkio', result)
-#         logging.info('result:%s' % str(result) )
-#         self.finish(result)
-
-
 @require_basic_auth
 class GetherClusterNetworkioHandler(APIHandler):
     '''
     classdocs
     '''
-    
+     
     @asynchronous
     @engine
     def get(self, cluster):
@@ -104,28 +39,28 @@ class GetherClusterNetworkioHandler(APIHandler):
             message = {'message' : content}
             self.finish(message)
             return
-        
+         
         container_dict, result = {}, {}
         container_ip_list = self.zkOper.retrieve_container_list(cluster)
         for container_ip in container_ip_list:
             container_name = self.zkOper.get_containerName(cluster, container_ip)
             host_ip = self.zkOper.get_hostIp(cluster, container_ip)
             container_dict.setdefault(host_ip, container_name)
-        
+         
         auth_username, auth_password = _retrieve_userName_passwd()
-        
+         
         async_client = AsyncHTTPClient()
         for host_ip, container_name in container_dict.items():
             requesturi = 'http://%s:%s/container/stat/%s/networkio' % (host_ip, options.port, container_name)
             logging.info('memory stat requesturi: %s' % str(requesturi))
             request = HTTPRequest(url=requesturi, method='GET', connect_timeout=40, request_timeout=40, \
                                   auth_username = auth_username, auth_password = auth_password)
-            
+             
             response = yield Task(async_client.fetch, request)
             body = json.loads(response.body.strip())
             ret = body.get('response')
             result.update({host_ip:ret})
-        
+         
         async_client.close()
         self.finish(result)
 
