@@ -93,6 +93,9 @@ class ZkOpers(object):
         resultValue = self.retrieve_container_cluster_info(containerClusterName)
         return resultValue.get('containerCount')
     
+    '''
+    @todo: remove?
+    '''
     def retrieve_config_node_value(self):
         clusterUUID = self.getClusterUUID()
         path = self.rootPath + "/" + clusterUUID + "/config"

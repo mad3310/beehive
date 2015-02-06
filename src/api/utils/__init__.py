@@ -4,9 +4,7 @@ import random
 import string
 import base64
 import logging
-import docker
 import re, traceback
-
 
 from tornado.options import options
 from tornado.httpclient import HTTPClient
@@ -112,3 +110,11 @@ def _check_create_status(container_name):
         return True
     else:
         return False
+    
+def _get_gateway_from_ip(ip):
+    ip_item_list = ip.split('.')
+    ip_item_list[-1] = '1'
+    ip_item_list[-2] = '0'
+    return '.'.join(ip_item_list)
+    
+

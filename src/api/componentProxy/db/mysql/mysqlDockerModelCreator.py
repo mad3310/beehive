@@ -5,10 +5,10 @@ Created on 2015-2-1
 '''
 import os
 
-from componentProxy.abstractDockerModelCreator import AbstractDockerModelCreator
+from componentProxy.abstractDockerModelCreator import AbstractContainerModelCreator
 from docker.docker_model import Docker_Model
 
-class MysqlDockerModelCreator(AbstractDockerModelCreator):
+class MysqlDockerModelCreator(AbstractContainerModelCreator):
     '''
     classdocs
     '''

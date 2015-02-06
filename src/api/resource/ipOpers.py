@@ -135,4 +135,15 @@ class IpOpers(object):
 
         ip_list = self.get_ips_from_ipPool()
         return len(ip_list)
+    
+    def retrieve_ip_resource(self, ip_count):
+        ip_list = None
+        isLock,lock = self.zkOper.lock_assign_ip()
+        try:
+            if isLock:
+                ip_list = self.zkOper.retrieve_ip(ip_count)
+        finally:
+            if isLock:
+                self.zkOper.unLock_assign_ip(lock)
+        return ip_list
 

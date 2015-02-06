@@ -7,9 +7,7 @@ Created on Sep 8, 2014
 @author: root
 '''
 
-import logging
-
-from api.common.zk.zkOpers import ZkOpers
+from zk.zkOpers import ZkOpers
 from tornado.options import options
 from utils.autoutil import *
 
@@ -17,18 +15,24 @@ class ResourceVerify():
     
     zkOper = ZkOpers('127.0.0.1', 2181)
     
-    def __init__(self, verify_dict):
-        self.verify_dict = verify_dict
+    def __init__(self):
+        '''
+        constructor
+        '''
     
-    def check_resource(self):
+    def check_resource(self, _component_container_cluster_config):
         result_dict = {}
         error_msg = ''
-        nodeCount = self.verify_dict.get('nodeCount')
+        nodeCount = _component_container_cluster_config.nodeCount
         ip_list = self.zkOper.get_ips_from_ipPool()
+        '''
+        @todo: if check occurs failed, the program will be continue running?
+        '''
         if len(ip_list) < nodeCount:
             error_msg = 'ips are not enough!'
+            
         ecect_server = ElectServer()
-        host_ip_list = ecect_server.elect_server_list(self.verify_dict)
+        host_ip_list = ecect_server.elect_server_list(_component_container_cluster_config)
         logging.info('host_ip_list:%s' % str(host_ip_list))
         
         num = 0
@@ -46,6 +50,7 @@ class ResourceVerify():
         logging.info('select_ip_list:%s' % str(select_ip_list))
         if not self.check_hosts_illegal(select_ip_list, nodeCount):
             error_msg += 'two mcluster data nodes are on a server, illegal!'
+            
         result_dict.setdefault('error_msg', error_msg)
         result_dict.setdefault('select_ip_list', select_ip_list)
         return result_dict
@@ -65,7 +70,7 @@ class ResourceVerify():
 
     def get_host_ip_list(self, host_ip_list, container_num):
 
-        hostip_num_dict, ip_list = {}, []
+        ip_list = []
         
         for i in range(container_num):
             for index,(host_ip, available_host_num) in enumerate(host_ip_list):
@@ -79,13 +84,12 @@ class ResourceVerify():
     
 class ElectServer(object):
     
-    
-    def elect_server_list(self, verify_item):
+    def elect_server_list(self, _component_container_cluster_config):
         score_dict, score_list, ips_result  = {}, [], []
         host_ip_list = self.zkOper.retrieve_servers_white_list()
         available_dict = {}
         for host_ip in host_ip_list:
-            host_score, available_host_num = self.__get_score(host_ip, verify_item)
+            host_score, available_host_num = self.__get_score(host_ip, _component_container_cluster_config)
             if host_score != 0 :
                 score_dict.setdefault(host_ip, host_score)
                 available_dict.setdefault(host_ip, available_host_num)
@@ -100,19 +104,25 @@ class ElectServer(object):
                     break
         return ips_result
     
-    def __get_score(self, host_ip, verify_item={}):
+    def __get_score(self, host_ip, _component_container_cluster_config={}):
         """
         return score and the num of avaliable hosts
         """
-        
-        mem_free_limit = 0
+        '''
+        @todo: use _component_container_cluster_config to replace to zkOpers operaion,
+        foucs on mem_limit
+        '''
         normal_info = self.zkOper.retrieve_mcluster_info_from_config()
         mem_limit = normal_info.get('mem_limit')/1024/1024
+        
         server_url = 'http://%s:%s/server/resource' % (host_ip, options.port)
         server_res = http_get(server_url)
         logging.info('server_res: %s' % str(server_res) )
-        mem_free_limit = verify_item.get('mem_free_limit')
-        if not mem_free_limit:
+        mem_free_limit = _component_container_cluster_config.mem_free_limit
+        '''
+        the default mem_free_limit is 10G
+        '''
+        if mem_free_limit is None:
             mem_free_limit = 10*1024
         mem_usable = float(server_res["response"]["mem_res"]["free"]) - mem_free_limit
         logging.info('mem_usable:%s' %  mem_usable)
@@ -121,6 +131,9 @@ class ElectServer(object):
             weighted_value = 0
             num = 0
         else:
+            '''
+            @todo: why is mem_usable/mem_limit? Do you means that mem_usable/(mem_usable+mem_limit)?
+            '''
             weighted_value = mem_usable
             num = int(mem_usable/mem_limit)
         return weighted_value, num

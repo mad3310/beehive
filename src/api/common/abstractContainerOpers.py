@@ -13,18 +13,18 @@ class Abstract_Container_Opers(object):
     zkOper = ZkOpers('127.0.0.1', 2181)
     
     @abstractmethod
-    def create(self, dict):
+    def create(self, arg_dict):
         raise NotImplementedError, "Cannot call abstract method"
     
     @abstractmethod
-    def start(self, dict):
+    def start(self, arg_dict):
         raise NotImplementedError, "Cannot call abstract method"
 
     @abstractmethod
-    def stop(self, dict):
+    def stop(self, arg_dict):
         raise NotImplementedError, "Cannot call abstract method"
     
     @abstractmethod
-    def destroy(self):
+    def destroy(self, arg_dict):
         raise NotImplementedError, "Cannot call abstract method"
     

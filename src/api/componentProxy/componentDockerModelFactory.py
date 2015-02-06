@@ -3,8 +3,8 @@ Created on 2015-2-1
 
 @author: asus
 '''
-from common.componentProxy.db.mysql.mysqlDockerModelCreator import MysqlDockerModelCreator
-from common.componentProxy.loadbalance.gbalancer.gbalancer.gbalancerDockerModelCreator import GbalancerDockerModelCreator
+from componentProxy.db.mysql.mysqlDockerModelCreator import MysqlDockerModelCreator
+from componentProxy.loadbalance.gbalancer.gbalancerDockerModelCreator import GbalancerDockerModelCreator
 
 class ComponentDockerModelFactory(object):
     '''
@@ -17,11 +17,11 @@ class ComponentDockerModelFactory(object):
         Constructor
         '''
     
-    def create(self, component_type, arg_dict):
-        if 'mclusternode' == component_type:
+    def create(self, _component_type, arg_dict):
+        if 'mclusternode' == _component_type:
             creator = MysqlDockerModelCreator()
             
-        elif 'mclustervip' == component_type:
+        elif 'mclustervip' == _component_type:
             creator = GbalancerDockerModelCreator()
     
         docker_py_model = creator.create(arg_dict)
