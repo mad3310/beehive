@@ -74,6 +74,9 @@ class IpOpers(object):
         return all_ips       
 
     def __ip_legal(self, ip):
+        '''
+        @todo: same as utils.autoutil.ping_ip_able?
+        '''
         cmd = 'ping -w 2 %s' % str(ip)
         ret = os.system(cmd)
         if not ret:

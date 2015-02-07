@@ -11,7 +11,7 @@ import logging
 from zk.zkOpers import ZkOpers
 from tornado.options import options
 
-class ResourceVerify():
+class ResourceVerify(object):
     
     zkOper = ZkOpers('127.0.0.1', 2181)
     

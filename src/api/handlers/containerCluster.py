@@ -157,6 +157,9 @@ class ContainerClusterHandler(APIHandler):
         args = self.get_all_arguments()
         logging.info(' args:%s' % str(args))
         
+        '''
+        @todo: put below code to the self.containerClusterOpers.create
+        '''
         containerClusterName = args.get('containerClusterName')
         exists = self.zkOper.check_containerCluster_exists(containerClusterName)
         if exists:
@@ -215,7 +218,6 @@ class ContainerClusterHandler(APIHandler):
         self.finish(return_message)
     
     def check_resource(self):
-        
         logging.info('remove useless ips')
         self.zkOper.remove_useless_ips()
         error_msg = ''
@@ -296,6 +298,9 @@ class ContainerClusterStartHandler(APIHandler):
                                 log_message= "no containerClusterName argument!",\
                                 response =  "please check params!")
         
+        '''
+        @todo: put below code into self.containerClusterOpers.start
+        '''
         exists = self.zkOper.check_containerCluster_exists(containerClusterName)
         if not exists:
             raise HTTPAPIError(status_code=400, error_detail="containerCluster %s not exist!" % containerClusterName,\
@@ -334,6 +339,9 @@ class ContainerClusterStopHandler(APIHandler):
                                 log_message= "no containerClusterName argument!",\
                                 response =  "please check params!")
         
+        '''
+        @todo: put below code into self.containerClusterOpers.stop
+        '''
         exists = self.zkOper.check_containerCluster_exists(containerClusterName)
         if not exists:
             raise HTTPAPIError(status_code=400, error_detail="containerCluster %s not exist!" % containerClusterName,\
@@ -354,6 +362,9 @@ class ContainerClusterStopHandler(APIHandler):
         massage.setdefault("message", "due to stop a container cluster need a lot time, please wait and check the result~")
         self.finish(massage)
 
+'''
+@todo: remove? mulit-component need to provide this manager?
+'''
 class StartMclusterManagerHandler(APIHandler):
 
     mcluster_manager = MclusterManager()

@@ -129,19 +129,6 @@ def http_get(url, _connect_timeout=40.0, _request_timeout=40.0, auth_username=No
         logging.error(str(e))
         return e
     
-# def http_delete(url, body={}, _connect_timeout=30.0, _request_timeout=30.0, auth_username=None, auth_password=None):   
-#     try:
-#         request = HTTPRequest(url=url, method='DELETE', body=urllib.urlencode(body), connect_timeout=_connect_timeout, request_timeout=_request_timeout,\
-#                               auth_username = auth_username, auth_password = auth_password)
-#         fetch_ret = _request_fetch(request)
-#         logging.info('fetch_ret:%s' % str(fetch_ret) )
-#         #return_dict = json.loads(fetch_ret)
-#         #logging.info('GET result :%s' % str(return_dict))
-#         return return_dict
-#     except Exception, e:
-#         logging.error(str(e))
-#         return e
-
 def get_containerClusterName_from_containerName(container_name):
     containerClusterName = ''
     if 'd-mcl' in container_name:

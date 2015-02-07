@@ -79,6 +79,10 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
             else:
                 select_ip_list = ret.get('select_ip_list')
                 logging.info('select_ip_list:%s' % str(select_ip_list))
+                
+        '''
+        @todo: retrieve ip or port, then put these ip or port to create method
+        '''
         
         create_container_arg_list = self.component_container_model_factory.create(_component_type, 
                                                                                   args, 

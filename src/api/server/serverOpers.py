@@ -18,6 +18,7 @@ from zk.zkOpers import ZkOpers
 from container.container_module import Container
 from container.ContainerOpers import Container_Opers
 from common.abstractAsyncThread import Abstract_Async_Thread
+from utils.autoutil import getHostIp
 
 
 class Server_Opers(Abstract_Async_Thread):
@@ -281,6 +282,9 @@ class ContainerLoad(object):
         return mem_ret and mem_ret
 
 
+'''
+@todo: what means for this class?
+'''
 class UpdateServer(object):
 
     zkOper = ZkOpers('127.0.0.1',2181)

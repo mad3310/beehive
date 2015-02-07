@@ -49,6 +49,9 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
                 status = self.zkOper.retrieve_container_status_value(containerClusterName, container_ip)
                 logging.info('get container status dict: %s' % str(status) )
                 con_info = self.zkOper.retrieve_container_node_value(containerClusterName, container_ip)
+                '''
+                @todo: put component issues to Factory
+                '''
                 node_type = con_info.get('type')
                 if node_type == 'mclusternode':
                     normal.append(status.get('status'))
@@ -60,10 +63,16 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
             ret = self.__get_cluster_status(nodes_stat)
             cluster_status.setdefault('status', ret)
             
+            '''
+            @todo: why put destroyed method on check logic?
+            '''
             if ret == 'destroyed':
                 logging.info('delete containerCluster: %s' % containerClusterName)
                 self.zkOper.delete_container_cluster(containerClusterName)
         except:
+            '''
+            @todo: check method will be invoked by sync or async method? how to issue with this exception?
+            '''
             logging.error(str( traceback.format_exc()) )
             
         return cluster_status
@@ -74,6 +83,10 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         normal_nodes_stat, all_nodes_stat = [], []
         if not isinstance(nodes_stat, dict):
             cluster_stat = 'failed'
+            
+        '''
+        @todo: put component type issues to Factory
+        '''
         vip = nodes_stat.get('vip')
         normal = nodes_stat.get('normal')
         if vip:
@@ -112,6 +125,9 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         create_info = con.create_info(container_node_value)
         return create_info
 
+    '''
+    @todo: why reason that need check_create_status? same as check method?
+    '''
     def check_create_status(self, containerClusterName):
         failed_rst = {'code':"000001"}
         succ_rst = {'code':"000000"}
@@ -166,6 +182,9 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         try:
             error_msg = ''
             logging.info('config args: %s' % conf_dict)
+            '''
+            @todo: remove normal and vip type, because the config item removed from zk.
+            '''
             if 'type' in conf_dict:
                 _type = conf_dict.pop('type')
                 if _type == 'normal':
@@ -264,7 +283,7 @@ class ContainerCluster_destroy_Action(ContainerCluster_Action_Base):
 
 
 '''
-@todo: what means?
+@todo: what means? same as check() method?
 '''
 class GetClustersChanges(object):
     
@@ -274,13 +293,19 @@ class GetClustersChanges(object):
         '''
     
     def get_res(self):
-        host_ip = self.random_host_ip()
+        host_ip = self.__random_host_ip()
+        '''
+        @todo: 
+        why:
+        1. /serverCluster/update
+        2. /containerCluster/info
+        '''
         self._get(host_ip, '/serverCluster/update')
         res = self._get(host_ip, '/containerCluster/info')
         logging.info('res : %s' % str(res) )
         return self.__reget_res(res)
     
-    def random_host_ip(self):
+    def __random_host_ip(self):
         host_ip_list = self.zkOper.retrieve_data_node_list()
         host = getHostIp()
         if host in host_ip_list:
@@ -296,7 +321,6 @@ class GetClustersChanges(object):
         return ret.get('response')
 
     def __reget_res(self, res):
-        
         clusters = []
         for cluster_name, nodes in res.items():
             cluster, nodeInfo = {}, []
