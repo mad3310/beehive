@@ -3,7 +3,7 @@ import logging
 import traceback
 
 from tornado.options import options
-from mail import send_email
+from utils.mail import send_email
 from tornado.web import HTTPError
 from utils.exceptions import HTTPAPIError
 from utils.threading_exception_queue import Threading_Exception_Queue

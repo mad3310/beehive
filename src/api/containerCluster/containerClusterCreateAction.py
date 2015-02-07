@@ -126,16 +126,16 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         if _containerClusterName is None or '' == _containerClusterName:
             raise CommonException('_containerClusterName should be not null,in __updatez_zk_info_when_process_complete')
         
-        container_cluster_info = self.zkOper.retrieve_container_cluster_info(_containerClusterName)
-        container_cluster_info.setdefault('start_flag', create_result)
-        container_cluster_info.setdefault('error_msg', error_msg)
-        self.zkOper.write_container_cluster_info(container_cluster_info)
+        _container_cluster_info = self.zkOper.retrieve_container_cluster_info(_containerClusterName)
+        _container_cluster_info.setdefault('start_flag', create_result)
+        _container_cluster_info.setdefault('error_msg', error_msg)
+        self.zkOper.write_container_cluster_info(_container_cluster_info)
     
     def __create_container_cluser_info(self, containerCount, containerClusterName):
-        containerClusterProps = {}
-        containerClusterProps.setdefault('containerCount', containerCount)
-        containerClusterProps.setdefault('containerClusterName', containerClusterName)
-        self.zkOper.write_container_cluster_info(containerClusterProps)
+        _container_cluster_info = {}
+        _container_cluster_info.setdefault('containerCount', containerCount)
+        _container_cluster_info.setdefault('containerClusterName', containerClusterName)
+        self.zkOper.write_container_cluster_info(_container_cluster_info)
     
     @tornado.gen.engine
     def __dispatch_create_container_task(self, create_container_node_ip_list, create_container_arg_list, container_count):

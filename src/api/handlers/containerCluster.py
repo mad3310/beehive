@@ -219,6 +219,9 @@ class ContainerClusterHandler(APIHandler):
     
     def check_resource(self):
         logging.info('remove useless ips')
+        '''
+        @todo: why remove ip on handler?
+        '''
         self.zkOper.remove_useless_ips()
         error_msg = ''
         ip_list = self.zkOper.get_ips_from_ipPool()
