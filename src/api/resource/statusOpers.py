@@ -3,14 +3,12 @@
 import logging
 import datetime
 import traceback
-import re
 
 from tornado.options import options
 from abc import abstractmethod
 from zk.zkOpers import ZkOpers
 from resource.ipOpers import IpOpers
 from server.serverOpers import Server_Opers
-from utils.autoutil import *
 from utils import _retrieve_userName_passwd
 
 TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
@@ -32,7 +30,10 @@ class CheckStatusBase(object):
     @abstractmethod
     def retrieve_alarm_level(self, total_count, success_count, failed_count):
         raise NotImplementedError, "Cannot call abstract method"
-   
+        
+        '''
+        @todo: these code can be issued? After raise?
+        '''
         result_dict = {}
         format_str = "total=%s, success count=%s, failed count=%s"
         format_values = (total_count, success_count, failed_count)
@@ -105,7 +106,11 @@ class CheckResIpUsable(CheckStatusBase):
 #                     error_record += 'ip: %s,' % str(ip)
             logging.info('check ip res resutl failed_count : %s' % failed_count)
         except:
+            '''
+            @todo: if occurs exception, the code will be continue run?
+            '''
             logging.error( str(traceback.format_exc()) )
+            
             
         alarm_level = self.retrieve_alarm_level(0, 0, failed_count)
         super(CheckResIpUsable, self).write_status(0, 0, \
@@ -142,6 +147,9 @@ class CheckContainersUnderOom(CheckStatusBase):
                         error_record.append(each)
         
         except:
+            '''
+            @todo: exception will continue run? the zk will record error message or right message?
+            '''
             logging.error( str(traceback.format_exc()) )
             
         alarm_level = self.retrieve_alarm_level(0, 0, failed_count)
@@ -154,7 +162,10 @@ class CheckContainersUnderOom(CheckStatusBase):
             return options.alarm_nothing
         else:
             return options.alarm_serious
-
+    
+    '''
+    @todo: sync invoke these interface, will be block other server process?
+    '''
     def _get(self):
         try:
             rst = {}
@@ -202,8 +213,13 @@ class CheckContainersMemLoad(CheckStatusBase):
         super(CheckContainersMemLoad, self).write_status(0, 0, failed_count, 
                                                          alarm_level, error_record,
                                                          monitor_type, monitor_key) 
-
+    '''
+    @todo: need abstract _get method to base class?
+    '''
     def _get(self):
+        '''
+        @todo: error usage put return rst to finally
+        '''
         try:
             rst = {}
             host_ip = getHostIp()

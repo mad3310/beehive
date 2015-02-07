@@ -6,20 +6,15 @@ Created on Sep 10, 2014
 
 @author: root
 '''
+import sys
+import commands
+import logging
+import traceback
 import os
 import re
-import sys
-import time
-import logging
-import docker
-import traceback
-import commands
 
 from docker.dockerOpers import Docker_Opers
-from utils.autoutil import *
 from zk.zkOpers import ZkOpers
-from utils.invokeCommand import InvokeCommand
-from tornado.options import options
 from container.container_module import Container
 from container.ContainerOpers import Container_Opers
 from common.abstractAsyncThread import Abstract_Async_Thread

@@ -3,7 +3,6 @@
 
 import logging
 
-from zk.zkOpers import ZkOpers
 from tornado.options import options
 from tornado.gen import Callback, Wait, engine
 from tornado.httpclient import AsyncHTTPClient
@@ -51,7 +50,9 @@ class ServerCluster_Opers(object):
                 succ.append(callback_key)
             else:
                 fail.append(callback_key)
-        
+        '''
+        @todo: need to put to finally
+        '''
         http_client.close()
         logging.debug('succ:%s' % str(succ))
         logging.debug('fail:%s' % str(fail))

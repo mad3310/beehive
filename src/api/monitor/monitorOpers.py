@@ -6,11 +6,13 @@ Created on 2013-7-21
 @author: asus
 '''
 
-from statusOpers import *
+from resource.statusOpers import CheckContainersUnderOom, CheckResIpUsable, CheckResIpNum 
 
 import logging
 
-
+'''
+@todo: need to remove? no reference.
+'''
 class ResInfoSyncHandler:    
     
     def retrieve_info(self, data_node_info_list):
@@ -18,7 +20,6 @@ class ResInfoSyncHandler:
         
     def _action(self, data_node_info_list):
         logging.info("_retrieve_db_info_sync:do nothing!")
-
 
 class ContainerInfoAsyncHandler:
     """monitor container item
@@ -29,10 +30,6 @@ class ContainerInfoAsyncHandler:
     check_cons_under_oom = CheckContainersUnderOom()
     
     def retrieve_info(self):
-        self._action()
-    
-    def _action(self):
-        #self.check_cons_mem_load.check()
         self.check_cons_under_oom.check()
 
 
@@ -44,12 +41,12 @@ class ResInfoAsyncHandler:
     check_res_ip_usable = CheckResIpUsable()
     check_res_ip_num = CheckResIpNum()
     
-    def __init__(self):
-        pass
+    '''
+    @todo: 
+    1. the rest value of disk
+    2. the rest value of memory
+    '''
     
     def retrieve_info(self):
-        self._action()
-    
-    def _action(self):
         self.check_res_ip_usable.check()
         self.check_res_ip_num.check()

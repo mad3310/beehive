@@ -7,9 +7,9 @@ import logging
 import sys
 
 from tornado.options import options
-from abstractAsyncThread import Abstract_Async_Thread
+from common.abstractAsyncThread import Abstract_Async_Thread
 from utils import _retrieve_userName_passwd
-from utils.autoutil import http_get, http_post
+from utils.autoutil import http_post
 
 class ContainerCluster_Action_Base(Abstract_Async_Thread):
     
@@ -33,6 +33,9 @@ class ContainerCluster_Action_Base(Abstract_Async_Thread):
     def dispatch_container_tasks(self, params, admin_user, admin_passwd):
         logging.info('params: %s' % str(params))
         for host_ip, container_name in params.items():
+            '''
+            @todo: why use isinstance to compare?
+            '''
             if isinstance(container_name, str) or isinstance(container_name, unicode):
                 self.post(host_ip, container_name, admin_user, admin_passwd)
             elif isinstance(container_name, list):
@@ -44,13 +47,16 @@ class ContainerCluster_Action_Base(Abstract_Async_Thread):
             container_ip_list = self.zkOper.retrieve_container_list(self.cluster)
             logging.info('container_ip_list:%s' % str(container_ip_list) )
             self.zkOper.recover_ips_to_pool(container_ip_list)
-          
+    
+    '''
+    @todo: use Task way to replace to post() method sync.
+    '''      
     def post(self, host_ip, container_name, admin_user, admin_passwd):
         args = {}
         args.setdefault('containerName', container_name)
         request_uri = 'http://%s:%s/container/%s' % (host_ip, options.port, self.action)
         logging.info('post-----  url: %s, \n body: %s' % ( request_uri, str (args) ) )
-        ret = http_post(request_uri, args, auth_username = admin_user, auth_password = admin_passwd)
+        ret = http_post(request_uri, args, admin_user, admin_passwd)
         logging.info('result: %s' % str(ret))
     
     def get_params(self):

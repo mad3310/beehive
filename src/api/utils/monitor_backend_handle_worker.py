@@ -3,16 +3,14 @@
 
 import logging
 import kazoo
-import threading
 import time
+import sys
 
-from common.zkOpers import ZkOpers
-from common.monitorOpers import ResInfoAsyncHandler, ContainerInfoAsyncHandler
+from monitor.monitorOpers import ResInfoAsyncHandler, ContainerInfoAsyncHandler
+from common.abstractAsyncThread import Abstract_Async_Thread
 
-
-class Monitor_Backend_Handle_Worker(threading.Thread):
+class Monitor_Backend_Handle_Worker(Abstract_Async_Thread):
     
-    zkOper = ZkOpers('127.0.0.1', 2181)
     res_handler = ResInfoAsyncHandler()
     con_handler = ContainerInfoAsyncHandler()
     
@@ -21,7 +19,6 @@ class Monitor_Backend_Handle_Worker(threading.Thread):
         super(Monitor_Backend_Handle_Worker,self).__init__()
 
     def run(self):
-        
         isLock, lock = False, None
         try:
             isLock, lock = self.zkOper.lock_async_monitor_action()
@@ -29,21 +26,29 @@ class Monitor_Backend_Handle_Worker(threading.Thread):
             logging.info("a thread is running the monitor async, give up this oper on this machine!")
             return
         
-        if isLock:
-            try:
-                begin_time = time.time()
-                self.__action_monitor_async()
-                while True:
-                    end_time = time.time()
-                    if int(end_time - begin_time) > (self.timeout - 2):
-                        logging.info('release the log, get lock time: %s, release time: %s,\n total time : %s' % (str(begin_time), str(end_time), int(end_time-begin_time) ) )
-                        break
-                time.sleep(1)
-            except Exception, e:
-                logging.error(e)
-            finally:
-                self.zkOper.unLock_aysnc_monitor_action(lock)
+        if not isLock:
+            return
+        
+        try:
+            begin_time = time.time()
+            self.__action_monitor_async()
+            '''
+            @todo: please zz share the idea for below code
+            '''
+            while True:
+                end_time = time.time()
+                '''
+                @todo: -2 what means?
+                '''
+                if int(end_time - begin_time) > (self.timeout - 2):
+                    logging.info('release the log, get lock time: %s, release time: %s,\n total time : %s' % (str(begin_time), str(end_time), int(end_time-begin_time) ) )
+                    break
+            time.sleep(1)
+        except Exception:
+            self.threading_exception_queue.put(sys.exc_info())
+        finally:
+            self.zkOper.unLock_aysnc_monitor_action(lock)
                 
     def __action_monitor_async(self):
-        res_status_dict = self.res_handler.retrieve_info()
-        con_status_dict = self.con_handler.retrieve_info()
+        self.res_handler.retrieve_info()
+        self.con_handler.retrieve_info()

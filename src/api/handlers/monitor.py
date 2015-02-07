@@ -10,14 +10,13 @@ import logging
 import traceback
 import json
 
-from base import APIHandler
+from handlers.base import APIHandler
 from tornado.web import asynchronous
 from tornado.gen import Task, engine
 from tornado.httpclient import AsyncHTTPClient
 from tornado.options import options
 from tornado.tornado_basic_auth import require_basic_auth
 from server.serverOpers import Server_Opers
-from zk.zkOpers import ZkOpers
 from utils.exceptions import HTTPAPIError
 
 
@@ -32,7 +31,6 @@ class ContainerStatus(APIHandler):
         stat_dict = {}
         for monitor_type in monitor_types:
             monitor_status_list = self.zkOper.retrieve_monitor_status_list(monitor_type)
-            monitor_status_list_count = len(monitor_status_list)
             
             monitor_type_sub_dict = {}
             for monitor_status_key in monitor_status_list:

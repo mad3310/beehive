@@ -41,14 +41,14 @@ class Res_Opers():
         srv_cap_info = self.disk_stat()
         resource.setdefault("srv_capacity", srv_cap_info)
 
-       # disk_over_load = self.disk_loadavg()
-       # resource.setdefault("disk_over_load", disk_over_load)
+        # disk_over_load = self.disk_loadavg()
+        # resource.setdefault("disk_over_load", disk_over_load)
         
         disk_instant_spd = self.disk_instant_load()
         resource.setdefault("disk_instant_spd", disk_instant_spd)
         
-       # _cpu_info = self.cpu_info()
-       # resource.setdefault("cpu_info" , _cpu_info)
+        # _cpu_info = self.cpu_info()
+        # resource.setdefault("cpu_info" , _cpu_info)
        
         cur_cpu_usage = self.get_cur_cpu_usage()
         resource.setdefault("cur_cpu_idle", cur_cpu_usage)
@@ -300,7 +300,7 @@ class Res_Opers():
                 break
             f.close()
 
-           # print "value : %s" % str(float(pid_sum2 - pid_sum1) / float(sys_sum2 - sys_sum1))
+            # print "value : %s" % str(float(pid_sum2 - pid_sum1) / float(sys_sum2 - sys_sum1))
             _percent = float(pid_sum2 - pid_sum1) / float(sys_sum2 - sys_sum1)  
             self._logger.info("%s process occupy %s " % (str(child), str(_percent)))
             percent += _percent
@@ -419,7 +419,7 @@ class Res_Opers():
         f = open(_path, "r")
         lines = f.readlines()
         
-       # print lines
+        # print lines
         nr_mapped = 0
         for line in lines:
             list = line.split(" ")
@@ -435,7 +435,7 @@ class Res_Opers():
         #docker_c = docker.Client(base_url = 'unix://var/run/docker.sock')
         containers_info_list = self.get_containers_info()
         id = ""
-       # print "containers_id_list :" , containers_info_list
+        # print "containers_id_list :" , containers_info_list
         container_names = containers_info_list[0]["Names"]
         for container_name in container_names:
             if container_name == name:

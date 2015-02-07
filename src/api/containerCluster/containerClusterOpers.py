@@ -9,6 +9,7 @@ Created on Sep 8, 2014
 import random, re
 import logging, traceback
 
+from utils.autoutil import getHostIp
 from tornado.options import options
 from common.abstractAsyncThread import Abstract_Async_Thread
 from common.abstractContainerOpers import Abstract_Container_Opers

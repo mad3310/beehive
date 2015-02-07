@@ -6,10 +6,10 @@ Created on Sep 8, 2014
 
 @author: root
 '''
+import logging
 
 from zk.zkOpers import ZkOpers
 from tornado.options import options
-from utils.autoutil import *
 
 class ResourceVerify():
     
@@ -51,6 +51,9 @@ class ResourceVerify():
         if not self.check_hosts_illegal(select_ip_list, nodeCount):
             error_msg += 'two mcluster data nodes are on a server, illegal!'
             
+        '''
+        @todo: add the ckeck logic for the rest value of disk,if the disk usage > 70%, then throw exception
+        '''
         result_dict.setdefault('error_msg', error_msg)
         result_dict.setdefault('select_ip_list', select_ip_list)
         return result_dict
@@ -83,7 +86,9 @@ class ResourceVerify():
 
     
 class ElectServer(object):
-    
+    '''
+    @todo: duplicate logic with containerClusterCreateAction.__choose_host?
+    '''
     def elect_server_list(self, _component_container_cluster_config):
         score_dict, score_list, ips_result  = {}, [], []
         host_ip_list = self.zkOper.retrieve_servers_white_list()
@@ -111,6 +116,7 @@ class ElectServer(object):
         '''
         @todo: use _component_container_cluster_config to replace to zkOpers operaion,
         foucs on mem_limit
+        what means mem_limit and mem_free_limit?
         '''
         normal_info = self.zkOper.retrieve_mcluster_info_from_config()
         mem_limit = normal_info.get('mem_limit')/1024/1024
@@ -127,6 +133,9 @@ class ElectServer(object):
         mem_usable = float(server_res["response"]["mem_res"]["free"]) - mem_free_limit
         logging.info('mem_usable:%s' %  mem_usable)
         
+        '''
+        @todo: no need to if esle, only change to if
+        '''
         if mem_usable and mem_usable < mem_limit:
             weighted_value = 0
             num = 0

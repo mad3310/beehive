@@ -56,6 +56,9 @@ class GbalancerContainerModel(AbstractContainerModelCreator):
         
         return create_container_arg_list
     
+    '''
+    @todo: gbalancer need to bind volumn?
+    '''
     def __get_normal_volumes_args(self):
         volumes, binds = {}, {}
         mcluster_conf_info = self.zkOper.retrieve_mcluster_info_from_config()

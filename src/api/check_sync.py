@@ -5,7 +5,7 @@ import json
 
 from zk.zkOpers import ZkOpers
 from utils.configFileOpers import ConfigFileOpers
-from common.utils.autoutil import getHostIp
+from utils.autoutil import getHostIp
 from tornado.options import options
 
 
@@ -14,12 +14,15 @@ class CheckSync():
     zkOpers = ZkOpers('127.0.0.1', 2181)
     config_file_obj = ConfigFileOpers()
 
+    '''
+    @todo: if failed, only to logging? the program will be continue to run?
+    '''
     def sync(self):
         if self.zkOpers.existCluster():
             self.sync_server_cluster()
             self.sync_data_node()
         else:
-             logging.info("cluster does not exist")
+            logging.info("cluster does not exist")
 
     def sync_server_cluster(self):
         cluster_uuid = self.zkOpers.getClusterUUID() 

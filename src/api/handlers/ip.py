@@ -1,10 +1,13 @@
 #-*- coding: utf-8 -*-
-from base import APIHandler
+from handlers.base import APIHandler
+from utils.exceptions import HTTPAPIError
 from resource.ipOpers import IpOpers
 from tornado.tornado_basic_auth import require_basic_auth
 
 # ip management
-# eg. curl ???
+'''
+@todo: every interface need to add comment for the curl usage
+'''
 
 @require_basic_auth
 class IPHandler(APIHandler):
@@ -22,7 +25,7 @@ class IPHandler(APIHandler):
         
         return_message = {}
         return_message.setdefault("message", "write ip to ip pools successfully!")
-        self.finish(return_message)        
+        self.finish(return_message)
         
     def get(self):
         return_message, ips = {}, []

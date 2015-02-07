@@ -4,16 +4,16 @@ Created on 2015-2-2
 @author: asus
 '''
 import logging
-import sys, traceback
+import sys
 import tornado
 
 from tornado.options import options
+from tornado.gen import Callback, Wait
 from common.abstractAsyncThread import Abstract_Async_Thread
 from resource.ipOpers import IpOpers
 from resource.resourceVerify import ResourceVerify
-from utils import _retrieve_userName_passwd, _get_gateway_from_ip
 from utils.exceptions import CommonException
-from utils.autoutil import http_get, http_post
+from utils.autoutil import http_get
 from componentProxy.componentManagerValidator import ComponentManagerStatusValidator
 from container.container_model import Container_Model
 from componentProxy.componentContainerModelFactory import ComponentContainerModelFactory
@@ -133,8 +133,8 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         containerClusterProps.setdefault('containerClusterName', containerClusterName)
         self.zkOper.write_container_cluster_info(containerClusterProps)
     
+    @tornado.gen.engine
     def __dispatch_create_container_task(self, create_container_node_ip_list, create_container_arg_list, container_count):
-        admin_user, admin_passwd = _retrieve_userName_passwd()
         http_client = tornado.httpclient.AsyncHTTPClient()
         
         _error_record_dict = {}
@@ -176,6 +176,9 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         create_container_node_ip_list = []
         data_node_info_list = self.zkOper.retrieve_data_node_list()
         data_node_info_list.sort()
+        '''
+        @todo: don't use 4 to compare the container list
+        '''
         if len(data_node_info_list) < 4:
             create_container_node_ip_list = data_node_info_list
             create_container_node_ip_list.append(data_node_info_list[-1])

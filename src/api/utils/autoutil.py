@@ -7,7 +7,6 @@ import logging
 import traceback
 import threading
 import json
-import socket
 import os, re
 
 from utils import _request_fetch
@@ -32,6 +31,9 @@ class FuncThread(threading.Thread):
     def isFinished(self):
         return self.finished
 
+'''
+@todo: the class used?
+'''
 class Data:
     def __init__(self, data = None):
         self.data = data
@@ -47,6 +49,9 @@ def doInThread(func, *params, **paramMap):
     ft.start()
     return ft
 
+'''
+@todo: the method used?
+'''
 def doInTimes(func, times, *params, **paramMap):
     while times > 0:
         rst = func(*params, **paramMap)
@@ -58,6 +63,9 @@ def doInTimes(func, times, *params, **paramMap):
 def _isExcept(e, eType = Exception):
     return isinstance(e, eType)
 
+'''
+@todo: the method used?
+'''
 def handleTimeout(func, timeout, *params, **paramMap):
     """
     """
@@ -82,6 +90,9 @@ def getHostIp():
     logging.info("host ip: %s" % (ip))
     return ip
 
+'''
+@todo: the method used?
+'''
 def getVMIp():
     ips = os.popen("/sbin/ifconfig | grep 'inet addr' | awk '{print $2}'").read()
     ip = ips.split('\n')[1]

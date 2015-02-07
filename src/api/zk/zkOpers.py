@@ -10,10 +10,10 @@ Created on 2013-7-11
 import logging
 import threading
 
-from utils.autoutil import *
 from resource.resourceOpers import Res_Opers
 from kazoo.client import KazooClient
 from container.container_module import Container
+from utils.autoutil import get_containerClusterName_from_containerName
 
 class ZkOpers(object):
     
@@ -50,6 +50,9 @@ class ZkOpers(object):
             return True
         return False
 
+    '''
+    @todo: remove?
+    '''
     def getDataNodeNumber(self, clusterUUID):
         path = self.rootPath + "/" + clusterUUID
         dataNodeNumber = self.zk.get_children(path)
@@ -291,19 +294,28 @@ class ZkOpers(object):
         clusterUUID = self.getClusterUUID()
         path = self.rootPath + '/' +clusterUUID + '/ipPool/' + ip
         self.zk.ensure_path(path)
-     
+    
+    '''
+    @todo: remove?
+    ''' 
     def writeClusterNormalConf(self, info):
         clusterUUID = self.getClusterUUID()
         path = self.rootPath + '/' + clusterUUID + '/config/normal'
         self.zk.ensure_path(path)
         self.zk.set(path, str(info))
 
+    '''
+    @todo: remove?
+    '''
     def writeConfigVerify(self, info):
         clusterUUID = self.getClusterUUID()
         path = self.rootPath + '/' + clusterUUID + '/config'
         self.zk.ensure_path(path)
         self.zk.set(path, str(info))
     
+    '''
+    @todo: remove?
+    '''
     def writeClusterVipConf(self, info):
         clusterUUID = self.getClusterUUID()
         path = self.rootPath + '/' + clusterUUID + '/config/vip'

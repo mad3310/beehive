@@ -19,7 +19,6 @@ from common.abstractContainerOpers import Abstract_Container_Opers
 from common.abstractAsyncThread import Abstract_Async_Thread
 from docker.dockerOpers import Docker_Opers
 from container.container_module import Container
-from resource.resourceOpers import Res_Opers
 from utils.exceptions import CommonException, RetryException
 from utils.log import _log_docker_run_command
 from utils import _is_ip, _is_mask, _mask_to_num, _check_create_status
@@ -239,7 +238,7 @@ class Container_create_action(object):
     
     '''
     @todo: 
-    1. check the duplicate with Container's logic?
+    1. check the duplicate with Container's logic? can be remove?
     '''
     def __retrieve_container_ip_mask(self, container_name):
         re_info = self.docker_opers.inspect_container(container_name)
@@ -421,6 +420,9 @@ class Container_destroy_action(Abstract_Async_Thread):
         mount_dir = ''
         con = Container(self.container_name)
         type = con.type()
+        '''
+        @todo: if other component need to delete these volumn?
+        '''
         if 'vip' in type:
             logging.info('vip node, no need to remove mount dir!')
         else:

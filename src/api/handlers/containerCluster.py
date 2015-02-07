@@ -40,6 +40,9 @@ class ContainerClusterHandler(APIHandler):
             self.finish(message)
             return
         
+        '''
+        @todo: why duplicate check resource with ContainerCluster_create_Action.check_resource()
+        '''
         error_msg = self.check_resource()
         if error_msg:
             raise HTTPAPIError(status_code=578, error_detail=error_msg,\

@@ -12,15 +12,18 @@ import time
 import Queue
 import logging
 
-from api.common.zk.zkOpers import ZkOpers
+from zk.zkOpers import ZkOpers
 from utils.autoutil import doInThread
 from utils.exceptions import CommonException
-from api.common.resource.resourceOpers import Res_Opers
+from resource.resourceOpers import Res_Opers
 
 
 class IpOpers(object):
     '''
     classdocs
+    '''
+    '''
+    @todo: why use Queue? List?
     '''
     store_illegal_ips_queue = Queue.Queue()
     store_all_ips_queue = Queue.Queue()
@@ -32,6 +35,9 @@ class IpOpers(object):
         constructor
         '''
     
+    '''
+    @todo: the method only invoke the zk.method, what means?
+    '''
     def get_ips_from_ipPool(self):
         return self.zkOper.get_ips_from_ipPool()
     
@@ -51,7 +57,7 @@ class IpOpers(object):
         if len(ips) < ip_count:
             raise CommonException('the ips of this segment is less the the number you need, please apply less ips')
         for ip in ips:
-            if self.ip_legal(ip):
+            if self.__ip_legal(ip):
                 choosed_ip.append(ip)
                 num += 1
             if num == ip_count:
@@ -67,7 +73,7 @@ class IpOpers(object):
             all_ips.append(ip)
         return all_ips       
 
-    def ip_legal(self, ip):
+    def __ip_legal(self, ip):
         cmd = 'ping -w 2 %s' % str(ip)
         ret = os.system(cmd)
         if not ret:
@@ -85,7 +91,7 @@ class IpOpers(object):
         """
         while not self.store_all_ips_queue.empty():
             ip = self.store_all_ips_queue.get(block=False)
-            is_lagel = self.ip_legal(ip)
+            is_lagel = self.__ip_legal(ip)
             if not is_lagel:
                 self.store_illegal_ips_queue.put(ip)
 
