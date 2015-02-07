@@ -5,16 +5,19 @@ import string
 import base64
 import logging
 import re, traceback
+import datetime
 
 from tornado.options import options
 from tornado.httpclient import HTTPClient
 from tornado.httpclient import HTTPError
-from util.configFileOpers import ConfigFileOpers
+from utils.configFileOpers import ConfigFileOpers
 from container.containerOpers import Container_Opers
 
 confOpers = ConfigFileOpers()
 
 container_opers = Container_Opers()
+
+TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 
 def get_random_password():
     a = list(string.letters+string.digits)
@@ -117,4 +120,6 @@ def _get_gateway_from_ip(ip):
     ip_item_list[-2] = '0'
     return '.'.join(ip_item_list)
     
-
+def get_current_time():
+    dt = datetime.datetime.now()
+    return dt.strftime(TIME_FORMAT)

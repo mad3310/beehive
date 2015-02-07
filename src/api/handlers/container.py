@@ -192,6 +192,77 @@ class RemoveContainerHandler(APIHandler):
 
 
 @require_basic_auth
+class GetherContainerMemeoyHandler(APIHandler):
+    
+    @asynchronous
+    def get(self, container_name):
+
+        exists = check_container_exists(container_name)
+        if not exists:
+            massage = {}
+            massage.setdefault("message", "container %s not exists" % container_name)
+            self.finish(massage)
+            return
+
+        result, memory_stat_item = {}, {}
+        conl = ContainerLoad(container_name)
+        memory_stat_item = conl.get_memory_stat_item()
+        current_time = get_current_time()
+        
+        result.setdefault('memory', memory_stat_item)
+        result.setdefault('time', current_time)
+        result.setdefault('containerName', container_name)
+        self.finish(result)
+
+
+@require_basic_auth
+class GetherContainerCpuacctHandler(APIHandler):
+    
+    @asynchronous
+    def get(self, container_name):
+
+        exists = check_container_exists(container_name)
+        if not exists:
+            massage = {}
+            massage.setdefault("message", "container %s not exists" % container_name)
+            self.finish(massage)
+            return
+
+        result, cpuacct_stat_item = {}, {}
+        conl = ContainerLoad(container_name)
+        cpuacct_stat_item = conl.get_cpuacct_stat_item()
+        current_time = get_current_time()
+        
+        result.setdefault('cpuacct', cpuacct_stat_item)
+        result.setdefault('time', current_time)
+        result.setdefault('containerName', container_name)
+        self.finish(result)
+
+
+@require_basic_auth
+class GetherContainerNetworkioHandler(APIHandler):
+    
+    def get(self, container_name):
+
+        exists = check_container_exists(container_name)
+        if not exists:
+            massage = {}
+            massage.setdefault("message", "container %s not exists" % container_name)
+            self.finish(massage)
+            return
+
+        result, network_io_item = {}, {}
+        conl = ContainerLoad(container_name)
+        network_io_item = conl.get_network_io()
+        current_time = get_current_time()
+        
+        result.setdefault('networkio', network_io_item)
+        result.setdefault('time', current_time)
+        result.setdefault('containerName', container_name)
+        self.finish(result)
+
+
+@require_basic_auth
 class CheckContainerStatusHandler(APIHandler):
     '''
     classdocs
