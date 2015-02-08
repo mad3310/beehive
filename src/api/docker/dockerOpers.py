@@ -70,6 +70,29 @@ class Docker_Opers(client):
     def inspect_container(self, container):
         return self.client.inspect_container(container)
     
+    '''
+    @todo: need test
+    '''
+    def retrieve_containers_ids(self):
+        containers_info = self.containers()
+        id_list = []
+        for container_iter in containers_info:
+            id_list.append(container_iter['Id'])
+        return id_list
+    
+    '''
+    @todo: need test
+    '''
+    def retrieve_containers_ips(self):
+        container_id_list = self.retrieve_containers_ids()
+        ip_list = []
+        for container_id_iter in container_id_list:
+            env = self.inspect_container(container_id_iter)['Config']['Env']
+            for item in env:
+                if item.startswith("IP="):
+                    ip_list.append(item.split("=")[1])
+        return ip_list
+    
 if __name__ == '__main__':
     d = Docker_Opers()
     print d.inspect_container('d-mcl-djimlwy-n-1')

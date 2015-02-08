@@ -15,8 +15,7 @@ import logging
 from zk.zkOpers import ZkOpers
 from utils.autoutil import doInThread
 from utils.exceptions import CommonException
-from resource.resourceOpers import Res_Opers
-
+from docker.dockerOpers import Docker_Opers
 
 class IpOpers(object):
     '''
@@ -29,6 +28,8 @@ class IpOpers(object):
     store_all_ips_queue = Queue.Queue()
 
     zkOper = ZkOpers('127.0.0.1', 2181)
+    
+    docker_opers = Docker_Opers()
     
     def __init__(self):
         '''
@@ -82,8 +83,8 @@ class IpOpers(object):
         if not ret:
             logging.info('ping ip: %s result :%s' % (ip, str(ret)) )
             return False
-        res_opers = Res_Opers()
-        host_con_ip_list = res_opers.get_containers_ip()
+        
+        host_con_ip_list = self.docker_opers.retrieve_containers_ips()
         if ip in host_con_ip_list:
             return False
         return True

@@ -10,7 +10,7 @@ Created on 2013-7-11
 import logging
 import threading
 
-from resource.resourceOpers import Res_Opers
+from docker.dockerOpers import Docker_Opers
 from kazoo.client import KazooClient
 from container.container_module import Container
 from utils.autoutil import get_containerClusterName_from_containerName
@@ -24,6 +24,8 @@ class ZkOpers(object):
     zk = None
     
     rootPath = "/letv/docker"
+    
+    docker_opers = Docker_Opers()
     
     '''
     classdocs
@@ -434,8 +436,7 @@ class ZkOpers(object):
         '''
         @todo: should not put more logic into zkOpers
         '''
-        res_opers = Res_Opers()
-        host_con_ip_list = res_opers.get_containers_ip()
+        host_con_ip_list = self.docker_opers.retrieve_containers_ips()
         
         ip_list = list( set(ipPool_ip_list) & set(host_con_ip_list) )
         for ip in ip_list:

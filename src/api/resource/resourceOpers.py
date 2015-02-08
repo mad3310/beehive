@@ -13,8 +13,9 @@ import docker
 import threading
 
 from utils.autoutil import *
-from invokeCommand import InvokeCommand
+from utils.invokeCommand import InvokeCommand
 from tornado.options import options
+from docker.dockerOpers import Docker_Opers
 
 
 class Res_Opers():
@@ -25,6 +26,8 @@ class Res_Opers():
     docker_c = docker.Client(base_url = 'unix://var/run/docker.sock')
     _logger = logging.getLogger("process_info")
     _logger.setLevel(logging.INFO)
+    
+    docker_opers = Docker_Opers()
 
     def __init__(self ,container_name = ""):
         self.name = container_name
@@ -67,33 +70,10 @@ class Res_Opers():
 #         dict.setdefault("rss_cpu", self.search_pid_family_info(pid))
         return dict
     
-    def get_containers_info(self):
-        #docker_c = docker.Client(base_url = 'unix://var/run/docker.sock')
-        containers_list = self.docker_c.containers()
-        return containers_list
-    
-    def get_containers_id(self):
-        # docker_c = docker.Client(base_url = 'unix://var/run/docker.sock')
-        containers_info = self.get_containers_info()
-        id_list = []
-        for container_iter in containers_info:
-            id_list.append(container_iter['Id'])
-        return id_list
-    
-    def get_containers_ip(self):
-        container_id_list = self.get_containers_id()
-        ip_list = []
-        for container_id_iter in container_id_list:
-            env = self.docker_c.inspect_container(container_id_iter)['Config']['Env']
-            for item in env:
-                if item.startswith("IP="):
-                    ip_list.append(item.split("=")[1])
-        return ip_list
-    
     def get_containers_alloc_mem(self):
         
         total_mem = 0
-        containers_id_list = self.get_containers_id()
+        containers_id_list = self.docker_opers.retrieve_containers_ids()
         for container_id_iter in containers_id_list:
             print self.docker_c.inspect_container(container_id_iter)
             total_mem += self.docker_c.inspect_container(container_id_iter)['Config']['Memory']
@@ -101,7 +81,7 @@ class Res_Opers():
         return int((total_mem /1024)/1024)
     
     def get_container_id_pid_dict(self, name):
-        containers_info_list = self.get_containers_info()
+        containers_info_list = self.docker_opers.containers()
         id = ""
         for container_info in containers_info_list:
             container_name = container_info["Names"][0] 
@@ -150,7 +130,6 @@ class Res_Opers():
         self._logger.info("container_rw_load :" + str(pid_load_dict))
         
         pid = self.id_pid_dict["pid_0"]
-        #pid = 1
         children_pid_list = self.get_container_children_pid(pid)
         
         suffix = 1
@@ -377,7 +356,7 @@ class Res_Opers():
         
     def get_container_alloc_mem(self):
         #docker_c = docker.Client(base_url = 'unix://var/run/docker.sock')
-        containers_info_list = self.get_containers_info()
+        containers_info_list = self.docker_opers.containers()
         id = ""
         mem = 0
         #print "containers_id_listcat /proc/39965/net/netstat | grep 'IpExt: ' | tail -n 1 | awk '{ print $8 "\t" $9 }' :" , containers_info_list
@@ -432,8 +411,7 @@ class Res_Opers():
     
     
     def container_occupy_mem_resource(self, name):
-        #docker_c = docker.Client(base_url = 'unix://var/run/docker.sock')
-        containers_info_list = self.get_containers_info()
+        containers_info_list = self.docker_opers.containers()
         id = ""
         # print "containers_id_list :" , containers_info_list
         container_names = containers_info_list[0]["Names"]
@@ -508,7 +486,6 @@ class Res_Opers():
         
     
     def get_container_id_pid(self, id):
-        #docker_c = docker.Client(base_url = 'unix://var/run/docker.sock')
         id_pid_dict = {}
                   
         id_pid_dict.setdefault("container_id_0", id)
@@ -519,8 +496,7 @@ class Res_Opers():
         return id_pid_dict
             
     def get_containers_id_pid(self):
-        #docker_c = docker.Client(base_url = 'unix://var/run/docker.sock')
-        containers_id_list = self.get_containers_id()
+        containers_id_list = self.docker_opers.retrieve_containers_ids()
         id_pid_dict = {}
         i = 0
         for container_id_iter in containers_id_list:
@@ -537,7 +513,6 @@ class Res_Opers():
     
     def get_container_children_pid(self, ppid = 1):
         invokeCmd = InvokeCommand()
-       # _shell = options.pid_children + " " + str(ppid)
         _shell = 'shell/list_children.sh %s' % ppid
         ret = invokeCmd._runSysCmd(_shell)
         pid_str = ret[0]
@@ -548,7 +523,6 @@ class Res_Opers():
         return pid_list
     
     
- #   def compute_container_
     def memory_stat(self):  
         mem, stat = {}, {} 
         f = open("/proc/meminfo", "r")  
@@ -606,7 +580,6 @@ class Res_Opers():
     def disk_instant_load(self):
         mount_dev = self.get_dev_name()
         invokeCmd = InvokeCommand()
-        #print mount_dev
         _shell = "iostat -dxk %s 2 2" % (mount_dev)
         self._logger.info(str(_shell))
         ret_sub_p = invokeCmd._runSysCmd(_shell)
