@@ -17,12 +17,12 @@ from tornado.httpclient import HTTPRequest, AsyncHTTPClient
 from tornado.web import asynchronous
 from tornado.gen import engine, Task
 from utils.configFileOpers import ConfigFileOpers
-from tornado.tornado_basic_auth import require_basic_auth
+from tornado_.tornado_basic_auth import require_basic_auth
 from utils import _retrieve_userName_passwd
 from serverCluster.serverClusterOpers import ServerCluster_Opers
 from utils.autoutil import http_get
 from utils.exceptions import HTTPAPIError
-from handlers.base import APIHandler
+from base import APIHandler
 
 @require_basic_auth
 class ServerClusterHandler(APIHandler):

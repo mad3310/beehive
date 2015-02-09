@@ -7,7 +7,7 @@ import traceback
 import logging
 
 from tornado.web import asynchronous
-from handlers.base import APIHandler
+from base import APIHandler
 from server.serverOpers import Server_Opers
 from resource.resourceOpers import Res_Opers
 from utils.exceptions import HTTPAPIError

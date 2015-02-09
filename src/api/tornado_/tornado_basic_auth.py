@@ -22,7 +22,7 @@
 
 import base64
 
-from api.common.utils.configFileOpers import ConfigFileOpers
+from utils.configFileOpers import ConfigFileOpers
 from tornado.options import options
 
 def check_auth(kwargs):

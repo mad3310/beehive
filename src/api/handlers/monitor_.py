@@ -10,7 +10,7 @@ import logging
 import traceback
 import json
 
-from handlers.base import APIHandler
+from base import APIHandler
 from tornado.web import asynchronous
 from tornado.gen import Task, engine
 from tornado.httpclient import AsyncHTTPClient

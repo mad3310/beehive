@@ -11,7 +11,7 @@ import logging
 import traceback
 
 from tornado.web import asynchronous
-from handlers.base import APIHandler
+from base import APIHandler
 from tornado.tornado_basic_auth import require_basic_auth
 from utils.exceptions import HTTPAPIError
 from containerCluster.containerClusterOpers import ContainerCluster_Opers, GetClustersChanges
