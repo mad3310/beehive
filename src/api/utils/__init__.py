@@ -10,12 +10,8 @@ import datetime
 from tornado.options import options
 from tornado.httpclient import HTTPClient
 from tornado.httpclient import HTTPError
-from utils.configFileOpers import ConfigFileOpers
-from container.containerOpers import Container_Opers
 
 confOpers = ConfigFileOpers()
-
-container_opers = Container_Opers()
 
 TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 
@@ -106,13 +102,6 @@ def _mask_to_num(netmask=None):
             return { 'false': netmask }
         num = num + str(bin(ip).replace('0b',''))
     return len(num.replace(r"0",''))
-
-def _check_create_status(container_name):
-    stat = container_opers.get_container_stat(container_name)
-    if stat == 'started':
-        return True
-    else:
-        return False
     
 def _get_gateway_from_ip(ip):
     ip_item_list = ip.split('.')

@@ -9,7 +9,6 @@ import threading
 import json
 import os, re
 
-from utils import _request_fetch
 from tornado.httpclient import HTTPRequest
 
 class FuncThread(threading.Thread):

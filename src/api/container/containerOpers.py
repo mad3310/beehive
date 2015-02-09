@@ -21,7 +21,7 @@ from docker_.dockerOpers import Docker_Opers
 from container.container_module import Container
 from utils.exceptions import CommonException, RetryException
 from utils.log import _log_docker_run_command
-from utils import _is_ip, _is_mask, _mask_to_num, _check_create_status
+from utils import _is_ip, _is_mask, _mask_to_num
 from componentProxy.componentDockerModelFactory import ComponentDockerModelFactory
 
 class Container_Opers(Abstract_Container_Opers):
@@ -100,6 +100,7 @@ class Container_Opers(Abstract_Container_Opers):
 class Container_create_action(object):
     
     docker_opers = Docker_Opers()
+    container_opers = Container_Opers
     
     component_docker_model_factory = ComponentDockerModelFactory()
     
@@ -146,7 +147,7 @@ class Container_create_action(object):
             logging.error(error_message)
             raise CommonException(error_message)
         
-        result = _check_create_status(container_name)
+        result = self._check_create_status(container_name)
         if not result:
             error_message = 'the exception of creating container'
             logging.error(error_message)
@@ -155,7 +156,14 @@ class Container_create_action(object):
         container_node_info = self._get_container_info(container_name, arg_dict)
         logging.info('get container info: %s' % str(container_node_info))
         self.zkOper.write_container_node_info('started', container_node_info)
-    
+
+    def _check_create_status(self, container_name):
+        stat = self.container_opers.get_container_stat(container_name)
+        if stat == 'started':
+            return True
+        else:
+            return False
+
     def __set_ip_add_route_retry(self, retryCount, container_name=None):
         
         if container_name is None:
@@ -314,7 +322,7 @@ class Container_start_action(Abstract_Async_Thread):
         start_flag = {'status':'starting', 'message':''}
         self.zkOper.write_container_status_by_containerName(self.container_name, start_flag)
         self.docker_opers.__start(self.container_name)
-        stat = self.docker_opers.get_container_stat(self.container_name)
+        stat = self.container_opers.get_container_stat(self.container_name)
         if stat == 'stopped':
             message = '__start container %s failed' % self.container_name
         else:
@@ -351,7 +359,7 @@ class Container_stop_action(Abstract_Async_Thread):
         self.zkOper.write_container_status_by_containerName(self.container_name, stop_flag)
         
         self.docker_opers.stop(self.container_name, 30)
-        stat = self.docker_opers.get_container_stat(self.container_name)
+        stat = self.container_opers.get_container_stat(self.container_name)
         if stat == 'started':
             status = 'failed'
             message = 'stop container %s failed' % self.container_name
