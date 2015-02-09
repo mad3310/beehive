@@ -6,7 +6,7 @@ import traceback
 
 from base import APIHandler
 from utils.exceptions import HTTPAPIError
-from tornado.tornado_basic_auth import require_basic_auth
+from tornado_.tornado_basic_auth import require_basic_auth
 from tornado.web import asynchronous
 from container.containerOpers import Container_Opers
 

@@ -11,7 +11,7 @@ from base import APIHandler
 from server.serverOpers import Server_Opers
 from resource.resourceOpers import Res_Opers
 from utils.exceptions import HTTPAPIError
-from tornado.tornado_basic_auth import require_basic_auth
+from tornado_.tornado_basic_auth import require_basic_auth
 
 
 class ServerHandler(APIHandler):

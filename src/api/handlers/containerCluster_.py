@@ -12,7 +12,7 @@ import traceback
 
 from tornado.web import asynchronous
 from base import APIHandler
-from tornado.tornado_basic_auth import require_basic_auth
+from tornado_.tornado_basic_auth import require_basic_auth
 from utils.exceptions import HTTPAPIError
 from containerCluster.containerClusterOpers import ContainerCluster_Opers, GetClustersChanges
 from componentProxy.db.mysql.mclusterOper import MclusterManager
