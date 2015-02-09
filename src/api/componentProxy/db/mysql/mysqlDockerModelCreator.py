@@ -6,7 +6,7 @@ Created on 2015-2-1
 import os
 
 from componentProxy.abstractDockerModelCreator import AbstractContainerModelCreator
-from docker.docker_model import Docker_Model
+from docker_.docker_model import Docker_Model
 
 class MysqlDockerModelCreator(AbstractContainerModelCreator):
     '''

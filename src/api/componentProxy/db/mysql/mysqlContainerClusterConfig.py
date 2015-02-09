@@ -18,6 +18,6 @@ class MysqlContainerClusterConfig(object):
         self.nodeCount = 3
         self.need_validate_manager_status = True
         self.mem_free_limit = 10
-        self.mem_limit = 1024
+        self.mem_limit = 512*1024*1024
         
         

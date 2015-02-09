@@ -15,7 +15,8 @@ class Docker_Opers(client):
     def __init__(self):
         super(Docker_Opers, self).__init__(base_url='unix://var/run/docker.sock')
         
-    def create(self,image,hostname,user='root',name,environment,tty=True,ports,stdin_open=True,mem_limit,volumes):
+    def create(self, image, hostname=None, user='root', name=None, environment=None,
+               tty=True, ports=None, stdin_open=True, mem_limit=0, volumes=None):
         container_id = self.client.create_container(image, 
                                                     hostname, 
                                                     user,

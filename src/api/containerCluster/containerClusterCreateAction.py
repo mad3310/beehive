@@ -89,13 +89,8 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
                                                                                   containerCount, 
                                                                                   _containerClusterName)
 
-        '''
-        @todo: the select_ip_list exist, why use __choose_host() to retrieve the host list?
-        '''
-        if select_ip_list:
-            create_container_node_ip_list = select_ip_list
-        else:
-            create_container_node_ip_list = self.__choose_host()
+
+        create_container_node_ip_list = select_ip_list
         
         logging.info('choose host iplist: %s' % str(create_container_node_ip_list) )
         
@@ -175,30 +170,6 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
             http_client.close()
             
         return _error_record_dict
-    
-    def __choose_host(self):
-        create_container_node_ip_list = []
-        data_node_info_list = self.zkOper.retrieve_data_node_list()
-        data_node_info_list.sort()
-        '''
-        @todo: don't use 4 to compare the container list
-        '''
-        if len(data_node_info_list) < 4:
-            create_container_node_ip_list = data_node_info_list
-            create_container_node_ip_list.append(data_node_info_list[-1])
-        elif len(data_node_info_list) == 4:
-            create_container_node_ip_list = data_node_info_list
-        else:
-            url_post = "/server"
-            resource_dict = {}
-            for data_node_ip in data_node_info_list:
-                requesturi = "http://%s:%s%s" % (data_node_ip, options.port, url_post)
-                return_dict = http_get(requesturi)
-                resource_dict.setdefault(data_node_ip, return_dict['response'])
-            logging.info("Before sort, all server the resource info, the resource value is %s" % str(resource_dict))
-            create_container_node_ip_list = self.__sort_server_resource(resource_dict)
-            logging.info("After sort, the resource list is %s" % str(create_container_node_ip_list))
-        return create_container_node_ip_list
     
     def __sort_server_resource(self, arg_dict):
         resource_list = []
