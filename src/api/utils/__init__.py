@@ -113,3 +113,13 @@ def _get_gateway_from_ip(ip):
 def get_current_time():
     dt = datetime.datetime.now()
     return dt.strftime(TIME_FORMAT)
+
+def _get_property_dict(class_model_obj):
+    """use this method temporarily, later add to class Container_Model
+    
+    """
+    result = {}
+    for _property, value in class_model_obj.__dict__.items():
+        property = _property.replace('_', '')
+        result.setdefault(property, value)
+    return result

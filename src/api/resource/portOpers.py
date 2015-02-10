@@ -14,4 +14,7 @@ class Port_Opers(object):
         '''
         Constructor
         '''
+    
+    def retrieve_port_resource(self, num):
+        pass
         

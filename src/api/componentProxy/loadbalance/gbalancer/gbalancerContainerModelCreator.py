@@ -20,7 +20,7 @@ class GbalancerContainerModelCreator(AbstractContainerModelCreator):
         Constructor
         '''
     
-    def create(self, arg_dict, containerCount, containerClusterName):
+    def create(self, arg_dict, containerCount, containerClusterName, _component_container_cluster_config):
         _network_mode = arg_dict.get('network_mode')
         if "ip" == _network_mode:
             containerIPList = self.ip_opers.retrieve_ip_resource(containerCount)

@@ -17,10 +17,11 @@ class ComponentContainerClusterConfigFactory(object):
         Constructor
         '''
         
-    def retrieve_config(self, _component_type):
+    def retrieve_config(self, args):
+        _component_type = args.get('componentType')
         if "mclustervip" == _component_type:
-            config = GbalancerContainerClusterConfig()
+            config = GbalancerContainerClusterConfig(args)
         elif "mclusternode" == _component_type:
-            config = MysqlContainerClusterConfig()
+            config = MysqlContainerClusterConfig(args)
         
         return config

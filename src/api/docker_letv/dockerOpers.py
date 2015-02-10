@@ -15,34 +15,55 @@ class Docker_Opers(client):
     def __init__(self):
         super(Docker_Opers, self).__init__(base_url='unix://var/run/docker.sock')
         
-    def create(self, image, hostname=None, user='root', name=None, environment=None,
-               tty=True, ports=None, stdin_open=True, mem_limit=0, volumes=None):
-        container_id = self.client.create_container(image, 
-                                                    hostname, 
-                                                    user,
-                                                    name, 
-                                                    environment, 
-                                                    tty, 
-                                                    ports, 
-                                                    stdin_open,
-                                                    mem_limit, 
-                                                    volumes)
+
+    def create(self, docker_model):
+        image = docker_model.image
+        hostname = docker_model.hostname
+        user = 'root'
+        name = docker_model.name
+        environment = docker_model.environment
+        tty = True
+        ports = docker_model.ports
+        stdin_open = True
+        mem_limit = docker_model.mem_limit
+        volumes = docker_model.volumes
+        
+        container_id = self.client.create_container(image=image, 
+                                                    hostname=hostname, 
+                                                    user=user,
+                                                    name=name, 
+                                                    environment=environment, 
+                                                    tty=tty, 
+                                                    ports=ports, 
+                                                    stdin_open=stdin_open,
+                                                    mem_limit=mem_limit, 
+                                                    volumes=volumes)
         return container_id
     
-    def start(self, container, binds=None, port_bindings=None, lxc_conf=None,
-              publish_all_ports=False, links=None, privileged=False,
-              dns=None, dns_search=None, volumes_from=None, network_mode=None):
-        self.client.__start(container, 
-                          binds, 
-                          port_bindings, 
-                          lxc_conf, 
-                          publish_all_ports, 
-                          links,
-                          privileged, 
-                          dns, 
-                          dns_search, 
-                          volumes_from, 
-                          network_mode)
+    def start(self, docker_model):
+        container = docker_model.name
+        binds = docker_model.binds
+        port_bindings = None 
+        lxc_conf = None
+        publish_all_ports = publish_all_ports
+        links = None
+        privileged=True
+        dns=None
+        dns_search=None
+        volumes_from=None
+        network_mode='bridge'
+        
+        self.client.__start(container=container, 
+                            binds=binds, 
+                            port_bindings=port_bindings, 
+                            lxc_conf=lxc_conf, 
+                            publish_all_ports=publish_all_ports, 
+                            links=links,
+                            privileged=privileged, 
+                            dns=dns, 
+                            dns_search=dns_search, 
+                            volumes_from=volumes_from, 
+                            network_mode=network_mode)
        
     def stop(self, container, timeout=20):
         self.client.stop(container, timeout)

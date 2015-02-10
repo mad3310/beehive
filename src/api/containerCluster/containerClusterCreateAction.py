@@ -21,6 +21,7 @@ from componentProxy.componentContainerClusterConfigFactory import ComponentConta
 
 class ContainerCluster_create_Action(Abstract_Async_Thread): 
     ip_opers = IpOpers()
+    port_opers = portOpers()
     
     res_verify = ResourceVerify()
     
@@ -54,10 +55,14 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         logging.info('args:%s' % str(args))
         _containerClusterName = args.get('containerClusterName')
         _component_type = args.get('componentType')
+        _network_mode = _containerClusterName = args.get('network_mode')
+        
         logging.info('containerClusterName : %s' % str(_containerClusterName))
+        logging.info('_component_type : %s' % str(_component_type))
+        logging.info('_network_mode : %s' % str(_network_mode))
         
         
-        _component_container_cluster_config = self.component_container_cluster_config_factory.retrieve_config()
+        _component_container_cluster_config = self.component_container_cluster_config_factory.retrieve_config(args)
         logging.info('config node info in zk: %s, type: %s' % ( str( _component_container_cluster_config), type(_component_container_cluster_config)) )
         
         
@@ -81,14 +86,15 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
                 select_ip_list = ret.get('select_ip_list')
                 logging.info('select_ip_list:%s' % str(select_ip_list))
                 
-        '''
-        @todo: retrieve ip or port, then put these ip or port to create method
-        '''
+        ip_port_resource_list = self.__get_ip_port_resource(_network_mode, containerCount)
+        logging.info('ip_port_resource_list : %s' % str(ip_port_resource_list) )
         
         create_container_arg_list = self.component_container_model_factory.create(_component_type, 
-                                                                                  args, 
+                                                                                  args,
                                                                                   containerCount, 
-                                                                                  _containerClusterName)
+                                                                                  _containerClusterName, 
+                                                                                  ip_port_resource_list,
+                                                                                  _component_container_cluster_config)
 
 
         create_container_node_ip_list = select_ip_list
@@ -106,10 +112,10 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         
         _action_flag = False
         if _component_container_cluster_config.need_validate_manager_status:
-            _action_flag = self.component_manager_status_validator(_component_type, 
-                                                                   create_container_node_ip_list, 
-                                                                   create_container_arg_list, 
-                                                                   6)
+            _action_flag = self.component_manager_status_validator.start_Status_Validator(_component_type, 
+                                                                                          create_container_node_ip_list, 
+                                                                                          create_container_arg_list, 
+                                                                                          6)
         else:
             _action_flag = True
             
@@ -117,7 +123,15 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         
         return (_action_result, '')
         
-            
+    
+    def __get_ip_port_resource(self, _network_mode, containerCount):
+        ip_port_resource_list = []
+        if 'ip' == _network_mode:
+            ip_port_resource_list = self.ip_opers.retrieve_ip_resource(containerCount)
+        elif 'port' == _network_mode:
+            ip_port_resource_list = self.port_opers.retrieve_port_resource(containerCount)
+        return ip_port_resource_list
+    
     def __update_zk_info_when_process_complete(self, _containerClusterName, create_result='failed', error_msg=''):
         if _containerClusterName is None or '' == _containerClusterName:
             raise CommonException('_containerClusterName should be not null,in __updatez_zk_info_when_process_complete')
@@ -134,25 +148,28 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         self.zkOper.write_container_cluster_info(_container_cluster_info)
     
     @tornado.gen.engine
-    def __dispatch_create_container_task(self, create_container_node_ip_list, create_container_arg_list, container_count):
+    def __dispatch_create_container_task(self, create_container_node_ip_list, container_model_list, container_count):
         http_client = tornado.httpclient.AsyncHTTPClient()
         
         _error_record_dict = {}
         try:
             _key_sets = set()
             for i in range(container_count):
-                args_dict = create_container_arg_list[i]
+                container_model = container_model_list[i]
                 host_ip = create_container_node_ip_list[i]
-                args_dict.setdefault('host_ip', host_ip)
+                container_model.host_ip = host_ip
+                property_dict = _get_property_dict(container_model)
                 url_post = "/inner/container" 
                 requesturi = "http://%s:%s%s" % (host_ip, options.port, url_post)
                 logging.debug('requesturi:%s' % requesturi)
-                logging.debug('args_dict:%s' % args_dict)
+                logging.debug('property dict before dispatch: %s' % str(property_dict) )
+                request = HTTPRequest(url=requesturi, method='POST', body=urllib.urlencode(property_dict), \
+                                      connect_timeout=40, request_timeout=40)
+                
                 callback_key = "%s_%s_%s" % ("create_container", _component_type, host_ip)
                 _key_sets.add(callback_key)
-                http_client.fetch(requesturi, callback=(yield Callback(callback_key)))
+                http_client.fetch(request, callback=(yield Callback(callback_key)))
             
-        
             for i in range(container_count):
                 callback_key = _key_sets.pop()
                 response = yield Wait(callback_key)

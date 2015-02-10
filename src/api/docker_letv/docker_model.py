@@ -21,7 +21,7 @@ class Docker_Model(object):
     
     @image.setter
     def image(self, image):
-        _image = image
+        self._image = image
     
     @property    
     def hostname(self):
@@ -29,7 +29,7 @@ class Docker_Model(object):
     
     @hostname.setter
     def hostname(self, hostname):
-        _hostname = hostname
+        self._hostname = hostname
         
     @property
     def user(self):
@@ -37,7 +37,7 @@ class Docker_Model(object):
     
     @user.setter
     def user(self, user):
-        _user = user
+        self._user = user
         
     @property
     def name(self):
@@ -45,7 +45,7 @@ class Docker_Model(object):
     
     @name.setter
     def name(self, name):
-        _name = name
+        self._name = name
     
     @property    
     def environment(self):
@@ -53,7 +53,7 @@ class Docker_Model(object):
     
     @environment.setter
     def environment(self, environment):
-        _environment = environment
+        self._environment = environment
     
     @property   
     def tty(self):
@@ -61,7 +61,7 @@ class Docker_Model(object):
     
     @tty.setter
     def tty(self, tty):
-        _tty = tty
+        self._tty = tty
         
     @property
     def ports(self):
@@ -69,7 +69,7 @@ class Docker_Model(object):
     
     @ports.setter
     def ports(self, ports):
-        _ports = ports
+        self._ports = ports
     
     @property    
     def stdin_open(self):
@@ -77,7 +77,7 @@ class Docker_Model(object):
     
     @stdin_open.setter
     def stdin_open(self, stdin_open):
-        _stdin_open = stdin_open
+        self._stdin_open = stdin_open
     
     @property    
     def mem_limit(self):
@@ -85,7 +85,7 @@ class Docker_Model(object):
     
     @mem_limit.setter
     def mem_limit(self, mem_limit=1):
-        _mem_limit = mem_limit
+        self._mem_limit = mem_limit
     
     @property        
     def volumes(self):
@@ -93,7 +93,7 @@ class Docker_Model(object):
     
     @volumes.setter
     def volumes(self, volumes):
-        _volumes = volumes
+        self._volumes = volumes
     
     @property    
     def binds(self):
@@ -101,7 +101,7 @@ class Docker_Model(object):
     
     @binds.setter
     def binds(self, binds):
-        _binds = binds
+        self._binds = binds
     
     @property        
     def privileged(self):
@@ -109,7 +109,7 @@ class Docker_Model(object):
     
     @privileged.setter
     def privileged(self, privileged=False):
-        _privileged = privileged
+        self._privileged = privileged
     
     @property    
     def network_mode(self):
@@ -117,7 +117,7 @@ class Docker_Model(object):
     
     @network_mode.setter
     def network_mode(self, network_mode='bridge'):
-        _network_mode = network_mode
+        self._network_mode = network_mode
     
     @property    
     def use_ip(self):
@@ -125,5 +125,5 @@ class Docker_Model(object):
     
     @use_ip.setter
     def use_ip(self, use_ip=False):
-        _use_ip = use_ip
+        self._use_ip = use_ip
         
