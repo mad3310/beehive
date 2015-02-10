@@ -11,6 +11,7 @@ from tornado.options import options
 from tornado.gen import Callback, Wait
 from common.abstractAsyncThread import Abstract_Async_Thread
 from resource.ipOpers import IpOpers
+from resource.portOpers import PortOpers
 from resource.resourceVerify import ResourceVerify
 from utils.exceptions import CommonException
 from utils.autoutil import http_get
@@ -21,7 +22,7 @@ from componentProxy.componentContainerClusterConfigFactory import ComponentConta
 
 class ContainerCluster_create_Action(Abstract_Async_Thread): 
     ip_opers = IpOpers()
-    port_opers = portOpers()
+    port_opers = PortOpers()
     
     res_verify = ResourceVerify()
     

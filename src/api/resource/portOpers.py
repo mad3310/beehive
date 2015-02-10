@@ -4,13 +4,13 @@ Created on 2015-2-8
 @author: asus
 '''
 
-class Port_Opers(object):
+class PortOpers(object):
     '''
     classdocs
     '''
 
 
-    def __init__(self, params):
+    def __init__(self, params={}):
         '''
         Constructor
         '''

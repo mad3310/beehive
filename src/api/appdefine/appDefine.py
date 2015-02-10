@@ -6,7 +6,7 @@ from tornado.options import define
 join = os.path.join
 dirname = os.path.dirname
 
-base_dir = os.path.abspath(dirname(dirname(dirname(__file__))))
+base_dir = os.path.abspath(dirname(dirname(__file__)))
 
 define('port', default = 8888, type = int, help = 'app listen port')
 define('debug', default = False, type = bool, help = 'is debuging?')
