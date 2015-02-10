@@ -15,7 +15,7 @@ from tornado.web import asynchronous
 from tornado.gen import Task, engine
 from tornado.httpclient import AsyncHTTPClient
 from tornado.options import options
-from tornado_.tornado_basic_auth import require_basic_auth
+from tornado_letv.tornado_basic_auth import require_basic_auth
 from server.serverOpers import Server_Opers
 from utils.exceptions import HTTPAPIError
 

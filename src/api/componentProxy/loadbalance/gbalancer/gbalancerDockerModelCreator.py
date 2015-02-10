@@ -5,7 +5,7 @@ Created on 2015-2-1
 '''
 
 from componentProxy.abstractDockerModelCreator import AbstractContainerModelCreator
-from docker_.docker_model import Docker_Model
+from docker_letv.docker_model import Docker_Model
 
 class GbalancerDockerModelCreator(AbstractContainerModelCreator):
     '''

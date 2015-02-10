@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
 
-from handlers.serverCluster_ import *
-from handlers.server_ import *
-from handlers.containerCluster_ import *
-from handlers.container_ import *
-from handlers.monitor_ import *
+from handlers.serverCluster_handler import *
+from handlers.server_handler import *
+from handlers.containerCluster_handler import *
+from handlers.container_handler import *
+from handlers.monitor_handler import *
 from handlers.ip import *
 from handlers.admin import AdminConf, AdminUser, AdminReset
 

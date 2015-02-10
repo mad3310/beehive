@@ -17,7 +17,7 @@ from tornado.httpclient import HTTPRequest, AsyncHTTPClient
 from tornado.web import asynchronous
 from tornado.gen import engine, Task
 from utils.configFileOpers import ConfigFileOpers
-from tornado_.tornado_basic_auth import require_basic_auth
+from tornado_letv.tornado_basic_auth import require_basic_auth
 from utils import _retrieve_userName_passwd
 from serverCluster.serverClusterOpers import ServerCluster_Opers
 from utils.autoutil import http_get

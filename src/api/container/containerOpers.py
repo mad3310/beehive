@@ -17,7 +17,7 @@ import re
 
 from common.abstractContainerOpers import Abstract_Container_Opers
 from common.abstractAsyncThread import Abstract_Async_Thread
-from docker_.dockerOpers import Docker_Opers
+from docker_letv.dockerOpers import Docker_Opers
 from container.container_module import Container
 from utils.exceptions import CommonException, RetryException
 from utils.log import _log_docker_run_command
@@ -147,7 +147,7 @@ class Container_create_action(object):
             logging.error(error_message)
             raise CommonException(error_message)
         
-        result = self._check_create_status(container_name)
+        result = self.__check_create_status(container_name)
         if not result:
             error_message = 'the exception of creating container'
             logging.error(error_message)
@@ -157,7 +157,7 @@ class Container_create_action(object):
         logging.info('get container info: %s' % str(container_node_info))
         self.zkOper.write_container_node_info('started', container_node_info)
 
-    def _check_create_status(self, container_name):
+    def __check_create_status(self, container_name):
         stat = self.container_opers.get_container_stat(container_name)
         if stat == 'started':
             return True
