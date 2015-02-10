@@ -2,7 +2,7 @@
 from handlers.base import APIHandler
 from utils.exceptions import HTTPAPIError
 from resource.ipOpers import IpOpers
-from tornado.tornado_basic_auth import require_basic_auth
+from tornado_.tornado_basic_auth import require_basic_auth
 
 # ip management
 '''

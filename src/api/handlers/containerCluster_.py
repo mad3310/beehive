@@ -11,6 +11,7 @@ import logging
 import traceback
 
 from tornado.web import asynchronous
+from tornado.gen import engine, Task
 from base import APIHandler
 from tornado_.tornado_basic_auth import require_basic_auth
 from utils.exceptions import HTTPAPIError
@@ -168,16 +169,6 @@ class ContainerClusterHandler(APIHandler):
             self.finish(message)
             return
         
-        '''
-        @todo: why duplicate check resource with ContainerCluster_create_Action.check_resource()
-        '''
-        error_msg = self.check_resource()
-        if error_msg:
-            raise HTTPAPIError(status_code=578, error_detail=error_msg,\
-                                notification = "direct", \
-                                log_message= error_msg,\
-                                response =  "please add ips into pools")
-        
         try:
             self.containerClusterOpers.create(args)
         except kazoo.exceptions.LockTimeout:
@@ -216,18 +207,6 @@ class ContainerClusterHandler(APIHandler):
         return_message = {}
         return_message.setdefault("message", "remove container has been done but need some time, please wait a moment and check the result!")
         self.finish(return_message)
-    
-    def check_resource(self):
-        logging.info('remove useless ips')
-        '''
-        @todo: why remove ip on handler?
-        '''
-        self.zkOper.remove_useless_ips()
-        error_msg = ''
-        ip_list = self.zkOper.get_ips_from_ipPool()
-        if len(ip_list) < 4:
-            error_msg = 'ips are not enough!'
-        return error_msg
 
         
 @require_basic_auth

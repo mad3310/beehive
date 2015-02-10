@@ -17,6 +17,7 @@ from utils.autoutil import http_get
 from componentProxy.componentManagerValidator import ComponentManagerStatusValidator
 from container.container_model import Container_Model
 from componentProxy.componentContainerModelFactory import ComponentContainerModelFactory
+from componentProxy.componentContainerClusterConfigFactory import ComponentContainerClusterConfigFactory
 
 class ContainerCluster_create_Action(Abstract_Async_Thread): 
     ip_opers = IpOpers()
@@ -117,7 +118,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         return (_action_result, '')
         
             
-    def __update_zk_info_when_process_complete(self, _containerClusterName, create_result='failed', error_msg):
+    def __update_zk_info_when_process_complete(self, _containerClusterName, create_result='failed', error_msg=''):
         if _containerClusterName is None or '' == _containerClusterName:
             raise CommonException('_containerClusterName should be not null,in __updatez_zk_info_when_process_complete')
         
@@ -167,28 +168,5 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
                     _error_record_dict.setdefault(callback_key_ip, error_record_msg)
                     
         finally:
-            http_client.close()
-            
-        return _error_record_dict
-    
-    def __sort_server_resource(self, arg_dict):
-        resource_list = []
-        create_node_ip_list = []
-        for (data_node_ip, resource_sub_dict) in arg_dict.items():
-            memoryCount = resource_sub_dict.get('memoryCount')
-            diskCount = resource_sub_dict.get('diskCount')
-            resourceCount = memoryCount * 0.6 + diskCount *0.4
-            resource_list.append(resourceCount)
-        resource_list.sort()
-        for resourceCount in resource_list:
-            for (data_node_ip, resource_sub_dict) in arg_dict.items():
-                memoryCount = resource_sub_dict.get('memoryCount')
-                diskCount = resource_sub_dict.get('diskCount')
-                resourceCount_cal_tmp = memoryCount * 0.6 + diskCount *0.4
-                if resourceCount_cal_tmp == resourceCount:
-                    create_node_ip_list.insert(0,data_node_ip)
-                    del arg_dict[data_node_ip]
-                    break
-        return create_node_ip_list
-    
+            http_client.close()    
     

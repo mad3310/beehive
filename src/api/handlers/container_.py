@@ -24,18 +24,11 @@ class ContainerHandler(APIHandler):
     @asynchronous
     def post(self):
         args = self.get_all_arguments()
-        try:
-            self.container_opers.create(args)
-        except:
-            raise HTTPAPIError(status_code=500, error_detail="container created failed!",\
-                                notification = "direct", \
-                                log_message= "container created failed!",\
-                                response =  "container created failed!")
-            
+        self.container_opers.create(args)
         return_message = {}
         return_message.setdefault("message", "Success Create Container")
         self.finish(return_message)
-        
+
 #     def delete(self, container_name):
 # #         args = self.get_all_arguments()
 # #         container_name = args.get('containerName')
