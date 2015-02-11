@@ -20,7 +20,7 @@ class GbalancerContainerModelCreator(AbstractContainerModelCreator):
         Constructor
         '''
     
-    def create(self, arg_dict, containerCount, containerClusterName, container_ip_list, _component_container_cluster_config):
+    def create(self, arg_dict, containerCount, containerClusterName, container_ip_list, component_container_cluster_config):
         component_type = arg_dict.get('componentType')
         network_mode = arg_dict.get('network_mode')
         create_container_arg_list = []
@@ -33,7 +33,9 @@ class GbalancerContainerModelCreator(AbstractContainerModelCreator):
             container_name = 'd-mcl-%s-n-%s' % (containerClusterName, str(i+1))
             container_model.container_name = container_name
             container_model.component_type = 'mclustervip'
-   
+            container_model.image = component_container_cluster_config.image
+            container_model.mem_limit = component_container_cluster_config.mem_limit
+            
             gateway = _get_gateway_from_ip(container_ip_list[0])
             env.setdefault('NETMASK', '255.255.0.0')
             env.setdefault('GATEWAY', gateway)

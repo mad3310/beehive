@@ -98,12 +98,12 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         #ip_port_resource_list = ['192.168.1.101', '192.168.1.102', '192.168.1.103']
         ip_port_resource_list = ['192.168.1.104']
         
-        create_container_arg_list = self.component_container_model_factory.create(_component_type, 
-                                                                                  args,
-                                                                                  containerCount, 
-                                                                                  _containerClusterName, 
-                                                                                  ip_port_resource_list,
-                                                                                  _component_container_cluster_config)
+        container_model_list = self.component_container_model_factory.create(_component_type, 
+                                                                             args,
+                                                                             containerCount, 
+                                                                             _containerClusterName, 
+                                                                             ip_port_resource_list,
+                                                                             _component_container_cluster_config)
         
         #select_ip_list = ['192.168.33.141', '192.168.33.142', '192.168.33.143']
         select_ip_list = ['192.168.33.141']
@@ -112,14 +112,14 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         logging.info('choose host iplist: %s' % str(create_container_node_ip_list) )
         
         self.__dispatch_create_container_task(create_container_node_ip_list, 
-                                              create_container_arg_list, 
+                                              container_model_list, 
                                               containerCount)
         
         _action_flag = False
         if _component_container_cluster_config.need_validate_manager_status:
             _action_flag = self.component_manager_status_validator.start_Status_Validator(_component_type, 
                                                                                           create_container_node_ip_list, 
-                                                                                          create_container_arg_list, 
+                                                                                          container_model_list, 
                                                                                           6)
         else:
             _action_flag = True
