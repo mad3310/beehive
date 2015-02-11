@@ -158,9 +158,6 @@ class ContainerClusterHandler(APIHandler):
         args = self.get_all_arguments()
         logging.info(' args:%s' % str(args))
         
-        '''
-        @todo: put below code to the self.containerClusterOpers.create
-        '''
         containerClusterName = args.get('containerClusterName')
         exists = self.zkOper.check_containerCluster_exists(containerClusterName)
         if exists:

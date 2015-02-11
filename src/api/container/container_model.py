@@ -11,7 +11,7 @@ class Container_Model(object):
     '''
 
 
-    def __init__(self, params):
+    def __init__(self, params={}):
         '''
         Constructor
         '''
@@ -126,7 +126,7 @@ class Container_Model(object):
         return self._mount_dir
     
     @env.setter
-    def mem_limit(self, mount_dir):
+    def mount_dir(self, mount_dir):
         self._mount_dir = mount_dir
     
 

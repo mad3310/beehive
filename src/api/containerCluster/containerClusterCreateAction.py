@@ -6,13 +6,16 @@ Created on 2015-2-2
 import logging
 import sys
 import tornado
+import urllib
 
 from tornado.options import options
 from tornado.gen import Callback, Wait
+from tornado.httpclient import HTTPRequest
 from common.abstractAsyncThread import Abstract_Async_Thread
 from resource.ipOpers import IpOpers
 from resource.portOpers import PortOpers
 from resource.resourceVerify import ResourceVerify
+from utils import _get_property_dict
 from utils.exceptions import CommonException
 from utils.autoutil import http_get
 from componentProxy.componentManagerValidator import ComponentManagerStatusValidator
@@ -56,7 +59,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         logging.info('args:%s' % str(args))
         _containerClusterName = args.get('containerClusterName')
         _component_type = args.get('componentType')
-        _network_mode = _containerClusterName = args.get('network_mode')
+        _network_mode = args.get('network_mode')
         
         logging.info('containerClusterName : %s' % str(_containerClusterName))
         logging.info('_component_type : %s' % str(_component_type))
@@ -69,6 +72,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         
         is_res_verify = _component_container_cluster_config.is_res_verify
         containerCount = _component_container_cluster_config.nodeCount
+        logging.info('is_res_verify : %s, containerCount:%s' % (str(is_res_verify), containerCount))
         self.__create_container_cluser_info(containerCount, _containerClusterName)
         
         select_ip_list = []
@@ -102,14 +106,11 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         
         logging.info('choose host iplist: %s' % str(create_container_node_ip_list) )
         
-        _error_record_dict = self.__dispatch_create_container_task(create_container_node_ip_list, 
-                                                                   create_container_arg_list, 
-                                                                   containerCount)
+        self.__dispatch_create_container_task(create_container_node_ip_list, 
+                                              create_container_arg_list, 
+                                              containerCount)
                       
-        if _error_record_dict.__len__() <> 0:
-            raise CommonException('not all container succeed created %s' % str(_error_record_dict))
-        else:
-            logging.info('all container create successful')
+
         
         _action_flag = False
         if _component_container_cluster_config.need_validate_manager_status:
@@ -167,7 +168,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
                 request = HTTPRequest(url=requesturi, method='POST', body=urllib.urlencode(property_dict), \
                                       connect_timeout=40, request_timeout=40)
                 
-                callback_key = "%s_%s_%s" % ("create_container", _component_type, host_ip)
+                callback_key = "%s_%s" % ("create_container", host_ip)
                 _key_sets.add(callback_key)
                 http_client.fetch(request, callback=(yield Callback(callback_key)))
             
@@ -184,6 +185,11 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
                 if cmp('false',return_result) == 0:
                     callback_key_ip = callback_key.split("_")[-1]
                     _error_record_dict.setdefault(callback_key_ip, error_record_msg)
+
+            if _error_record_dict.__len__() <> 0:
+                raise CommonException('not all container succeed created %s' % str(_error_record_dict))
+            else:
+                logging.info('all container create successful')
                     
         finally:
             http_client.close()    

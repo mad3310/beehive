@@ -14,7 +14,7 @@ class MysqlDockerModelCreator(AbstractContainerModelCreator):
     '''
 
 
-    def __init__(self, params):
+    def __init__(self, params={}):
         '''
         Constructor
         '''

@@ -25,7 +25,11 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         super(ContainerCluster_Opers, self).__init__()
     
     def create(self, arg_dict):
-        containerCluster_create_action = ContainerCluster_create_Action(dict)
+        _containerClusterName = arg_dict.get('containerClusterName')
+        exists = self.zkOper.check_containerCluster_exists(_containerClusterName)
+        if exists:
+            raise CommonException('containerCluster %s has existed, choose another containerCluster name' % containerClusterName)
+        containerCluster_create_action = ContainerCluster_create_Action(arg_dict)
         containerCluster_create_action.start()
     
     def start(self, containerClusterName):
