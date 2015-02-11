@@ -108,7 +108,7 @@ class Container_create_action(object):
         '''
             constructor
         '''
-        
+  
     def create(self, arg_dict):
         if arg_dict is None or {} == arg_dict:
             raise CommonException("please check the param is not null![the code is container_opers's create method]")
