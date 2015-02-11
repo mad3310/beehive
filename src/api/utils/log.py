@@ -6,7 +6,7 @@ import logging
 def _log_docker_run_command(docker_model):
         
         cmd = ''
-        cmd += 'docker run -i -t --rm --privileged -n --memory="%s" -h %s'  % (docker_model.mem_limit, docker_model.container_name)
+        cmd += 'docker run -i -t --rm --privileged -n --memory="%s" -h %s'  % (docker_model.mem_limit, docker_model.name)
         _volumes = docker_model.volumes
         if _volumes:
             for host_addr, container_addr in _volumes.items():
@@ -39,5 +39,5 @@ def _log_docker_run_command(docker_model):
         N3_HOSTNAME = env.get('N3_HOSTNAME')
         if N3_HOSTNAME:
             cmd += '--env "N3_HOSTNAME=%s" \n' % N3_HOSTNAME 
-        cmd += '--name %s %s' % (docker_model.container_name, docker_model.image)
+        cmd += '--name %s %s' % (docker_model.name, docker_model.image)
         logging.info(cmd)

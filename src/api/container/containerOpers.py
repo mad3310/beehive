@@ -22,6 +22,7 @@ from container.container_module import Container
 from utils.exceptions import CommonException, RetryException
 from utils.log import _log_docker_run_command
 from utils import _is_ip, _is_mask, _mask_to_num
+from zk.zkOpers import ZkOpers
 from componentProxy.componentDockerModelFactory import ComponentDockerModelFactory
 
 class Container_Opers(Abstract_Container_Opers):
@@ -84,7 +85,7 @@ class Container_Opers(Abstract_Container_Opers):
         all -> False  started containers on such server
         """
         container_name_list = []
-        container_info_list = self.docker_opers.containers(all)
+        container_info_list = self.docker_opers.containers(all=all)
         for container_info in container_info_list:
             name = container_info.get('Names')[0]
             name = name.replace('/', '')
@@ -97,10 +98,11 @@ class Container_Opers(Abstract_Container_Opers):
         return return_result
     
     
-class Container_create_action(object):
+class Container_create_action(Abstract_Async_Thread):
     
     docker_opers = Docker_Opers()
-    container_opers = Container_Opers
+    container_opers = Container_Opers()
+    zkOper = ZkOpers()
     
     component_docker_model_factory = ComponentDockerModelFactory()
     
@@ -108,7 +110,7 @@ class Container_create_action(object):
         '''
             constructor
         '''
-  
+    
     def create(self, arg_dict):
         if arg_dict is None or {} == arg_dict:
             raise CommonException("please check the param is not null![the code is container_opers's create method]")
@@ -276,7 +278,7 @@ class Container_create_action(object):
         container_node_info.setdefault('containerName', container_name)
         container_node_info.setdefault('inspect', con.inspect)
         container_node_info.setdefault('hostIp', arg_dict.get('host_ip'))
-        container_node_info.setdefault('type', arg_dict.get('container_type'))
+        container_node_info.setdefault('type', arg_dict.get('component_type'))
         return container_node_info
     
     def __get_route_dicts(self, route_list=None):

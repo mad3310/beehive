@@ -26,7 +26,7 @@ class MysqlContainerClusterConfig(object):
         self.mem_limit = mem_limit if mem_limit else 512*1024*1024
         
         image = params.get('image')
-        self.image = image if image else 'letv/mcluster:0.0.5'
+        self.image = image if image else 'letv/mcluster:0.0.2'
         
         self.mount_dir = {'/srv/mcluster':'', '/data/mcluster_data':'/data/mcluster_data'}
         self.ports = [2181,2888,3306,3888,4567,4568,4569]

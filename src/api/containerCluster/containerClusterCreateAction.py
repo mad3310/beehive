@@ -22,7 +22,6 @@ from componentProxy.componentManagerValidator import ComponentManagerStatusValid
 from container.container_model import Container_Model
 from componentProxy.componentContainerModelFactory import ComponentContainerModelFactory
 from componentProxy.componentContainerClusterConfigFactory import ComponentContainerClusterConfigFactory
-from __main__ import traceback
 
 class ContainerCluster_create_Action(Abstract_Async_Thread): 
     ip_opers = IpOpers()

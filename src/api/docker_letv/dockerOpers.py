@@ -45,7 +45,7 @@ class Docker_Opers(client):
         binds = docker_model.binds
         port_bindings = None 
         lxc_conf = None
-        publish_all_ports = publish_all_ports
+        publish_all_ports = False
         links = None
         privileged=True
         dns=None
@@ -53,7 +53,7 @@ class Docker_Opers(client):
         volumes_from=None
         network_mode='bridge'
         
-        self.client.__start(container=container, 
+        self.client.start(container=container, 
                             binds=binds, 
                             port_bindings=port_bindings, 
                             lxc_conf=lxc_conf, 

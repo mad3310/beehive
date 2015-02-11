@@ -65,7 +65,7 @@ class MysqlDockerModelCreator(AbstractContainerModelCreator):
             if '/data/mcluster_data' in k:
                 _path = '/data/mcluster_data/d-mcl-%s' % containerClusterName
                 if not os.path.exists(_path):
-                    os.mkdir(_path)
+                    os.makedirs(_path)
                 re_bind_arg.setdefault(_path, v)
             else:
                 re_bind_arg.setdefault(k, v)

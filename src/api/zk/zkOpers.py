@@ -30,7 +30,7 @@ class ZkOpers(object):
     '''
     classdocs
     '''
-    def __init__(self,zkAddress,zkPort):
+    def __init__(self, zkAddress='127.0.0.1', zkPort=2181):
         '''
         Constructor
         '''
