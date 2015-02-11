@@ -43,7 +43,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
     def destory(self, containerClusterName):
         containerCluster_destroy_action = ContainerCluster_destroy_Action(containerClusterName)
         containerCluster_destroy_action.start()
-   
+
     def check(self, containerClusterName):
         try:
             cluster_status = {}

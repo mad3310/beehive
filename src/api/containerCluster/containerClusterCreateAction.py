@@ -57,7 +57,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
             The process is end.
             '''
             self.__update_zk_info_when_process_complete(_containerClusterName, __action_result, __error_message)
-  
+    
     def __issue_create_action(self, args={}):
         logging.info('args:%s' % str(args))
         _containerClusterName = args.get('containerClusterName')
@@ -84,9 +84,6 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
             1. check_resource return dict type message, could the error_message be put to the client?
             2. why put the lack_resource to the client?
             '''
-#             if _error_msg:
-#                 _action_result = 'lack_resource'
-#                 return (_action_result, _error_msg)
             
             if _error_msg:
                 container_cluster_info = {}

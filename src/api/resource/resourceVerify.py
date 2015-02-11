@@ -15,6 +15,7 @@ from utils.exceptions import CommonException
 class ResourceVerify(object):
     
     zkOper = ZkOpers('127.0.0.1', 2181)
+    elect_server = ElectServer()
     
     def __init__(self):
         '''
@@ -24,16 +25,16 @@ class ResourceVerify(object):
     def check_resource(self, _component_container_cluster_config):
         result_dict = {}
         error_msg = ''
+        select_ip_list = []
         nodeCount = _component_container_cluster_config.nodeCount
         ip_list = self.zkOper.get_ips_from_ipPool()
         '''
         @todo: if check occurs failed, the program will be continue running?
         '''
         if len(ip_list) < nodeCount:
-            raise CommonException('ips are not enough!')
-            
-        ecect_server = ElectServer()
-        host_ip_list = ecect_server.elect_server_list(_component_container_cluster_config)
+            error_msg += 'ips are not enough!'
+        
+        host_ip_list = self.elect_server.elect_server_list(_component_container_cluster_config)
         logging.info('host_ip_list:%s' % str(host_ip_list))
         
         num = 0
@@ -44,9 +45,6 @@ class ResourceVerify(object):
             error_msg += 'server resource are not enough!'
         
         select_ip_list = self.get_host_ip_list(host_ip_list, nodeCount)
-        
-        if len(set(select_ip_list)) <= 2:
-            error_msg = 'server nums are not enough, two data node can not be on a server!'
         
         logging.info('select_ip_list:%s' % str(select_ip_list))
         if not self.check_hosts_illegal(select_ip_list, nodeCount):
@@ -87,9 +85,7 @@ class ResourceVerify(object):
 
     
 class ElectServer(object):
-    '''
-    @todo: duplicate logic with containerClusterCreateAction.__choose_host?
-    '''
+    
     def elect_server_list(self, _component_container_cluster_config):
         score_dict, score_list, ips_result  = {}, [], []
         host_ip_list = self.zkOper.retrieve_servers_white_list()
@@ -119,6 +115,7 @@ class ElectServer(object):
         foucs on mem_limit
         what means mem_limit and mem_free_limit?
         '''
+        
         normal_info = self.zkOper.retrieve_mcluster_info_from_config()
         mem_limit = normal_info.get('mem_limit')/1024/1024
         
@@ -126,12 +123,8 @@ class ElectServer(object):
         server_res = http_get(server_url)
         logging.info('server_res: %s' % str(server_res) )
         mem_free_limit = _component_container_cluster_config.mem_free_limit
-        '''
-        the default mem_free_limit is 10G
-        '''
-        if mem_free_limit is None:
-            mem_free_limit = 10*1024
-        mem_usable = float(server_res["response"]["mem_res"]["free"]) - mem_free_limit
+        
+        mem_usable = float(server_res["response"]["mem_res"]["free"]) - mem_free_limit/(1024*1024)
         logging.info('mem_usable:%s' %  mem_usable)
         
         '''
