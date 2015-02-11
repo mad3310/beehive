@@ -121,4 +121,12 @@ class Container_Model(object):
     def mem_limit(self, mem_limit):
         self._mem_limit = mem_limit
 
+    @property
+    def network_mode(self):
+        return self._network_mode
+    
+    @env.setter
+    def network_mode(self, network_mode):
+        self._network_mode = network_mode
+
         

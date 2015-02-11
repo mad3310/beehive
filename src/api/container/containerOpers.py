@@ -76,7 +76,7 @@ class Container_Opers(Abstract_Container_Opers):
                     return 'started'
                 elif 'Exited' in stat:
                     return 'stopped'
-    
+
     def get_all_containers(self, all=True):
         """get all containers on some server
         
@@ -119,7 +119,7 @@ class Container_create_action(object):
         
         docker_model = self.component_docker_model_factory.create(component_type, arg_dict)
         
-        _log_docker_run_command(env, docker_model)
+        _log_docker_run_command(docker_model)
         '''
         orginal:
             image=image_name, 
@@ -141,11 +141,11 @@ class Container_create_action(object):
         '''
         self.docker_opers.start(docker_model)
         
-        init_con_ret = self.__set_ip_add_route_retry(3, container_name)
-        if not init_con_ret:
-            error_message = '__set_ip_add_route_retry container failed'
-            logging.error(error_message)
-            raise CommonException(error_message)
+#         init_con_ret = self.__set_ip_add_route_retry(3, container_name)
+#         if not init_con_ret:
+#             error_message = '__set_ip_add_route_retry container failed'
+#             logging.error(error_message)
+#             raise CommonException(error_message)
         
         result = self.__check_create_status(container_name)
         if not result:

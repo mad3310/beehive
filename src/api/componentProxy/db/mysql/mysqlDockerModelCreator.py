@@ -18,7 +18,7 @@ class MysqlDockerModelCreator(AbstractContainerModelCreator):
         '''
         Constructor
         '''
-    
+
     def create(self, arg_dict):
         '''
         @todo: 
@@ -27,11 +27,11 @@ class MysqlDockerModelCreator(AbstractContainerModelCreator):
         '''
         _container_name = arg_dict.get('container_name')
         _containerClusterName = arg_dict.get('container_cluster_name')
-        _env = eval(arg_dict.get('env'))
+        _env = arg_dict.get('env')
         _image = arg_dict.get('image')
         _mem_limit = int(arg_dict.get('mem_limit'))
-        _volumes = eval(arg_dict.get('volumes'))
-        _binds = eval( arg_dict.get('binds'))
+        _volumes = arg_dict.get('volumes')
+        _binds = arg_dict.get('binds')
         _binds = self.__rewrite_bind_arg(_containerClusterName, _binds)
         _ports = arg_dict.get('ports')
         _network_mode = arg_dict.get('network_mode')
@@ -49,6 +49,8 @@ class MysqlDockerModelCreator(AbstractContainerModelCreator):
         _docker_model.ports = _ports
         if 'ip' == _network_mode:
             _docker_model.use_ip = True
+        else:
+            _docker_model.use_ip = False
         
         return _docker_model
     

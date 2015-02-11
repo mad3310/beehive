@@ -2,10 +2,12 @@
 #-*- coding: utf-8 -*-
 import logging
 
-def _log_docker_run_command(self, env, _mem_limit, _volumes, container_name, image_name):
+
+def _log_docker_run_command(docker_model):
         
         cmd = ''
-        cmd += 'docker run -i -t --rm --privileged -n --memory="%s" -h %s'  % (_mem_limit, container_name)
+        cmd += 'docker run -i -t --rm --privileged -n --memory="%s" -h %s'  % (docker_model.mem_limit, docker_model.container_name)
+        _volumes = docker_model.volumes
         if _volumes:
             for host_addr, container_addr in _volumes.items():
                 if container_addr:
@@ -13,6 +15,7 @@ def _log_docker_run_command(self, env, _mem_limit, _volumes, container_name, ima
                 else:
                     cmd += ' -v %s \n' % host_addr
         
+        env = docker_model.environment
         cmd += '--env "ZKID=%s" \n' % env.get('ZKID')
         cmd += '--env "IP=%s" \n' % env.get('IP')
         cmd += '--env "HOSTNAME=%s" \n' % env.get('HOSTNAME')
@@ -36,5 +39,5 @@ def _log_docker_run_command(self, env, _mem_limit, _volumes, container_name, ima
         N3_HOSTNAME = env.get('N3_HOSTNAME')
         if N3_HOSTNAME:
             cmd += '--env "N3_HOSTNAME=%s" \n' % N3_HOSTNAME 
-        cmd += '--name %s %s' % (container_name, image_name)
+        cmd += '--name %s %s' % (docker_model.container_name, docker_model.image)
         logging.info(cmd)

@@ -29,5 +29,5 @@ class MysqlContainerClusterConfig(object):
         self.image = image if image else 'letv/mcluster:0.0.5'
         
         self.mount_dir = {'/srv/mcluster':'', '/data/mcluster_data':'/data/mcluster_data'}
-        self.ports = '[2181,2888,3306,3888,4567,4568,4569]'
+        self.ports = [2181,2888,3306,3888,4567,4568,4569]
         
