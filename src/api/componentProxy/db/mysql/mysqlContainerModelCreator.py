@@ -20,14 +20,16 @@ class MySQLContainerModelCreator(AbstractContainerModelCreator):
         Constructor
         '''
         
-    def create(self, containerCount, containerClusterName, container_ip_list, _component_container_cluster_config):
+    def create(self, arg_dict, containerCount, containerClusterName, container_ip_list, _component_container_cluster_config):
         
+        component_type = arg_dict.get('componentType')
         create_container_arg_list = []
         mount_dir = _component_container_cluster_config.mount_dir
         volumes, binds = self.__get_normal_volumes_args(mount_dir)
         for i in range(int(containerCount)):
             env = {}
             container_model = Container_Model()
+            container_model.component_type = component_type
             container_model.container_cluster_name = containerClusterName
             container_model.container_ip = container_ip_list[i]
             container_name = 'd-mcl-%s-n-%s' % (containerClusterName, str(i+1))
@@ -35,7 +37,6 @@ class MySQLContainerModelCreator(AbstractContainerModelCreator):
             container_model.component_type = 'mclusternode'
             container_model.volumes = volumes
             container_model.binds = binds
-            container_model.mount_dir = mount_dir
             container_model.image = _component_container_cluster_config.image
             container_model.ports = _component_container_cluster_config.ports
             container_model.mem_limit = _component_container_cluster_config.mem_limit

@@ -87,7 +87,7 @@ class Container_Model(object):
     
     @binds.setter
     def binds(self, binds):
-        _binds_binds = binds
+        self._binds = binds
         
     @property
     def env(self):
@@ -120,14 +120,5 @@ class Container_Model(object):
     @env.setter
     def mem_limit(self, mem_limit):
         self._mem_limit = mem_limit
-        
-    @property
-    def mount_dir(self):
-        return self._mount_dir
-    
-    @env.setter
-    def mount_dir(self, mount_dir):
-        self._mount_dir = mount_dir
-    
 
         

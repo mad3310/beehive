@@ -53,7 +53,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
             set the action result to zk, if throw exception, the process will be shut and set 'failed' to zk. 
             The process is end.
             '''
-            self.__update_zk_info_when_process_complete(_containerClusterName, __action_result, __error_message='')
+            self.__update_zk_info_when_process_complete(_containerClusterName, __action_result, __error_message)
   
     def __issue_create_action(self, args={}):
         logging.info('args:%s' % str(args))
@@ -91,8 +91,10 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
                 select_ip_list = ret.get('select_ip_list')
                 logging.info('select_ip_list:%s' % str(select_ip_list))
                 
-        ip_port_resource_list = self.__get_ip_port_resource(_network_mode, containerCount)
-        logging.info('ip_port_resource_list : %s' % str(ip_port_resource_list) )
+        #ip_port_resource_list = self.__get_ip_port_resource(_network_mode, containerCount)
+        #logging.info('ip_port_resource_list : %s' % str(ip_port_resource_list) )
+        
+        ip_port_resource_list = ['192.168.1.101', '192.168.1.102', '192.168.1.103']
         
         create_container_arg_list = self.component_container_model_factory.create(_component_type, 
                                                                                   args,
@@ -101,7 +103,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
                                                                                   ip_port_resource_list,
                                                                                   _component_container_cluster_config)
 
-
+        select_ip_list = ['192.168.33.141', '192.168.33.142', '192.168.33.143']
         create_container_node_ip_list = select_ip_list
         
         logging.info('choose host iplist: %s' % str(create_container_node_ip_list) )
@@ -163,8 +165,8 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
                 property_dict = _get_property_dict(container_model)
                 url_post = "/inner/container" 
                 requesturi = "http://%s:%s%s" % (host_ip, options.port, url_post)
-                logging.debug('requesturi:%s' % requesturi)
-                logging.debug('property dict before dispatch: %s' % str(property_dict) )
+                logging.info('requesturi:%s' % requesturi)
+                logging.info('property dict before dispatch: %s' % str(property_dict) )
                 request = HTTPRequest(url=requesturi, method='POST', body=urllib.urlencode(property_dict), \
                                       connect_timeout=40, request_timeout=40)
                 
@@ -182,7 +184,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
                 else:
                     return_result = response.body.strip()
                 
-                if cmp('false',return_result) == 0:
+                if cmp('false', return_result) == 0:
                     callback_key_ip = callback_key.split("_")[-1]
                     _error_record_dict.setdefault(callback_key_ip, error_record_msg)
 

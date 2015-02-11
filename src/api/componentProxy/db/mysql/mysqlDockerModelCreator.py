@@ -26,11 +26,9 @@ class MysqlDockerModelCreator(AbstractContainerModelCreator):
         2. specify the default value
         '''
         _container_name = arg_dict.get('container_name')
-        _containerClusterName = arg_dict.get('containerClusterName')
+        _containerClusterName = arg_dict.get('container_cluster_name')
         _env = eval(arg_dict.get('env'))
-        _image_version = arg_dict.get('image_version')
-        _image_name = arg_dict.get('image_name')
-        _image = '%s:%s' % (_image_name, _image_version)
+        _image = arg_dict.get('image')
         _mem_limit = int(arg_dict.get('mem_limit'))
         _volumes = eval(arg_dict.get('volumes'))
         _binds = eval( arg_dict.get('binds'))
