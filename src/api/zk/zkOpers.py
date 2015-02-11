@@ -15,10 +15,13 @@ from kazoo.client import KazooClient
 from container.container_module import Container
 from utils.autoutil import get_containerClusterName_from_containerName
 from utils.autoutil import ping_ip_able
+from utils.decorators import singleton
 
 '''
 @todo: need to check every method is should be now.
 '''
+
+@singleton
 class ZkOpers(object):
     
     zk = None

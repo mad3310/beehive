@@ -14,8 +14,8 @@ from utils.exceptions import CommonException
 
 class ResourceVerify(object):
     
-    zkOper = ZkOpers('127.0.0.1', 2181)
-    elect_server = ElectServer()
+    zkOper = ZkOpers()
+    
     
     def __init__(self):
         '''
@@ -34,7 +34,8 @@ class ResourceVerify(object):
         if len(ip_list) < nodeCount:
             error_msg += 'ips are not enough!'
         
-        host_ip_list = self.elect_server.elect_server_list(_component_container_cluster_config)
+        elect_server = ElectServer()
+        host_ip_list = elect_server.elect_server_list(_component_container_cluster_config)
         logging.info('host_ip_list:%s' % str(host_ip_list))
         
         num = 0
@@ -85,6 +86,8 @@ class ResourceVerify(object):
 
     
 class ElectServer(object):
+    
+    zkOper = ZkOpers()
     
     def elect_server_list(self, _component_container_cluster_config):
         score_dict, score_list, ips_result  = {}, [], []
