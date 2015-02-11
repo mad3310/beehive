@@ -215,11 +215,8 @@ class CheckCreateClusterStatusHandler(APIHandler):
 
     @asynchronous
     def get(self, containerClusterName):        
-        try:
-            check_result = ''
-            check_result =  self.containerClusterOpers.check_create_status(containerClusterName)
-        except:
-            logging.error( str(traceback.format_exc()) )
+        check_result = ''
+        check_result =  self.containerClusterOpers.check_create_status(containerClusterName)
         
         logging.info('check_result : %s, type: %s' % (str(check_result), type(check_result)) )
         if check_result.get('code') == '000002':
@@ -227,6 +224,7 @@ class CheckCreateClusterStatusHandler(APIHandler):
             raise HTTPAPIError(status_code=579, error_detail=error_message,\
                                 notification = "direct", \
                                 log_message= error_message)
+        
         self.finish(check_result)
 
 

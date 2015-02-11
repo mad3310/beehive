@@ -160,7 +160,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
             
             elif start_flag == 'failed':
                 check_rst_dict.update(lack_rst)
-                check_rst_dict.setdefault('error_msg', 'check mcluster stat failed')            
+                check_rst_dict.setdefault('error_msg', 'create containers failed!')
             
             return check_rst_dict
 

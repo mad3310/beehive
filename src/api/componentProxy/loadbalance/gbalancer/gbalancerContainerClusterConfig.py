@@ -10,12 +10,20 @@ class GbalancerContainerClusterConfig(object):
     '''
 
 
-    def __init__(self, params):
+    def __init__(self, params={}):
         '''
         Constructor
         '''
-        self.is_res_verify = True
-        self.nodeCount = 1
+        self.__init_params(params)
+    
+    def __init_params(self, params={}):
+            
+        self.is_res_verify = False
+        self.nodeCount = 3
         self.need_validate_manager_status = False
-        self.mem_free_limit = 10*1024*1024*1024           #stand for 10G                  
-        self.mem_limit = 512*1024*1024                    #stand for 512M
+        self.mem_free_limit = 10*1024*1024*1024                      #default value stand for 10G                  
+        mem_limit = params.get('mem_limit')                          #default value stand for 512M
+        self.mem_limit = mem_limit if mem_limit else 512*1024*1024
+        
+        image = params.get('image')
+        self.image = image if image else 'letv/mcluster_vip_gbalancer:0.0.3'

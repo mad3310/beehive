@@ -71,7 +71,6 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         _component_container_cluster_config = self.component_container_cluster_config_factory.retrieve_config(args)
         logging.info('config node info in zk: %s, type: %s' % ( str( _component_container_cluster_config), type(_component_container_cluster_config)) )
         
-        
         is_res_verify = _component_container_cluster_config.is_res_verify
         containerCount = _component_container_cluster_config.nodeCount
         logging.info('is_res_verify : %s, containerCount:%s' % (str(is_res_verify), containerCount))
