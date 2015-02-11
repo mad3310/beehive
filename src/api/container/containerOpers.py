@@ -117,6 +117,7 @@ class Container_create_action(object):
         component_type = arg_dict.get('component_type')
         env = eval(arg_dict.get('env'))
         
+        logging.info('get create container args : %s, type:%s' % (str(arg_dict), type(arg_dict)) )
         docker_model = self.component_docker_model_factory.create(component_type, arg_dict)
         
         _log_docker_run_command(docker_model)

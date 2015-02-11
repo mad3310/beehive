@@ -20,10 +20,19 @@ class MySQLContainerModelCreator(AbstractContainerModelCreator):
         Constructor
         '''
         
+    {'container_cluster_name': 'dh', 'volumes': {'/srv/mcluster': '', '/data/mcluster_data': '/data/mcluster_data'}, 
+     'component_type': 'mclusternode', 'image': 'letv/mcluster:0.0.5', 'host_ip': '192.168.33.141', 'network_mode': 'ip', 
+     'binds': {'/data/mcluster_data': {'bind': '/data/mcluster_data'}}, 
+     'env': {'IP': '192.168.1.101', 'N3_IP': '192.168.1.103', 'HOSTNAME': 'd-mcl-dh-n-1', 'NETMASK': '255.255.0.0', 
+             'N2_IP': '192.168.1.102', 'ZKID': 1, 'N3_HOSTNAME': 'd-mcl-dh-n-3', 'N1_IP': '192.168.1.101', 'GATEWAY': '192.168.0.1', 
+             'N1_HOSTNAME': 'd-mcl-dh-n-1', 'N2_HOSTNAME': 'd-mcl-dh-n-2'}, 
+     'container_name': 'd-mcl-dh-n-1', 'mem_limit': 536870912, 'ports': [2181, 2888, 3306, 3888, 4567, 4568, 4569], 
+     'container_ip': '192.168.1.101'}
+        
     def create(self, arg_dict, containerCount, containerClusterName, container_ip_list, _component_container_cluster_config):
         
         component_type = arg_dict.get('componentType')
-        network_mode = args.get('network_mode')
+        network_mode = arg_dict.get('network_mode')
         create_container_arg_list = []
         mount_dir = _component_container_cluster_config.mount_dir
         volumes, binds = self.__get_normal_volumes_args(mount_dir)

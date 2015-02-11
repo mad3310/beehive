@@ -66,7 +66,7 @@ def _retrieve_userName_passwd():
     confDict = confOpers.getValue(options.server_cluster_property, ['adminUser','adminPassword'])
     adminUser = confDict['adminUser']
     adminPasswd = base64.decodestring(confDict['adminPassword'])
-    return (adminUser,adminPasswd)
+    return (adminUser, adminPasswd)
 
 def getDictFromText(sourceText, keyList):
     totalDict = {}

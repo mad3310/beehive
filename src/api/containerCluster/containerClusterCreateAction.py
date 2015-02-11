@@ -22,6 +22,7 @@ from componentProxy.componentManagerValidator import ComponentManagerStatusValid
 from container.container_model import Container_Model
 from componentProxy.componentContainerModelFactory import ComponentContainerModelFactory
 from componentProxy.componentContainerClusterConfigFactory import ComponentContainerClusterConfigFactory
+from __main__ import traceback
 
 class ContainerCluster_create_Action(Abstract_Async_Thread): 
     ip_opers = IpOpers()
@@ -47,7 +48,9 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
             logging.debug('begin create')
             __action_result, __error_message = self.__issue_create_action(self._arg_dict)
         except:
-            self.threading_exception_queue.put(sys.exc_info())
+            #self.threading_exception_queue.put(sys.exc_info())
+            import traceback
+            logging.error(str(traceback.format_exc()))
         finally:
             '''
             set the action result to zk, if throw exception, the process will be shut and set 'failed' to zk. 
@@ -111,8 +114,6 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         self.__dispatch_create_container_task(create_container_node_ip_list, 
                                               create_container_arg_list, 
                                               containerCount)
-                      
-
         
         _action_flag = False
         if _component_container_cluster_config.need_validate_manager_status:
