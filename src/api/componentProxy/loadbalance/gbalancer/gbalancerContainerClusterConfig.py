@@ -18,7 +18,7 @@ class GbalancerContainerClusterConfig(object):
     
     def __init_params(self, params={}):
             
-        self.is_res_verify = False
+        self.is_res_verify = True
         self.nodeCount = 1
         self.need_validate_manager_status = False
         self.mem_free_limit = 10*1024*1024*1024                      #default value stand for 10G                  

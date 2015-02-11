@@ -10,6 +10,7 @@ import logging
 
 from zk.zkOpers import ZkOpers
 from tornado.options import options
+from utils.exceptions import CommonException
 
 class ResourceVerify(object):
     
@@ -29,7 +30,7 @@ class ResourceVerify(object):
         @todo: if check occurs failed, the program will be continue running?
         '''
         if len(ip_list) < nodeCount:
-            error_msg = 'ips are not enough!'
+            raise CommonException('ips are not enough!')
             
         ecect_server = ElectServer()
         host_ip_list = ecect_server.elect_server_list(_component_container_cluster_config)

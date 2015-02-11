@@ -23,6 +23,7 @@ from container.container_model import Container_Model
 from componentProxy.componentContainerModelFactory import ComponentContainerModelFactory
 from componentProxy.componentContainerClusterConfigFactory import ComponentContainerClusterConfigFactory
 
+
 class ContainerCluster_create_Action(Abstract_Async_Thread): 
     ip_opers = IpOpers()
     port_opers = PortOpers()
@@ -67,9 +68,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         logging.info('_component_type : %s' % str(_component_type))
         logging.info('_network_mode : %s' % str(_network_mode))
         
-        
         _component_container_cluster_config = self.component_container_cluster_config_factory.retrieve_config(args)
-        logging.info('config node info in zk: %s, type: %s' % ( str( _component_container_cluster_config), type(_component_container_cluster_config)) )
         
         is_res_verify = _component_container_cluster_config.is_res_verify
         containerCount = _component_container_cluster_config.nodeCount
@@ -85,18 +84,26 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
             1. check_resource return dict type message, could the error_message be put to the client?
             2. why put the lack_resource to the client?
             '''
+#             if _error_msg:
+#                 _action_result = 'lack_resource'
+#                 return (_action_result, _error_msg)
+            
             if _error_msg:
-                _action_result = 'lack_resource'
-                return (_action_result, _error_msg)
+                container_cluster_info = {}
+                container_cluster_info['containerClusterName'] = containerClusterName
+                container_cluster_info['start_flag'] = 'lack_resource'
+                container_cluster_info['error_msg'] = error_msg
+                self.zkOper.write_container_cluster_info(container_cluster_info)
+                logging.info('check resource failed:%s' % str(error_msg) )
+                return
             else:
                 select_ip_list = ret.get('select_ip_list')
                 logging.info('select_ip_list:%s' % str(select_ip_list))
-                
-        #ip_port_resource_list = self.__get_ip_port_resource(_network_mode, containerCount)
-        #logging.info('ip_port_resource_list : %s' % str(ip_port_resource_list) )
+        
+        ip_port_resource_list = self.__get_ip_port_resource(_network_mode, containerCount)
+        logging.info('ip_port_resource_list : %s' % str(ip_port_resource_list) )
         
         #ip_port_resource_list = ['192.168.1.101', '192.168.1.102', '192.168.1.103']
-        ip_port_resource_list = ['192.168.1.104']
         
         container_model_list = self.component_container_model_factory.create(_component_type, 
                                                                              args,
