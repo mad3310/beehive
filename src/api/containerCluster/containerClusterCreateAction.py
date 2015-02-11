@@ -95,7 +95,8 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         #ip_port_resource_list = self.__get_ip_port_resource(_network_mode, containerCount)
         #logging.info('ip_port_resource_list : %s' % str(ip_port_resource_list) )
         
-        ip_port_resource_list = ['192.168.1.101', '192.168.1.102', '192.168.1.103']
+        #ip_port_resource_list = ['192.168.1.101', '192.168.1.102', '192.168.1.103']
+        ip_port_resource_list = ['192.168.1.104']
         
         create_container_arg_list = self.component_container_model_factory.create(_component_type, 
                                                                                   args,
@@ -103,8 +104,9 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
                                                                                   _containerClusterName, 
                                                                                   ip_port_resource_list,
                                                                                   _component_container_cluster_config)
-
-        select_ip_list = ['192.168.33.141', '192.168.33.142', '192.168.33.143']
+        
+        #select_ip_list = ['192.168.33.141', '192.168.33.142', '192.168.33.143']
+        select_ip_list = ['192.168.33.141']
         create_container_node_ip_list = select_ip_list
         
         logging.info('choose host iplist: %s' % str(create_container_node_ip_list) )
