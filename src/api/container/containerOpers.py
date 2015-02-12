@@ -144,11 +144,11 @@ class Container_create_action(Abstract_Async_Thread):
         '''
         self.docker_opers.start(docker_model)
         
-#         init_con_ret = self.__set_ip_add_route_retry(3, container_name)
-#         if not init_con_ret:
-#             error_message = '__set_ip_add_route_retry container failed'
-#             logging.error(error_message)
-#             raise CommonException(error_message)
+        init_con_ret = self.__set_ip_add_route_retry(3, container_name)
+        if not init_con_ret:
+            error_message = '__set_ip_add_route_retry container failed'
+            logging.error(error_message)
+            raise CommonException(error_message)
         
         result = self.__check_create_status(container_name)
         if not result:
