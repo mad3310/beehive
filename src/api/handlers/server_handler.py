@@ -9,7 +9,7 @@ import logging
 from tornado.web import asynchronous
 from base import APIHandler
 from server.serverOpers import Server_Opers
-from resource.resourceOpers import Res_Opers
+from resource_letv.resourceOpers import Res_Opers
 from utils.exceptions import HTTPAPIError
 from tornado_letv.tornado_basic_auth import require_basic_auth
 

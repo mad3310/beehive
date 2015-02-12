@@ -12,9 +12,9 @@ from tornado.options import options
 from tornado.gen import Callback, Wait
 from tornado.httpclient import HTTPRequest
 from common.abstractAsyncThread import Abstract_Async_Thread
-from resource.ipOpers import IpOpers
-from resource.portOpers import PortOpers
-from resource.resourceVerify import ResourceVerify
+from resource_letv.ipOpers import IpOpers
+from resource_letv.portOpers import PortOpers
+from resource_letv.resourceVerify import ResourceVerify
 from utils import _get_property_dict
 from utils.exceptions import CommonException
 from componentProxy.componentManagerValidator import ComponentManagerStatusValidator

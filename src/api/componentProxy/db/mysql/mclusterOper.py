@@ -49,3 +49,5 @@ class MclusterManager(object):
         if self.__get_stat(containerName):
             return True
         return False
+
+

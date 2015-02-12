@@ -1,7 +1,7 @@
 #-*- coding: utf-8 -*-
 from handlers.base import APIHandler
 from utils.exceptions import HTTPAPIError
-from resource.ipOpers import IpOpers
+from resource_letv.ipOpers import IpOpers
 from tornado_letv.tornado_basic_auth import require_basic_auth
 
 # ip management
