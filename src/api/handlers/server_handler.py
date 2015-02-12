@@ -58,15 +58,7 @@ class CollectServerResHandler(APIHandler):
     @asynchronous
     def get(self):
         
-        try:
-            server_res = self.res_opers.retrieve_host_stat()
-        except:
-            error_message = str(traceback.format_exc())
-            raise HTTPAPIError(status_code=500, error_detail="get server resource failed!",\
-                                notification = "direct", \
-                                log_message= "get server resource failed!",\
-                                response =  "please check! %s" % (error_message))
-        
+        server_res = self.res_opers.retrieve_host_stat()
         self.finish(server_res)
 
 

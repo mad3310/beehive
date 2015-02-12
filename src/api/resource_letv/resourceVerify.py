@@ -127,7 +127,7 @@ class ElectServer(object):
         logging.info('server_res: %s' % str(server_res) )
         mem_free_limit = _component_container_cluster_config.mem_free_limit
         
-        mem_usable = float(server_res["response"]["mem_res"]["free"]) - mem_free_limit/(1024*1024)
+        mem_usable = float(server_res["response"]["mem_res"]["free"]) - mem_free_limit/(1024*1024 )
         logging.info('mem_usable:%s' %  mem_usable)
         
         '''

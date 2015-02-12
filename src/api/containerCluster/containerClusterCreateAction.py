@@ -100,7 +100,6 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
             logging.info('get select_ip_list here:%s' %str(select_ip_list) )
             return
         
-        
         ip_port_resource_list = self.__get_ip_port_resource(_network_mode, containerCount)
         logging.info('ip_port_resource_list : %s' % str(ip_port_resource_list) )
                 

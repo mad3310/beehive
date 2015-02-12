@@ -39,25 +39,25 @@ class Res_Opers():
         resource = {}
         
         mem_res_info = self.memory_stat()
-        resource_letv.setdefault("mem_res", mem_res_info) 
+        resource.setdefault("mem_res", mem_res_info) 
         
         srv_cap_info = self.disk_stat()
-        resource_letv.setdefault("srv_capacity", srv_cap_info)
+        resource.setdefault("srv_capacity", srv_cap_info)
 
         # disk_over_load = self.disk_loadavg()
-        # resource_letv.setdefault("disk_over_load", disk_over_load)
+        # resource.setdefault("disk_over_load", disk_over_load)
         
         disk_instant_spd = self.disk_instant_load()
-        resource_letv.setdefault("disk_instant_spd", disk_instant_spd)
+        resource.setdefault("disk_instant_spd", disk_instant_spd)
         
         # _cpu_info = self.cpu_info()
-        # resource_letv.setdefault("cpu_info" , _cpu_info)
+        # resource.setdefault("cpu_info" , _cpu_info)
        
         cur_cpu_usage = self.get_cur_cpu_usage()
-        resource_letv.setdefault("cur_cpu_idle", cur_cpu_usage)
+        resource.setdefault("cur_cpu_idle", cur_cpu_usage)
 
         cur_net_load = self.get_cur_net_load()
-        resource_letv.setdefault("cur_net_load", cur_net_load)
+        resource.setdefault("cur_net_load", cur_net_load)
         return resource
     
     def retrieve_container_stat(self):
