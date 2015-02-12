@@ -50,25 +50,21 @@ class MclusterManager(object):
             return True
         return False
     
-    def validate_manager_status(self, create_container_node_ip_list, create_container_arg_list, num):
-        container_name_list = []
-        check_container_node_ip_list = []
-        for index, create_container_arg in enumerate(create_container_arg_list):
-            if create_container_arg.get('container_type') == 'mclusternode':
-                container_name_list.append(create_container_arg.get('container_name'))
-                check_container_node_ip_list.append(create_container_node_ip_list[index])
+    def validate_manager_status(self, host_ip_list, container_model_list, num):
+        
         logging.info('wait 5 seconds...')
         time.sleep(5)
+          
         while num:
             stat = True
             succ = {}
-            logging.info('check_container_node_ip_list :%s' % str(check_container_node_ip_list) )
-            for index,host_ip in enumerate(check_container_node_ip_list):
-                container_name = container_name_list[index]
+            for index, host_ip in enumerate(host_ip_list):
+                container_model = container_model_list[index]
+                container_name = container_model.container_name
                 ret = self.__get(container_name, host_ip)
                 logging.info('check container %s,  result : %s' % (container_name, str(ret)))
                 if ret:
-                    succ.setdefault(host_ip, container_name)
+                    succ.setdefault(host_ip, container_model)
                 else:
                     stat = False
             logging.info('stat: %s' % str(stat))
@@ -76,9 +72,9 @@ class MclusterManager(object):
                 logging.info('successful!!!')
                 return True
             
-            for hostip, containername in succ.items():
-                container_name_list.remove(containername)
-                check_container_node_ip_list.remove(hostip)
+            for hostip, container_model in succ.items():
+                container_model_list.remove(container_model)
+                host_ip_list.remove(hostip)
             num -= 1
     
     def __get(self, containerName, container_node):

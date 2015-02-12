@@ -10,7 +10,7 @@ import logging
 
 from zk.zkOpers import ZkOpers
 from tornado.options import options
-from utils.exceptions import CommonException
+from utils.autoutil import http_get
 
 class ResourceVerify(object):
     
