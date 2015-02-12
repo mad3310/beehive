@@ -3,8 +3,9 @@ Created on 2015-2-4
 
 @author: asus
 '''
-from componentProxy.db.mysql.mclusterOper import MclusterManager
-from componentProxy.loadbalance.gbalancer.gbalancerOper import GbalanceManager
+from componentProxy.db.mysql.mysqlManagerValidator import MclusterManagerValidator
+from componentProxy.loadbalance.gbalancer.gbalancerManagerValidator import GbalanceManagerValidator
+
 
 class ComponentManagerStatusValidator(object):
     '''
@@ -20,11 +21,11 @@ class ComponentManagerStatusValidator(object):
     def start_Status_Validator(self, _component_type, create_container_node_ip_list, container_model_list, num):
         _check_result = False
         if "mclusternode" == _component_type:
-            _managerOpers = MclusterManager()
+            manager_validator = MclusterManagerValidator()
         elif "mclustervip" == _component_type:
-            _managerOpers = GbalanceManager()
+            manager_validator = GbalanceManagerValidator()
         else:
-            _managerOpers = None
+            manager_validator = None
             
-        _check_result = _managerOpers.validate_manager_status(create_container_node_ip_list, container_model_list, num)
+        _check_result = manager_validator.validate_manager_status(create_container_node_ip_list, container_model_list, num)
         return _check_result

@@ -108,7 +108,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
                                                                              ip_port_resource_list,
                                                                              _component_container_cluster_config)
         
-        select_ip_list = ['192.168.33.141', '192.168.33.142', '192.168.33.143']
+        select_ip_list = ['10.154.156.150', '10.154.156.151', '10.154.156.152']
         #select_ip_list = ['192.168.33.141']
         create_container_node_ip_list = select_ip_list
         
