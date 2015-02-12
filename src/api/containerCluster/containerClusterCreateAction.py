@@ -86,19 +86,15 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
             
             if _error_msg:
                 container_cluster_info = {}
-                container_cluster_info['containerClusterName'] = containerClusterName
+                container_cluster_info['containerClusterName'] = _containerClusterName
                 container_cluster_info['start_flag'] = 'lack_resource'
-                container_cluster_info['error_msg'] = error_msg
+                container_cluster_info['error_msg'] = _error_msg
                 self.zkOper.write_container_cluster_info(container_cluster_info)
-                logging.info('check resource failed:%s' % str(error_msg) )
+                logging.info('check resource failed:%s' % str(_error_msg) )
                 return
             else:
                 select_ip_list = ret.get('select_ip_list')
                 logging.info('select_ip_list:%s' % str(select_ip_list))
-        
-        if select_ip_list:
-            logging.info('get select_ip_list here:%s' %str(select_ip_list) )
-            return
         
         ip_port_resource_list = self.__get_ip_port_resource(_network_mode, containerCount)
         logging.info('ip_port_resource_list : %s' % str(ip_port_resource_list) )
