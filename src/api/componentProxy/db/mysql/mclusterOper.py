@@ -54,13 +54,14 @@ class MclusterManager(object):
         
         logging.info('wait 5 seconds...')
         time.sleep(5)
-          
+         
         while num:
             stat = True
             succ = {}
             for index, host_ip in enumerate(host_ip_list):
                 container_model = container_model_list[index]
                 container_name = container_model.container_name
+                logging.info('host_ip:%s, container_name:%s' % (host_ip, container_name) )
                 ret = self.__get(container_name, host_ip)
                 logging.info('check container %s,  result : %s' % (container_name, str(ret)))
                 if ret:
