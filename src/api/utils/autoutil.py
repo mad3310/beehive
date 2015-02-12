@@ -10,6 +10,7 @@ import json
 import os, re
 
 from tornado.httpclient import HTTPRequest
+from utils import _request_fetch
 
 class FuncThread(threading.Thread):
     def __init__(self, func, *params, **paramMap):

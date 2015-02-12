@@ -17,7 +17,6 @@ from resource.portOpers import PortOpers
 from resource.resourceVerify import ResourceVerify
 from utils import _get_property_dict
 from utils.exceptions import CommonException
-from utils.autoutil import http_get
 from componentProxy.componentManagerValidator import ComponentManagerStatusValidator
 from container.container_model import Container_Model
 from componentProxy.componentContainerModelFactory import ComponentContainerModelFactory

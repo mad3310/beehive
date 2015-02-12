@@ -4,6 +4,8 @@ import pexpect
 import commands
 import time
 import logging
+from tornado.options import options
+from utils.autoutil import http_get
 
 class MclusterManager(object):
     

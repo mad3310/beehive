@@ -4,7 +4,7 @@ Created on 2015-2-4
 @author: asus
 '''
 from componentProxy.db.mysql.mclusterOper import MclusterManager
-from componentProxy.db.mysql.gbalancer.gbalanceOper import GbalanceManager
+from componentProxy.loadbalance.gbalancer.gbalancerOper import GbalanceManager
 
 class ComponentManagerStatusValidator(object):
     '''

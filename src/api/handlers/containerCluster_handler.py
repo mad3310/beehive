@@ -349,14 +349,7 @@ class StartMclusterManagerHandler(APIHandler):
     @asynchronous
     def get(self, container_name):
         ret = ''
-        try:
-            ret = self.mcluster_manager.mcluster_manager_status(container_name)
-        except:
-            raise HTTPAPIError(status_code=500, error_detail="__start mcluster-manager failed",\
-                                notification = "direct", \
-                                log_message= "__start mcluster-manager failed",\
-                                response =  "__start mcluster-manager failed, please check!")   
-        
+        ret = self.mcluster_manager.mcluster_manager_status(container_name)
         return_message = {}
         return_message.setdefault("message", ret)
         self.finish(return_message)
