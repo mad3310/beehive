@@ -8,22 +8,22 @@ from utils.autoutil import http_get
 
 class MclusterManagerValidator():
     
-    def validate_manager_status(self, host_ip_list, container_model_list, num):
+    def validate_manager_status(self, container_model_list, num):
         
         logging.info('wait 5 seconds...')
         time.sleep(5)
-         
+        
         while num:
             stat = True
-            succ = {}
-            for index, host_ip in enumerate(host_ip_list):
-                container_model = container_model_list[index]
+            succ = []
+            for index, container_model in enumerate(container_model_list):
+                host_ip = container_model.host_ip
                 container_name = container_model.container_name
                 logging.info('host_ip:%s, container_name:%s' % (host_ip, container_name) )
                 ret = self.__get(container_name, host_ip)
                 logging.info('check container %s,  result : %s' % (container_name, str(ret)))
                 if ret:
-                    succ.setdefault(host_ip, container_model)
+                    succ.append(container_model)
                 else:
                     stat = False
             logging.info('stat: %s' % str(stat))
@@ -31,9 +31,8 @@ class MclusterManagerValidator():
                 logging.info('successful!!!')
                 return True
             
-            for hostip, container_model in succ.items():
+            for container_model in succ:
                 container_model_list.remove(container_model)
-                host_ip_list.remove(hostip)
             num -= 1
     
     def __get(self, containerName, container_node):

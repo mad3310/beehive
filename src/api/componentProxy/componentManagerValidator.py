@@ -18,7 +18,7 @@ class ComponentManagerStatusValidator(object):
         Constructor
         '''
         
-    def start_Status_Validator(self, _component_type, create_container_node_ip_list, container_model_list, num):
+    def start_Status_Validator(self, _component_type, container_model_list, num):
         _check_result = False
         if "mclusternode" == _component_type:
             manager_validator = MclusterManagerValidator()
@@ -27,5 +27,5 @@ class ComponentManagerStatusValidator(object):
         else:
             manager_validator = None
             
-        _check_result = manager_validator.validate_manager_status(create_container_node_ip_list, container_model_list, num)
+        _check_result = manager_validator.validate_manager_status(container_model_list, num)
         return _check_result

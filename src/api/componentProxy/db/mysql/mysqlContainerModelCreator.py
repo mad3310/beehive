@@ -20,17 +20,22 @@ class MySQLContainerModelCreator(AbstractContainerModelCreator):
         Constructor
         '''
         
-    def create(self, arg_dict, containerCount, containerClusterName, container_ip_list, _component_container_cluster_config):
+    def create(self, args):
         
         component_type = arg_dict.get('componentType')
         network_mode = arg_dict.get('network_mode')
+        _component_container_cluster_config = args.get('component_config')
+        containerClusterName = args.get('containerClusterName')
+        container_ip_list = args.get('ip_port_resource_list')
+        host_ip_list = args.get('host_ip_list')
         create_container_arg_list = []
         mount_dir = _component_container_cluster_config.mount_dir
+        containerCount = _component_container_cluster_config.nodeCount
         volumes, binds = self.__get_normal_volumes_args(mount_dir)
         for i in range(int(containerCount)):
-            env = {}
             container_model = Container_Model()
             container_model.component_type = component_type
+            container_model.host_ip = host_ip_list[i]
             container_model.network_mode = network_mode
             container_model.container_cluster_name = containerClusterName
             container_model.container_ip = container_ip_list[i]
@@ -43,6 +48,7 @@ class MySQLContainerModelCreator(AbstractContainerModelCreator):
             container_model.ports = _component_container_cluster_config.ports
             container_model.mem_limit = _component_container_cluster_config.mem_limit
             
+            env = {}
             for j, containerIp in enumerate(container_ip_list):
                 env.setdefault('N%s_IP' % str(j+1), containerIp)
                 env.setdefault('N%s_HOSTNAME' % str(j+1), 'd-mcl-%s-n-%s' % (containerClusterName, str(j+1)))

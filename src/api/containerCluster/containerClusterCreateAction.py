@@ -68,59 +68,43 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         logging.info('_network_mode : %s' % str(_network_mode))
         
         _component_container_cluster_config = self.component_container_cluster_config_factory.retrieve_config(args)
+        args.setdefault('component_config', _component_container_cluster_config)
         
         is_res_verify = _component_container_cluster_config.is_res_verify
         containerCount = _component_container_cluster_config.nodeCount
         logging.info('is_res_verify : %s, containerCount:%s' % (str(is_res_verify), containerCount))
         self.__create_container_cluser_info(containerCount, _containerClusterName)
         
-        select_ip_list = []
+        host_ip_list = []
         if is_res_verify:
             ret = self.res_verify.check_resource(_component_container_cluster_config)
             _error_msg = ret.get('error_msg')
-            '''
-            @todo: 
-            1. check_resource return dict type message, could the error_message be put to the client?
-            2. why put the lack_resource to the client?
-            '''
-            
             if _error_msg:
                 return ('lack_resource', _error_msg)
             else:
-                select_ip_list = ret.get('select_ip_list')
-                logging.info('select_ip_list:%s' % str(select_ip_list))
+                host_ip_list = ret.get('select_ip_list')
+                logging.info('host_ip_list:%s' % str(host_ip_list))
+        
+        args.setdefault('host_ip_list', host_ip_list)
         
         ip_port_resource_list = self.__get_ip_port_resource(_network_mode, containerCount)
-        logging.info('ip_port_resource_list : %s' % str(ip_port_resource_list) )
-                
-        container_model_list = self.component_container_model_factory.create(_component_type, 
-                                                                             args,
-                                                                             containerCount, 
-                                                                             _containerClusterName, 
-                                                                             ip_port_resource_list,
-                                                                             _component_container_cluster_config)
+        args.setdefault('ip_port_resource_list', ip_port_resource_list)
         
-        create_container_node_ip_list = select_ip_list
+        logging.info('show args to get create containers args list: %s' % str(args) )
+        container_model_list = self.component_container_model_factory.create(args)
         
-        logging.info('choose host iplist: %s' % str(create_container_node_ip_list) )
-        
-        self.__dispatch_create_container_task(create_container_node_ip_list, 
-                                              container_model_list, 
-                                              containerCount)
+        self.__dispatch_create_container_task(container_model_list)
         
         _action_flag = False
         if _component_container_cluster_config.need_validate_manager_status:
-            _action_flag = self.component_manager_status_validator.start_Status_Validator(_component_type, 
-                                                                                          create_container_node_ip_list, 
-                                                                                          container_model_list, 
-                                                                                          6)
+            _action_flag = self.component_manager_status_validator.start_Status_Validator(_component_type, container_model_list, 6)
         else:
             _action_flag = True
             
         _action_result = 'failed' if not _action_flag else 'succeed'
         
         return (_action_result, '')
-    
+
     def __get_ip_port_resource(self, _network_mode, containerCount):
         ip_port_resource_list = []
         if 'ip' == _network_mode:
@@ -145,16 +129,12 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         self.zkOper.write_container_cluster_info(_container_cluster_info)
     
     @tornado.gen.engine
-    def __dispatch_create_container_task(self, create_container_node_ip_list, container_model_list, container_count):
+    def __dispatch_create_container_task(self, container_model_list):
         http_client = tornado.httpclient.AsyncHTTPClient()
-        
         _error_record_dict = {}
         try:
             _key_sets = set()
-            for i in range(container_count):
-                container_model = container_model_list[i]
-                host_ip = create_container_node_ip_list[i]
-                container_model.host_ip = host_ip
+            for index, container_model in enumerate(container_model_list):
                 property_dict = _get_property_dict(container_model)
                 url_post = "/inner/container" 
                 requesturi = "http://%s:%s%s" % (host_ip, options.port, url_post)
@@ -167,7 +147,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
                 _key_sets.add(callback_key)
                 http_client.fetch(request, callback=(yield Callback(callback_key)))
             
-            for i in range(container_count):
+            for i in range(len(container_model_list)):
                 callback_key = _key_sets.pop()
                 response = yield Wait(callback_key)
                 

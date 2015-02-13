@@ -20,23 +20,30 @@ class GbalancerContainerModelCreator(AbstractContainerModelCreator):
         Constructor
         '''
     
-    def create(self, arg_dict, containerCount, containerClusterName, container_ip_list, component_container_cluster_config):
+    def create(self, args):
+    
         component_type = arg_dict.get('componentType')
         network_mode = arg_dict.get('network_mode')
+        _component_container_cluster_config = args.get('component_config')
+        containerClusterName = args.get('containerClusterName')
+        container_ip_list = args.get('ip_port_resource_list')
+        host_ip_list = args.get('host_ip_list')
+        containerCount = _component_container_cluster_config.nodeCount
         create_container_arg_list = []
         
         for i in range(int(containerCount)):
-            env = {}
             container_model = Container_Model()
             container_model.container_cluster_name = containerClusterName
             container_model.container_ip = container_ip_list[i]
+            container_model.host_ip = host_ip_list[i]
             container_name = 'd-mcl-%s-n-%s' % (containerClusterName, str(i+1))
             container_model.container_name = container_name
             container_model.component_type = 'mclustervip'
             container_model.image = component_container_cluster_config.image
             container_model.mem_limit = component_container_cluster_config.mem_limit
-            
             gateway = _get_gateway_from_ip(container_ip_list[0])
+            
+            env = {}
             env.setdefault('NETMASK', '255.255.0.0')
             env.setdefault('GATEWAY', gateway)
             env.setdefault('HOSTNAME', 'd-mcl-%s-n-%s' % (containerClusterName, str(i+1)))
