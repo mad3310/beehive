@@ -47,6 +47,9 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
             logging.debug('begin create')
             __action_result, __error_message = self.__issue_create_action(self._arg_dict)
         except:
+            '''
+            @todo: need to restore code, remove import****
+            '''
             #self.threading_exception_queue.put(sys.exc_info())
             import traceback
             logging.error(str(traceback.format_exc()))
@@ -79,6 +82,11 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         if is_res_verify:
             ret = self.res_verify.check_resource(_component_container_cluster_config)
             _error_msg = ret.get('error_msg')
+            '''
+            @todo: 
+            1. check_resource return dict type message, could the error_message be put to the client?
+            2. why put the lack_resource to the client?
+            '''
             if _error_msg:
                 return ('lack_resource', _error_msg)
             else:

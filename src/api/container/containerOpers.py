@@ -97,7 +97,9 @@ class Container_Opers(Abstract_Container_Opers):
         return_result = container_name in container_name_list
         return return_result
     
-    
+'''
+@todo: need to check if the async? or sync? extend object?
+'''    
 class Container_create_action(Abstract_Async_Thread):
     
     docker_opers = Docker_Opers()
@@ -144,6 +146,9 @@ class Container_create_action(Abstract_Async_Thread):
         '''
         self.docker_opers.start(docker_model)
         
+        '''
+        @todo: need to open these code
+        '''
 #         init_con_ret = self.__set_ip_add_route_retry(3, container_name)
 #         if not init_con_ret:
 #             error_message = '__set_ip_add_route_retry container failed'

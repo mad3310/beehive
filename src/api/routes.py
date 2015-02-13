@@ -37,6 +37,9 @@ handlers = [
     (r"/containerCluster/createStatus/(.*)", CheckCreateClusterStatusHandler),
     (r"/containerCluster/status/(.*)", CheckContainerClusterStatusHandler),
     (r"/containerCluster/conf", ClusterConfigHandler),
+    '''
+    @todo: need to un-comment
+    '''
     #(r"/containerCluster/ips/add", AddIpsIntoIpPoolHandler),
     #(r"/containerCluster/ips/get", GetIpsFromIpPool),
     (r"/containerCluster/stat/(.*)/memory", GetherClusterMemeoyHandler),

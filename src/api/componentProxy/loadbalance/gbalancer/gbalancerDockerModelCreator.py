@@ -19,6 +19,11 @@ class GbalancerDockerModelCreator(AbstractContainerModelCreator):
         '''
 
     def create(self, arg_dict):
+        '''
+        @todo: 
+        1. validate the field should be
+        2. specify the default value
+        '''
         _container_name = arg_dict.get('container_name')
         _containerClusterName = arg_dict.get('container_cluster_name')
         _env = eval( arg_dict.get('env') )
