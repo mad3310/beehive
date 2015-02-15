@@ -47,9 +47,9 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
             logging.debug('begin create')
             __action_result, __error_message = self.__issue_create_action(self._arg_dict)
         except:
-            #self.threading_exception_queue.put(sys.exc_info())
-            import traceback
-            logging.error(str(traceback.format_exc()))
+            self.threading_exception_queue.put(sys.exc_info())
+#             import traceback
+#             logging.error(str(traceback.format_exc()))
         finally:
             '''
             set the action result to zk, if throw exception, the process will be shut and set 'failed' to zk. 
@@ -77,10 +77,12 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         logging.info('is_res_verify : %s, containerCount:%s' % (str(is_res_verify), containerCount))
         self.__create_container_cluser_info(containerCount, _containerClusterName)
         
-        host_ip_list = []
+        host_ip_list, _error_msg = [], ''
         if is_res_verify:
-            ret = self.res_verify.check_resource(_component_container_cluster_config)
-            _error_msg = ret.get('error_msg')
+            try:
+                ret = self.res_verify.check_resource(_component_container_cluster_config)
+            except CommonException as e:
+                _error_msg = e
             if _error_msg:
                 return ('lack_resource', _error_msg)
             else:
