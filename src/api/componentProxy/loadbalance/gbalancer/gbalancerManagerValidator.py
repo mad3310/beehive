@@ -8,4 +8,8 @@ class GbalanceManagerValidator(object):
         
     
     def validate_manager_status(self, host_ip_list, container_model_list, num):
+        """webportal use gbalancer-manager to start gbalancer 
+        
+        """
+        
         pass

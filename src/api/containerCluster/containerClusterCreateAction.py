@@ -136,6 +136,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
             _key_sets = set()
             for index, container_model in enumerate(container_model_list):
                 property_dict = _get_property_dict(container_model)
+                host_ip = property_dict.get('host_ip')
                 url_post = "/inner/container" 
                 requesturi = "http://%s:%s%s" % (host_ip, options.port, url_post)
                 logging.info('requesturi:%s' % requesturi)

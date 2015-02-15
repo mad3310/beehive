@@ -78,14 +78,14 @@ class Container_Opers(Abstract_Container_Opers):
                 elif 'Exited' in stat:
                     return 'stopped'
 
-    def get_all_containers(self, all=True):
+    def get_all_containers(self, is_all=True):
         """get all containers on some server
         
         all -> True  all containers on such server
         all -> False  started containers on such server
         """
         container_name_list = []
-        container_info_list = self.docker_opers.containers(all=all)
+        container_info_list = self.docker_opers.containers(all=is_all)
         for container_info in container_info_list:
             name = container_info.get('Names')[0]
             name = name.replace('/', '')
@@ -98,7 +98,7 @@ class Container_Opers(Abstract_Container_Opers):
         return return_result
     
     
-class Container_create_action(Abstract_Async_Thread):
+class Container_create_action(object):
     
     docker_opers = Docker_Opers()
     container_opers = Container_Opers()
@@ -118,6 +118,8 @@ class Container_create_action(Abstract_Async_Thread):
         container_name = arg_dict.get('container_name')
         component_type = arg_dict.get('component_type')
         env = eval(arg_dict.get('env'))
+        binds = eval(arg_dict.get('binds'))
+        binds = self.__rewrite_bind_arg(binds)
         
         logging.info('get create container args : %s, type:%s' % (str(arg_dict), type(arg_dict)) )
         docker_model = self.component_docker_model_factory.create(component_type, arg_dict)
@@ -159,6 +161,18 @@ class Container_create_action(Abstract_Async_Thread):
         container_node_info = self._get_container_info(container_name, arg_dict)
         logging.info('get container info: %s' % str(container_node_info))
         self.zkOper.write_container_node_info('started', container_node_info)
+
+    def __rewrite_bind_arg(self, containerClusterName, bind_arg):
+        re_bind_arg = {}
+        for k,v in bind_arg.items():
+            if '/data/mcluster_data' in k:
+                _path = '/data/mcluster_data/d-mcl-%s' % containerClusterName
+                if not os.path.exists(_path):
+                    os.makedirs(_path)
+                re_bind_arg.setdefault(_path, v)
+            else:
+                re_bind_arg.setdefault(k, v)
+        return re_bind_arg
 
     def __check_create_status(self, container_name):
         stat = self.container_opers.get_container_stat(container_name)

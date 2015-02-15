@@ -15,15 +15,15 @@ class MySQLContainerModelCreator(AbstractContainerModelCreator):
     '''
 
 
-    def __init__(self, params={}):
+    def __init__(self):
         '''
         Constructor
         '''
         
     def create(self, args):
         
-        component_type = arg_dict.get('componentType')
-        network_mode = arg_dict.get('network_mode')
+        component_type = args.get('componentType')
+        network_mode = args.get('network_mode')
         _component_container_cluster_config = args.get('component_config')
         containerClusterName = args.get('containerClusterName')
         container_ip_list = args.get('ip_port_resource_list')
