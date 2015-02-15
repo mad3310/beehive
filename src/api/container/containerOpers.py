@@ -146,12 +146,12 @@ class Container_create_action(object):
             binds=_binds
         '''
         self.docker_opers.start(docker_model)
-        
-#         init_con_ret = self.__set_ip_add_route_retry(3, container_name)
-#         if not init_con_ret:
-#             error_message = '__set_ip_add_route_retry container failed'
-#             logging.error(error_message)
-#             raise CommonException(error_message)
+        if docker_model.use_ip:
+            init_con_ret = self.set_ip_add_route_retry(3, container_name)
+            if not init_con_ret:
+                error_message = 'set_ip_add_route_retry container failed'
+                logging.error(error_message)
+                raise CommonException(error_message)
         
         result = self.__check_create_status(container_name)
         if not result:
@@ -182,24 +182,23 @@ class Container_create_action(object):
         else:
             return False
 
-    def __set_ip_add_route_retry(self, retryCount, container_name=None):
+    def set_ip_add_route_retry(self, retryCount, container_name=None):
         
         if container_name is None:
             return False
         
         ret = False
         
-        for count in range(0,retryCount):
-            while True:
-                try:
-                    self.__set_ip_add_route(container_name)
-                except RetryException:
-                    logging.info('__set_ip_add_route_retry container, try times :%s' % count)
-                    continue
-                
-                ret = True
-                break
-            
+        while retryCount:
+            try:
+                self.__set_ip_add_route(container_name)
+            except:
+                err_msg = str(traceback.format_exc())
+                logging.info(err_msg)
+                raise RetryException(err_msg)
+            ret = True
+            break
+            retryCount -= 1
         return ret
         
     def __set_ip_add_route(self, container_name=None):
@@ -228,13 +227,12 @@ class Container_create_action(object):
                         child.expect(["bash", pexpect.EOF, pexpect.TIMEOUT], timeout)
                         
             r_list = self.__retrieve_route_list(child, timeout)
+            logging.info('r_list:%s' % str(r_list) )
             if len(r_list) == 0:
                 child.sendline(r"route add default gw %s" % (real_route))
                 child.expect(["#", pexpect.EOF, pexpect.TIMEOUT], timeout)
                 child.sendline(r"")
             elif len(r_list) > 1 or r_list[0]['route_ip'] != real_route:
-                raise RetryException("error")
-            else:
                 raise RetryException("error")
         finally:
             child.close()

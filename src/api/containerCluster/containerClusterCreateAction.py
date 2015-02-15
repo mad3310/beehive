@@ -54,6 +54,8 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
             '''
             set the action result to zk, if throw exception, the process will be shut and set 'failed' to zk. 
             The process is end.
+            
+            ***when container cluster is created failed, then such code will get a exception(handle this later)
             '''
             self.__update_zk_info_when_process_complete(_containerClusterName, __action_result, __error_message)
     
