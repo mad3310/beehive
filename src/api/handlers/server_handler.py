@@ -47,7 +47,9 @@ class UpdateServerHandler(APIHandler):
         return_message.setdefault("message", "update server successful")
         self.finish(return_message)
 
-
+'''
+@todo: ignore?
+'''
 class CollectServerResHandler(APIHandler):
     """
     update server container 
@@ -62,6 +64,9 @@ class CollectServerResHandler(APIHandler):
         self.finish(server_res)
 
 
+'''
+@todo: ignore?
+'''
 class CollectContainerResHandler(APIHandler):
     """
     update server container 

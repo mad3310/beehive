@@ -47,16 +47,15 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
             logging.debug('begin create')
             __action_result, __error_message = self.__issue_create_action(self._arg_dict)
         except:
-            '''
-            @todo: need to restore code, remove import****
-            '''
-            #self.threading_exception_queue.put(sys.exc_info())
-            import traceback
-            logging.error(str(traceback.format_exc()))
+            self.threading_exception_queue.put(sys.exc_info())
+#             import traceback
+#             logging.error(str(traceback.format_exc()))
         finally:
             '''
             set the action result to zk, if throw exception, the process will be shut and set 'failed' to zk. 
             The process is end.
+            
+            ***when container cluster is created failed, then such code will get a exception(handle this later)
             '''
             self.__update_zk_info_when_process_complete(_containerClusterName, __action_result, __error_message)
     
@@ -78,15 +77,17 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         logging.info('is_res_verify : %s, containerCount:%s' % (str(is_res_verify), containerCount))
         self.__create_container_cluser_info(containerCount, _containerClusterName)
         
-        host_ip_list = []
+        host_ip_list, _error_msg = [], ''
         if is_res_verify:
-            ret = self.res_verify.check_resource(_component_container_cluster_config)
-            _error_msg = ret.get('error_msg')
             '''
             @todo: 
-            1. check_resource return dict type message, could the error_message be put to the client?
-            2. why put the lack_resource to the client?
+            1. split check_resource and retrieve the host ip methods
             '''
+            try:
+                ret = self.res_verify.check_resource(_component_container_cluster_config)
+            except CommonException as e:
+                _error_msg = e
+
             if _error_msg:
                 return ('lack_resource', _error_msg)
             else:
@@ -144,6 +145,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
             _key_sets = set()
             for index, container_model in enumerate(container_model_list):
                 property_dict = _get_property_dict(container_model)
+                host_ip = property_dict.get('host_ip')
                 url_post = "/inner/container" 
                 requesturi = "http://%s:%s%s" % (host_ip, options.port, url_post)
                 logging.info('requesturi:%s' % requesturi)

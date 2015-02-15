@@ -44,15 +44,26 @@ class HTTPAPIError(HTTPError):
 
 class CommonException(Exception):
     def __init__(self, value):
+        super(ImageNotFoundError, self).__init__(
+            "Common Exception. Error Message %s " % (value))
         self.value = value
+        
     def __str__(self):
         return repr(self.value)
     
 class RetryException(Exception):
     def __init__(self, value):
+        super(ImageNotFoundError, self).__init__(
+            "Retry Exception. Error Message %s " % (value))
         self.value = value
+        
     def __str__(self):
         return repr(self.value)
+    
+class ImageNotFoundError(Exception):
+    def __init__(self, image, tag):
+        super(ImageNotFoundError, self).__init__(
+            "Image %s with tag %s not found." % (image, tag))
 
 _error_types = {400: "param_error",
                 401: "invalid_auth",

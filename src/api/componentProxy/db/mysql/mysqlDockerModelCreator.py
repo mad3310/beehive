@@ -8,13 +8,13 @@ import os
 from componentProxy.abstractDockerModelCreator import AbstractContainerModelCreator
 from docker_letv.docker_model import Docker_Model
 
+
 class MysqlDockerModelCreator(AbstractContainerModelCreator):
     '''
     classdocs
     '''
 
-
-    def __init__(self, params={}):
+    def __init__(self):
         '''
         Constructor
         '''

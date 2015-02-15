@@ -54,12 +54,6 @@ class ServerClusterHandler(APIHandler):
         dataNodeIp = requestParam.get('dataNodeIp')
         existDataNode = self.zkOper.existDataNode(clusterUUID, dataNodeIp)
         
-        if existDataNode:
-            raise HTTPAPIError(status_code=417, error_detail="This machine has existed, no need to regedit!",\
-                                notification = "direct", \
-                                log_message= "Machine has been regedited!",\
-                                response =  "This machine has been regedited!")
-        
         return_message = {}
         return_message.setdefault("message", "creating server cluster successful!")
         self.finish(return_message)

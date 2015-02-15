@@ -11,7 +11,7 @@ from tornado.web import asynchronous
 from container.containerOpers import Container_Opers
 
 
-#@require_basic_auth
+@require_basic_auth
 class ContainerHandler(APIHandler):
     
     container_opers = Container_Opers()

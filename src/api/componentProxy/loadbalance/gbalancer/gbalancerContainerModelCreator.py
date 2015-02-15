@@ -15,20 +15,20 @@ class GbalancerContainerModelCreator(AbstractContainerModelCreator):
     '''
 
 
-    def __init__(self, params={}):
+    def __init__(self):
         '''
         Constructor
         '''
     
     def create(self, args):
     
-        component_type = arg_dict.get('componentType')
-        network_mode = arg_dict.get('network_mode')
-        _component_container_cluster_config = args.get('component_config')
+        component_type = args.get('componentType')
+        network_mode = args.get('network_mode')
+        component_container_cluster_config = args.get('component_config')
         containerClusterName = args.get('containerClusterName')
         container_ip_list = args.get('ip_port_resource_list')
         host_ip_list = args.get('host_ip_list')
-        containerCount = _component_container_cluster_config.nodeCount
+        containerCount = component_container_cluster_config.nodeCount
         create_container_arg_list = []
         
         for i in range(int(containerCount)):

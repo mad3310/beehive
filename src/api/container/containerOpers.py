@@ -78,14 +78,14 @@ class Container_Opers(Abstract_Container_Opers):
                 elif 'Exited' in stat:
                     return 'stopped'
 
-    def get_all_containers(self, all=True):
+    def get_all_containers(self, is_all=True):
         """get all containers on some server
         
         all -> True  all containers on such server
         all -> False  started containers on such server
         """
         container_name_list = []
-        container_info_list = self.docker_opers.containers(all=all)
+        container_info_list = self.docker_opers.containers(all=is_all)
         for container_info in container_info_list:
             name = container_info.get('Names')[0]
             name = name.replace('/', '')
@@ -100,7 +100,7 @@ class Container_Opers(Abstract_Container_Opers):
 '''
 @todo: need to check if the async? or sync? extend object?
 '''    
-class Container_create_action(Abstract_Async_Thread):
+class Container_create_action(object):
     
     docker_opers = Docker_Opers()
     container_opers = Container_Opers()
@@ -118,8 +118,11 @@ class Container_create_action(Abstract_Async_Thread):
             raise CommonException("please check the param is not null![the code is container_opers's create method]")
         
         container_name = arg_dict.get('container_name')
+        containerClusterName = arg_dict.get('containerClusterName')
         component_type = arg_dict.get('component_type')
         env = eval(arg_dict.get('env'))
+        binds = eval(arg_dict.get('binds'))
+        binds = self.__rewrite_bind_arg(containerClusterName, binds)
         
         logging.info('get create container args : %s, type:%s' % (str(arg_dict), type(arg_dict)) )
         docker_model = self.component_docker_model_factory.create(component_type, arg_dict)
@@ -149,11 +152,12 @@ class Container_create_action(Abstract_Async_Thread):
         '''
         @todo: need to open these code
         '''
-#         init_con_ret = self.__set_ip_add_route_retry(3, container_name)
-#         if not init_con_ret:
-#             error_message = '__set_ip_add_route_retry container failed'
-#             logging.error(error_message)
-#             raise CommonException(error_message)
+#         if docker_model.use_ip:
+#             init_con_ret = self.set_ip_add_route_retry(3, container_name)
+#             if not init_con_ret:
+#                 error_message = 'set_ip_add_route_retry container failed'
+#                 logging.error(error_message)
+#                 raise CommonException(error_message)
         
         result = self.__check_create_status(container_name)
         if not result:
@@ -165,6 +169,18 @@ class Container_create_action(Abstract_Async_Thread):
         logging.info('get container info: %s' % str(container_node_info))
         self.zkOper.write_container_node_info('started', container_node_info)
 
+    def __rewrite_bind_arg(self, containerClusterName, bind_arg):
+        re_bind_arg = {}
+        for k,v in bind_arg.items():
+            if '/data/mcluster_data' in k:
+                _path = '/data/mcluster_data/d-mcl-%s' % containerClusterName
+                if not os.path.exists(_path):
+                    os.makedirs(_path)
+                re_bind_arg.setdefault(_path, v)
+            else:
+                re_bind_arg.setdefault(k, v)
+        return re_bind_arg
+
     def __check_create_status(self, container_name):
         stat = self.container_opers.get_container_stat(container_name)
         if stat == 'started':
@@ -172,24 +188,23 @@ class Container_create_action(Abstract_Async_Thread):
         else:
             return False
 
-    def __set_ip_add_route_retry(self, retryCount, container_name=None):
+    def set_ip_add_route_retry(self, retryCount, container_name=None):
         
         if container_name is None:
             return False
         
         ret = False
         
-        for count in range(0,retryCount):
-            while True:
-                try:
-                    self.__set_ip_add_route(container_name)
-                except RetryException:
-                    logging.info('__set_ip_add_route_retry container, try times :%s' % count)
-                    continue
-                
-                ret = True
-                break
-            
+        while retryCount:
+            try:
+                self.__set_ip_add_route(container_name)
+            except:
+                err_msg = str(traceback.format_exc())
+                logging.info(err_msg)
+                raise RetryException(err_msg)
+            ret = True
+            break
+            retryCount -= 1
         return ret
         
     def __set_ip_add_route(self, container_name=None):
@@ -218,13 +233,12 @@ class Container_create_action(Abstract_Async_Thread):
                         child.expect(["bash", pexpect.EOF, pexpect.TIMEOUT], timeout)
                         
             r_list = self.__retrieve_route_list(child, timeout)
+            logging.info('r_list:%s' % str(r_list) )
             if len(r_list) == 0:
                 child.sendline(r"route add default gw %s" % (real_route))
                 child.expect(["#", pexpect.EOF, pexpect.TIMEOUT], timeout)
                 child.sendline(r"")
             elif len(r_list) > 1 or r_list[0]['route_ip'] != real_route:
-                raise RetryException("error")
-            else:
                 raise RetryException("error")
         finally:
             child.close()

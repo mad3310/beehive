@@ -11,6 +11,7 @@ import logging
 from zk.zkOpers import ZkOpers
 from tornado.options import options
 from utils.autoutil import http_get
+from utils.exceptions import CommonException
 
 class ResourceVerify(object):
     
@@ -32,7 +33,7 @@ class ResourceVerify(object):
         @todo: if check occurs failed, the program will be continue running?
         '''
         if len(ip_list) < nodeCount:
-            error_msg += 'ips are not enough!'
+            raise CommonException('ips are not enough!')
         
         elect_server = ElectServer()
         host_ip_list = elect_server.elect_server_list(_component_container_cluster_config)
@@ -43,13 +44,13 @@ class ResourceVerify(object):
             num += available_host_num
         
         if num < nodeCount:
-            error_msg += 'server resource are not enough!'
+            raise CommonException('server resource are not enough!')
         
         select_ip_list = self.get_host_ip_list(host_ip_list, nodeCount)
         
         logging.info('select_ip_list:%s' % str(select_ip_list))
         if not self.check_hosts_illegal(select_ip_list, nodeCount):
-            error_msg += 'two mcluster data nodes are on a server, illegal!'
+            raise CommonException('two mcluster data nodes are on a server, illegal!')
             
         '''
         @todo: add the ckeck logic for the rest value of disk,if the disk usage > 70%, then throw exception

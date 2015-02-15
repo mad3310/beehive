@@ -15,6 +15,7 @@ from kazoo.client import KazooClient
 from container.container_module import Container
 from utils.autoutil import get_containerClusterName_from_containerName
 from utils.autoutil import ping_ip_able
+from utils.autoutil import nc_ip_port_available
 from utils.decorators import singleton
 
 '''
@@ -448,6 +449,30 @@ class ZkOpers(object):
             self.zk.delete(_path)
             
             
+    '''
+    **********************************************Port Pool***********************************
+    '''
+    def retrieve_port(self, host_ip, port_count):
+        clusterUUID = self.getClusterUUID()
+        path = "%s/%s/portPool/%s" % (self.rootPath, clusterUUID, host_ip)
+        rest_port_list = self._return_children_to_list(path)
+        assign_port_list = []
+
+        for port in rest_port_list:
+            port_path = path + "/" + port
+            self.zk.delete(port_path)
+            if not nc_ip_port_available(host_ip, port):
+                assign_port_list.append(port)
+            if len(assign_port_list) == port_count:
+                break
+        return assign_port_list
+    
+    def write_port_into_portPool(self, host_ip, port):
+        clusterUUID = self.getClusterUUID()
+        path = "%s/%s/portPool/%s/%s" % (self.rootPath, clusterUUID, host_ip, port)
+        self.zk.ensure_path(path)
+            
+            
             
     '''
     *********************************************Lock**********************************************
@@ -458,6 +483,13 @@ class ZkOpers(object):
         return self._lock_base_action(lock_name)
     
     def unLock_assign_ip(self, lock):
+        self._unLock_base_action(lock)
+        
+    def lock_assign_port(self):
+        lock_name = "port_assign"
+        return self._lock_base_action(lock_name)
+    
+    def unLock_assign_port(self, lock):
         self._unLock_base_action(lock)
         
     def lock_async_monitor_action(self):
