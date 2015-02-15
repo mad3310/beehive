@@ -116,10 +116,11 @@ class Container_create_action(object):
             raise CommonException("please check the param is not null![the code is container_opers's create method]")
         
         container_name = arg_dict.get('container_name')
+        containerClusterName = arg_dict.get('containerClusterName')
         component_type = arg_dict.get('component_type')
         env = eval(arg_dict.get('env'))
         binds = eval(arg_dict.get('binds'))
-        binds = self.__rewrite_bind_arg(binds)
+        binds = self.__rewrite_bind_arg(containerClusterName, binds)
         
         logging.info('get create container args : %s, type:%s' % (str(arg_dict), type(arg_dict)) )
         docker_model = self.component_docker_model_factory.create(component_type, arg_dict)
