@@ -23,7 +23,7 @@ from utils.exceptions import CommonException, RetryException
 from utils.log import _log_docker_run_command
 from utils import _is_ip, _is_mask, _mask_to_num
 from zk.zkOpers import ZkOpers
-from componentProxy.componentDockerModelFactory import ComponentDockerModelFactory
+
 
 class Container_Opers(Abstract_Container_Opers):
     
@@ -105,27 +105,13 @@ class Container_create_action(object):
     docker_opers = Docker_Opers()
     container_opers = Container_Opers()
     zkOper = ZkOpers()
-    
-    component_docker_model_factory = ComponentDockerModelFactory()
-    
+        
     def __init__(self):
         '''
             constructor
         '''
     
-    def create(self, arg_dict):
-        if arg_dict is None or {} == arg_dict:
-            raise CommonException("please check the param is not null![the code is container_opers's create method]")
-        
-        container_name = arg_dict.get('container_name')
-        containerClusterName = arg_dict.get('containerClusterName')
-        component_type = arg_dict.get('component_type')
-        env = eval(arg_dict.get('env'))
-        binds = eval(arg_dict.get('binds'))
-        binds = self.__rewrite_bind_arg(containerClusterName, binds)
-        
-        logging.info('get create container args : %s, type:%s' % (str(arg_dict), type(arg_dict)) )
-        docker_model = self.component_docker_model_factory.create(component_type, arg_dict)
+    def create(self, docker_model):
         
         _log_docker_run_command(docker_model)
         '''
@@ -168,18 +154,6 @@ class Container_create_action(object):
         container_node_info = self._get_container_info(container_name, arg_dict)
         logging.info('get container info: %s' % str(container_node_info))
         self.zkOper.write_container_node_info('started', container_node_info)
-
-    def __rewrite_bind_arg(self, containerClusterName, bind_arg):
-        re_bind_arg = {}
-        for k,v in bind_arg.items():
-            if '/data/mcluster_data' in k:
-                _path = '/data/mcluster_data/d-mcl-%s' % containerClusterName
-                if not os.path.exists(_path):
-                    os.makedirs(_path)
-                re_bind_arg.setdefault(_path, v)
-            else:
-                re_bind_arg.setdefault(k, v)
-        return re_bind_arg
 
     def __check_create_status(self, container_name):
         stat = self.container_opers.get_container_stat(container_name)

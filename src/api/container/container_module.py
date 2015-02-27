@@ -12,12 +12,15 @@ class Container():
 
     def init_inspect(self, container=None, inspect={}, inspect_file=None):
         if container:
-            docker_opers = Docker_Opers()
-            self.inspect =  docker_opers.inspect_container(container)
+            self.inspect =  self.get_inspect_from_name(container)
         elif inspect:
             self.inspect = inspect
         else:
             pass
+        
+    def get_inspect_from_name(self, container):
+        docker_opers = Docker_Opers()
+        return docker_opers.inspect_container(container)
         
     def memory(self):
         return self.inspect.get('Config').get('Memory')

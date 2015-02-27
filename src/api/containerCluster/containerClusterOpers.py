@@ -9,12 +9,13 @@ Created on Sep 8, 2014
 import random, re
 import logging, traceback
 
-from utils.autoutil import getHostIp
+from utils.autoutil import getHostIp, http_get
 from tornado.options import options
 from common.abstractAsyncThread import Abstract_Async_Thread
 from common.abstractContainerOpers import Abstract_Container_Opers
 from utils import _retrieve_userName_passwd
 from container.container_module import Container
+from zk.zkOpers import ZkOpers
 from containerCluster.baseContainerAction import ContainerCluster_Action_Base
 from containerCluster.containerClusterCreateAction import ContainerCluster_create_Action 
 
@@ -291,11 +292,13 @@ class ContainerCluster_destroy_Action(ContainerCluster_Action_Base):
 '''
 class GetClustersChanges(object):
     
+    zkOper = ZkOpers()
+    
     def __init__(self):
         '''
         Constructor
         '''
-    
+        
     def get_res(self):
         host_ip = self.__random_host_ip()
         '''

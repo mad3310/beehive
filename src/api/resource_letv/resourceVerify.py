@@ -120,15 +120,15 @@ class ElectServer(object):
         what means mem_limit and mem_free_limit?
         '''
         
-        normal_info = self.zkOper.retrieve_mcluster_info_from_config()
-        mem_limit = normal_info.get('mem_limit')/1024/1024
+        _mem_limit = _component_container_cluster_config.mem_limit
+        mem_limit = _mem_limit/(1024*1024)
         
         server_url = 'http://%s:%s/server/resource' % (host_ip, options.port)
         server_res = http_get(server_url)
         logging.info('server_res: %s' % str(server_res) )
         mem_free_limit = _component_container_cluster_config.mem_free_limit
         
-        mem_usable = float(server_res["response"]["mem_res"]["free"]) - mem_free_limit/(1024*1024 )
+        mem_usable = float(server_res["response"]["mem_res"]["free"]) - mem_free_limit/(1024*1024)
         logging.info('mem_usable:%s' %  mem_usable)
         
         '''

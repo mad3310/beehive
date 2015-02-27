@@ -9,12 +9,14 @@ from utils.exceptions import HTTPAPIError
 from tornado_letv.tornado_basic_auth import require_basic_auth
 from tornado.web import asynchronous
 from container.containerOpers import Container_Opers
+from componentProxy.componentDockerModelFactory import ComponentDockerModelFactory
 
 
 @require_basic_auth
 class ContainerHandler(APIHandler):
     
     container_opers = Container_Opers()
+    component_docker_model_factory = ComponentDockerModelFactory()
     
     '''
     @todo: 
@@ -24,10 +26,39 @@ class ContainerHandler(APIHandler):
     #@asynchronous
     def post(self):
         args = self.get_all_arguments()
-        self.container_opers.create(args)
+        docker_model = self.__create_docker_module(args)
+        self.container_opers.create(docker_model)
         return_message = {}
         return_message.setdefault("message", "Success Create Container")
         self.finish(return_message)
+
+    def __create_docker_module(self, arg_dict):
+        container_name = arg_dict.get('container_name')
+        containerClusterName = arg_dict.get('containerClusterName')
+        component_type = arg_dict.get('component_type')
+        env = eval(arg_dict.get('env'))
+        binds = eval(arg_dict.get('binds'))
+        binds = self.__rewrite_bind_arg(component_type, containerClusterName, binds)
+        logging.info('get create container args : %s, type:%s' % (str(arg_dict), type(arg_dict)) )
+        docker_model = self.component_docker_model_factory.create(component_type, arg_dict)
+        return docker_model
+
+    def __rewrite_bind_arg(self, component_type, containerClusterName, bind_arg):
+        re_bind_arg = {}
+        for k,v in bind_arg.items():
+            
+            """
+                need to make dir when '/data/mcluster_data' in bind path
+            """
+            
+            if 'mclusternode' == component_type and '/data/mcluster_data' in k:
+                _path = '/data/mcluster_data/d-mcl-%s' % containerClusterName
+                if not os.path.exists(_path):
+                    os.makedirs(_path)
+                re_bind_arg.setdefault(_path, v)
+            else:
+                re_bind_arg.setdefault(k, v)
+        return re_bind_arg
 
 #     def delete(self, container_name):
 # #         args = self.get_all_arguments()

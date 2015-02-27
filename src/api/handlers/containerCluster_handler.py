@@ -382,7 +382,7 @@ class ContainerClustersInfoHandler(APIHandler):
     
     #curl "http://localhost:8888/clusters/info?cluster_name="""
     #curl "http://localhost:8888/clusters/info?cluster_name="abc""
-    @asynchronous
+    
     def get(self):
         
         clusters_zk_info =  self.container_cluster_opers.get_clusters_zk()
@@ -427,16 +427,9 @@ class ContainerClusterInfoHandler(APIHandler):
 class CheckClusterSyncHandler(APIHandler):
 
     get_cluster_changes = GetClustersChanges()
-    @asynchronous
+    
     def get(self):
-        try:
-            res_info =  self.get_cluster_changes.get_res()      
-        except:
-            raise HTTPAPIError(status_code=500, error_detail="code error!",\
-                            notification = "direct", \
-                            log_message= "code error!",\
-                            response =  "code error!")
-        
+        res_info =  self.get_cluster_changes.get_res()
         return_message = {}
         logging.info('data:%s' % str(res_info))
         return_message.setdefault('data', res_info)
