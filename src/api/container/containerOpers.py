@@ -145,17 +145,18 @@ class Container_create_action(object):
 #                 logging.error(error_message)
 #                 raise CommonException(error_message)
         
-        result = self.__check_create_status(container_name)
+        result = self.__check_create_status(docker_model)
         if not result:
             error_message = 'the exception of creating container'
             logging.error(error_message)
             raise CommonException(error_message)
         
-        container_node_info = self._get_container_info(container_name, arg_dict)
+        container_node_info = self._get_container_info(docker_model)
         logging.info('get container info: %s' % str(container_node_info))
         self.zkOper.write_container_node_info('started', container_node_info)
 
-    def __check_create_status(self, container_name):
+    def __check_create_status(self, docker_model):
+        container_name = docker_model.name
         stat = self.container_opers.get_container_stat(container_name)
         if stat == 'started':
             return True
@@ -267,13 +268,14 @@ class Container_create_action(object):
         return ip,mask
         
         
-    def _get_container_info(self, container_name, arg_dict):
+    def _get_container_info(self, docker_model):
+        container_name = docker_model.name
         con = Container(container_name)
         container_node_info= {}
         container_node_info.setdefault('containerName', container_name)
         container_node_info.setdefault('inspect', con.inspect)
-        container_node_info.setdefault('hostIp', arg_dict.get('host_ip'))
-        container_node_info.setdefault('type', arg_dict.get('component_type'))
+        container_node_info.setdefault('hostIp', docker_model.host_ip)
+        container_node_info.setdefault('type', docker_model.component_type)
         return container_node_info
     
     def __get_route_dicts(self, route_list=None):

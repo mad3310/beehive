@@ -20,7 +20,7 @@ class MysqlContainerClusterConfig(object):
             
         self.is_res_verify = False
         self.nodeCount = 3
-        self.need_validate_manager_status = True
+        self.need_validate_manager_status = False
         self.mem_free_limit = 10*1024*1024*1024                      #default value stand for 10G                  
         mem_limit = params.get('mem_limit')                          #default value stand for 512M
         self.mem_limit = mem_limit if mem_limit else 512*1024*1024
