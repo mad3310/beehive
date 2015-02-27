@@ -17,7 +17,7 @@ from tornado_letv.tornado_basic_auth import require_basic_auth
 from utils.exceptions import HTTPAPIError
 from containerCluster.containerClusterOpers import ContainerCluster_Opers, GetClustersChanges
 from componentProxy.db.mysql.mclusterOper import MclusterManager
-from resource_letv.ipOpers import IpOpers
+
 
 @require_basic_auth
 class GetherClusterNetworkioHandler(APIHandler):
@@ -442,18 +442,3 @@ class CheckClusterSyncHandler(APIHandler):
         return_message.setdefault('data', res_info)
         self.finish(return_message)
 
-
-@require_basic_auth
-class AddIpsIntoIpPoolHandler(APIHandler):
-
-    ip_opers = IpOpers()
-    
-    #curl --user root:root -d"ipSegment=10.200.85.xxx&&ipCount=50" http://localhost:8888/containerCluster/ips
-    @asynchronous
-    def post(self):
-        args = self.get_all_arguments()
-        self.ip_opers.write_into_ipPool(args)
-        
-        dict = {}
-        dict.setdefault("message", "write ip to ip pools successfully!")
-        self.finish(dict)
