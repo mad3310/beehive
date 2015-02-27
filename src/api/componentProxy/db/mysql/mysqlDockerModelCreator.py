@@ -31,6 +31,7 @@ class MysqlDockerModelCreator(AbstractContainerModelCreator):
         _ports = eval( arg_dict.get('ports'))
         _network_mode = arg_dict.get('network_mode')
         _host_ip = arg_dict.get('host_ip')
+        _component_type = arg_dict.get('component_type')
         
         _docker_model = Docker_Model()
         _docker_model.image = _image
@@ -44,6 +45,7 @@ class MysqlDockerModelCreator(AbstractContainerModelCreator):
         _docker_model.hostname = _container_name
         _docker_model.ports = _ports
         _docker_model.host_ip = _host_ip
+        _docker_model.component_type = _component_type
         if 'ip' == _network_mode:
             _docker_model.use_ip = True
         else:

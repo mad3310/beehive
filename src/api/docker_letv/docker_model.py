@@ -126,4 +126,12 @@ class Docker_Model(object):
     @use_ip.setter
     def use_ip(self, use_ip=False):
         self._use_ip = use_ip
+
+    @property
+    def component_type(self):
+        return self._component_type
+    
+    @component_type.setter
+    def component_type(self, component_type):
+        self._component_type = component_type
         
