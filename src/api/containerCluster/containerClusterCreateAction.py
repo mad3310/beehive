@@ -48,9 +48,9 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
             logging.debug('begin create')
             __action_result, __error_message = self.__issue_create_action(self._arg_dict)
         except:
-#            self.threading_exception_queue.put(sys.exc_info())
-            import traceback
-            logging.error(str(traceback.format_exc()))
+            self.threading_exception_queue.put(sys.exc_info())
+#            import traceback
+#            logging.error(str(traceback.format_exc()))
         finally:
             '''
             set the action result to zk, if throw exception, the process will be shut and set 'failed' to zk. 
@@ -95,7 +95,6 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
                 host_ip_list = ret.get('select_ip_list')
                 logging.info('host_ip_list:%s' % str(host_ip_list))
         
-        host_ip_list = ['192.168.33.141', '192.168.33.142', '192.168.33.143']
         args.setdefault('host_ip_list', host_ip_list)
         
         ip_port_resource_list = self.__get_ip_port_resource(_network_mode, containerCount)

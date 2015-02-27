@@ -195,12 +195,7 @@ class ContainerClusterHandler(APIHandler):
             self.finish(return_message)
             return
 
-        try:
-            self.containerClusterOpers.destory(containerClusterName)
-        except:
-            logging.error(str(traceback.format_exc()))
-            raise HTTPAPIError(status_code=417, error_detail="containerCluster removed failed!",\
-                                response =  "check if the containerCluster removed!")
+        self.containerClusterOpers.destory(containerClusterName)
         
         return_message = {}
         return_message.setdefault("message", "remove container has been done but need some time, please wait a moment and check the result!")
