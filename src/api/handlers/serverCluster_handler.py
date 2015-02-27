@@ -95,14 +95,8 @@ class UpdateServerClusterHandler(APIHandler):
     
     def get(self):
         
-        try:
-            self.serverCluster_opers.update()
-        except:
-            raise HTTPAPIError(status_code=500, error_detail="update server failed!",\
-                                notification = "direct", \
-                                log_message= 'update  server cluster failed' ,\
-                                response =  "please check and notice related person")
-        
+        self.serverCluster_opers.update()
+
         return_message = {}
         return_message.setdefault("message", "serverCluster update successful")
         self.finish(return_message)

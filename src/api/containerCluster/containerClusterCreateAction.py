@@ -17,6 +17,7 @@ from resource_letv.portOpers import PortOpers
 from resource_letv.resourceVerify import ResourceVerify
 from utils import _get_property_dict
 from utils.exceptions import CommonException
+from utils import _retrieve_userName_passwd
 from componentProxy.componentManagerValidator import ComponentManagerStatusValidator
 from container.container_model import Container_Model
 from componentProxy.componentContainerModelFactory import ComponentContainerModelFactory
@@ -47,9 +48,9 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
             logging.debug('begin create')
             __action_result, __error_message = self.__issue_create_action(self._arg_dict)
         except:
-            self.threading_exception_queue.put(sys.exc_info())
-#             import traceback
-#             logging.error(str(traceback.format_exc()))
+#            self.threading_exception_queue.put(sys.exc_info())
+            import traceback
+            logging.error(str(traceback.format_exc()))
         finally:
             '''
             set the action result to zk, if throw exception, the process will be shut and set 'failed' to zk. 
@@ -94,6 +95,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
                 host_ip_list = ret.get('select_ip_list')
                 logging.info('host_ip_list:%s' % str(host_ip_list))
         
+        #host_ip_list = ['192.168.33.141', '192.168.33.142', '192.168.33.143']
         args.setdefault('host_ip_list', host_ip_list)
         
         ip_port_resource_list = self.__get_ip_port_resource(_network_mode, containerCount)
@@ -141,6 +143,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
     def __dispatch_create_container_task(self, container_model_list):
         http_client = tornado.httpclient.AsyncHTTPClient()
         _error_record_dict = {}
+        adminUser, adminPasswd = _retrieve_userName_passwd()
         try:
             _key_sets = set()
             for index, container_model in enumerate(container_model_list):
@@ -151,7 +154,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
                 logging.info('requesturi:%s' % requesturi)
                 logging.info('property dict before dispatch: %s' % str(property_dict) )
                 request = HTTPRequest(url=requesturi, method='POST', body=urllib.urlencode(property_dict), \
-                                      connect_timeout=40, request_timeout=40)
+                                      connect_timeout=40, request_timeout=40, auth_username=adminUser, auth_password=adminPasswd)
                 
                 callback_key = "%s_%s" % ("create_container", host_ip)
                 _key_sets.add(callback_key)

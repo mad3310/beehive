@@ -28,7 +28,6 @@ class MysqlDockerModelCreator(AbstractContainerModelCreator):
         _mem_limit = int(arg_dict.get('mem_limit'))
         _volumes = eval( arg_dict.get('volumes') )
         _binds = eval( arg_dict.get('binds') )
-        _binds = self.__rewrite_bind_arg(_containerClusterName, _binds)
         _ports = eval( arg_dict.get('ports'))
         _network_mode = arg_dict.get('network_mode')
         
@@ -49,21 +48,5 @@ class MysqlDockerModelCreator(AbstractContainerModelCreator):
             _docker_model.use_ip = False
         
         return _docker_model
-    
-    '''
-    @todo: 
-    1. remove the os.mkdir
-    2. put this logic to container_opers
-    '''
-    def __rewrite_bind_arg(self, containerClusterName, bind_arg):
-        re_bind_arg = {}
-        for k,v in bind_arg.items():
-            if '/data/mcluster_data' in k:
-                _path = '/data/mcluster_data/d-mcl-%s' % containerClusterName
-                if not os.path.exists(_path):
-                    os.makedirs(_path)
-                re_bind_arg.setdefault(_path, v)
-            else:
-                re_bind_arg.setdefault(k, v)
-        return re_bind_arg
+
         

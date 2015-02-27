@@ -240,6 +240,8 @@ class Container_create_action(object):
                 child.sendline(r"")
             elif len(r_list) > 1 or r_list[0]['route_ip'] != real_route:
                 raise RetryException("error")
+            else:
+                pass
         finally:
             child.close()
         
