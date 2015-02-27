@@ -95,7 +95,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
                 host_ip_list = ret.get('select_ip_list')
                 logging.info('host_ip_list:%s' % str(host_ip_list))
         
-        #host_ip_list = ['192.168.33.141', '192.168.33.142', '192.168.33.143']
+        host_ip_list = ['192.168.33.141', '192.168.33.142', '192.168.33.143']
         args.setdefault('host_ip_list', host_ip_list)
         
         ip_port_resource_list = self.__get_ip_port_resource(_network_mode, containerCount)
