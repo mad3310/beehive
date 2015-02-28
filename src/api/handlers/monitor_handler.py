@@ -24,7 +24,6 @@ from utils.exceptions import HTTPAPIError
 # eg. curl "http://localhost:8888/mcluster/status"          
 class ContainerStatus(APIHandler):
     
-    @asynchronous
     def get(self):
         
         monitor_types = self.zkOper.retrieve_monitor_type()
@@ -46,7 +45,6 @@ class CheckServerContainersMemLoad(APIHandler):
     
     server_opers = Server_Opers()
     
-    @asynchronous
     def get(self):
         
         logging.info('server: %s' % self.request.remote_ip)
@@ -100,7 +98,6 @@ class CheckServerContainersUnderOom(APIHandler):
     
     server_opers = Server_Opers()
     
-    @asynchronous
     def get(self):
         server_ip = self.request.remote_ip
         cons_under_oom = {}

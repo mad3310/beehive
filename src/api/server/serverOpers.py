@@ -28,10 +28,6 @@ class Server_Opers(Abstract_Async_Thread):
     
     container_opers = Container_Opers()
     
-    def retrieveServerResource(self):
-        resource = {'memoryCount':3,'diskCount':500}
-        return resource
-    
     def update(self):
         try:
             logging.info('update server!')

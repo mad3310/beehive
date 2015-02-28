@@ -14,18 +14,6 @@ from utils.exceptions import HTTPAPIError
 from tornado_letv.tornado_basic_auth import require_basic_auth
 
 
-class ServerHandler(APIHandler):
-    '''
-    classdocs
-    '''
-    server_opers = Server_Opers()
-
-    @asynchronous
-    def get(self):
-        return_message = self.server_opers.retrieveServerResource()
-        return self.finish(return_message)
-
-
 class UpdateServerHandler(APIHandler):
     """
     update server container 
@@ -33,7 +21,6 @@ class UpdateServerHandler(APIHandler):
     
     server_opers = Server_Opers()
     
-    @asynchronous
     def get(self):
         try:
             self.server_opers.update()

@@ -53,10 +53,6 @@ class ServerCluster_Opers(object):
                     succ.append(callback_key)
                 else:
                     fail.append(callback_key)
-        
-            '''
-            @todo: need to put to finally
-            '''
         finally:
             http_client.close()
         logging.debug('succ:%s' % str(succ))

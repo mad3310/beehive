@@ -189,7 +189,6 @@ class CheckCreateClusterStatusHandler(APIHandler):
     '''
     containerClusterOpers = ContainerCluster_Opers()
 
-    @asynchronous
     def get(self, containerClusterName):        
         check_result = ''
         check_result =  self.containerClusterOpers.check_create_status(containerClusterName)
@@ -211,7 +210,6 @@ class CheckContainerClusterStatusHandler(APIHandler):
     '''
     containerClusterOpers = ContainerCluster_Opers()
 
-    @asynchronous
     def get(self, containerClusterName):
         logging.info('containerClusterName:%s' % containerClusterName)
         
@@ -336,7 +334,6 @@ class ClusterConfigHandler(APIHandler):
     
     containerClusterOpers = ContainerCluster_Opers()
     
-    @asynchronous
     def post(self):
         args = self.get_all_arguments()
         logging.info('config args:%s' % str(args))

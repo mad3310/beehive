@@ -206,7 +206,6 @@ class RemoveContainerHandler(APIHandler):
 @require_basic_auth
 class GetherContainerMemeoyHandler(APIHandler):
     
-    @asynchronous
     def get(self, container_name):
 
         exists = check_container_exists(container_name)

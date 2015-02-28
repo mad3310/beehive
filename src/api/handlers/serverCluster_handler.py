@@ -69,23 +69,6 @@ class ServerClusterHandler(APIHandler):
 
 
 @require_basic_auth
-class GetServersInfoHandler(APIHandler):
-    '''
-    classdocs
-    '''
-    def get(self):
-        data_nodes_ip_list = self.zkOper.retrieve_data_node_list()
-        uri = "/server"
-        resource_dict = {}
-        for data_node_ip in data_nodes_ip_list:
-            requesturi = "http://%s:%s%s" % (data_node_ip, options.port, uri)
-            retrun_dict = http_get(requesturi)
-            resource_dict.setdefault(data_node_ip, retrun_dict['response'])
-        
-        self.finish(resource_dict)
-
-
-@require_basic_auth
 class UpdateServerClusterHandler(APIHandler):
     """
     update serverCluster 

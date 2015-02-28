@@ -9,94 +9,15 @@ import threading
 import json
 import os, re
 
-from tornado.httpclient import HTTPRequest
+from tornado.gen import engine, Task
+from tornado.httpclient import HTTPRequest, AsyncHTTPClient
 from utils import _request_fetch
-
-class FuncThread(threading.Thread):
-    def __init__(self, func, *params, **paramMap):
-        threading.Thread.__init__(self)
-        self.func = func
-        self.params = params
-        self.paramMap = paramMap
-        self.rst = None
-        self.finished = False
-
-    def run(self):
-        self.rst = self.func(*self.params, **self.paramMap)
-        self.finished = True
-
-    def getResult(self):
-        return self.rst
-
-    def isFinished(self):
-        return self.finished
-
-'''
-@todo: the class used?
-'''
-class Data:
-    def __init__(self, data = None):
-        self.data = data
-
-    def get(self):
-        return self.data
-
-    def set(self, data):
-        self.data = data
-
-def doInThread(func, *params, **paramMap):
-    ft = FuncThread(func, *params, **paramMap)
-    ft.start()
-    return ft
-
-'''
-@todo: the method used?
-'''
-def doInTimes(func, times, *params, **paramMap):
-    while times > 0:
-        rst = func(*params, **paramMap)
-        if rst and not isExcept(rst):
-            break
-        times = times - 1
-    return rst
-
-def _isExcept(e, eType = Exception):
-    return isinstance(e, eType)
-
-'''
-@todo: the method used?
-'''
-def handleTimeout(func, timeout, *params, **paramMap):
-    """
-    """
-    
-    interval = 0.6
-    if type(timeout) == tuple:
-        timeout, interval = timeout
-    rst = None
-    while timeout > 0:
-        t = time.time()
-        rst = func(*params, **paramMap)
-        if rst and not _isExcept(rst):
-            break
-        time.sleep(interval)
-        timeout -= time.time() - t
-    return rst
 
 def getHostIp():
     out_ip = os.popen("ifconfig $(route -n|grep UG|awk '{print $NF}')|grep 'inet addr'|awk '{print $2}'").read()
     ip = out_ip.split('\n')[0]
     ip = re.findall('.*:(.*)', ip)[0]
     logging.info("host ip: %s" % (ip))
-    return ip
-
-'''
-@todo: the method used?
-'''
-def getVMIp():
-    ips = os.popen("/sbin/ifconfig | grep 'inet addr' | awk '{print $2}'").read()
-    ip = ips.split('\n')[1]
-    ip = re.findall('.*:(.*)', ip)[0]
     return ip
 
 def ping_ip_able(ip):
@@ -138,7 +59,23 @@ def http_get(url, _connect_timeout=40.0, _request_timeout=40.0, auth_username=No
     except Exception, e:
         logging.error(str(e))
         return e
-    
+
+@engine
+def async_http_post(url, body={}, _connect_timeout=40.0, _request_timeout=40.0, auth_username=None, auth_password=None):
+    try:
+        async_client = AsyncHTTPClient()
+        request = HTTPRequest(url=url, method='POST', body=urllib.urlencode(body), connect_timeout=_connect_timeout, \
+                              request_timeout=_request_timeout, auth_username = auth_username, auth_password = auth_password)
+        response = yield Task(async_client.fetch, request)
+        return_dict = json.loads( response.body.strip())
+        logging.info('POST result :%s' % str(return_dict))
+        
+    except Exception, e:
+        logging.error(str(e))
+        return e
+    finally:
+        async_client.close()
+
 def get_containerClusterName_from_containerName(container_name):
     containerClusterName = ''
     if 'd-mcl' in container_name:
