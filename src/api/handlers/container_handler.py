@@ -118,18 +118,11 @@ class StartContainerHandler(APIHandler):
             massage.setdefault("message", "no need this operation, the container has been started!")
             self.finish(massage)
             return
-        
-        try: 
-            self.container_opers.__start(container_name)
-        except:
-            logging.error( str(traceback.format_exc()) )
-            raise HTTPAPIError(status_code=500, error_detail="container __start raise exception!",\
-                                notification = "direct", \
-                                log_message= "container __start raise exception",\
-                                response =  "container __start raise exception, please check!!")
+
+        self.container_opers.start(container_name)
         
         return_message = {}
-        return_message.setdefault("message", "due to __start a container need a little time, please wait and check the result~")
+        return_message.setdefault("message", "due to start a container need a little time, please wait and check the result~")
         self.finish(return_message)
 
 

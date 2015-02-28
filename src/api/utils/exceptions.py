@@ -44,7 +44,7 @@ class HTTPAPIError(HTTPError):
 
 class CommonException(Exception):
     def __init__(self, value):
-        super(ImageNotFoundError, self).__init__(
+        super(CommonException, self).__init__(
             "Common Exception. Error Message %s " % (value))
         self.value = value
         
@@ -53,7 +53,7 @@ class CommonException(Exception):
     
 class RetryException(Exception):
     def __init__(self, value):
-        super(ImageNotFoundError, self).__init__(
+        super(RetryException, self).__init__(
             "Retry Exception. Error Message %s " % (value))
         self.value = value
         

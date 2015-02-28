@@ -13,6 +13,7 @@ from utils.autoutil import getHostIp, http_get
 from tornado.options import options
 from common.abstractAsyncThread import Abstract_Async_Thread
 from common.abstractContainerOpers import Abstract_Container_Opers
+from utils.exceptions import CommonException
 from utils import _retrieve_userName_passwd
 from container.container_module import Container
 from zk.zkOpers import ZkOpers
@@ -27,9 +28,9 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
     
     def create(self, arg_dict):
         _containerClusterName = arg_dict.get('containerClusterName')
-        exists = self.zkOper.check_containerCluster_exists(containerClusterName)
+        exists = self.zkOper.check_containerCluster_exists(_containerClusterName)
         if exists:
-            raise CommonException('containerCluster %s has existed, choose another containerCluster name' % containerClusterName)
+            raise CommonException('containerCluster %s has existed, choose another containerCluster name' % _containerClusterName)
         containerCluster_create_action = ContainerCluster_create_Action(arg_dict)
         containerCluster_create_action.start()
     
