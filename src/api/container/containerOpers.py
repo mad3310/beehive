@@ -23,6 +23,7 @@ from utils.exceptions import CommonException, RetryException
 from utils.log import _log_docker_run_command
 from utils import _is_ip, _is_mask, _mask_to_num
 from zk.zkOpers import ZkOpers
+from docker import Client
 
 
 class Container_Opers(Abstract_Container_Opers):
@@ -303,7 +304,7 @@ class Container_create_action(object):
 
 class Container_start_action(Abstract_Async_Thread):
     
-    docker_opers = Docker_Opers()
+    container_opers = Container_Opers()
     
     def __init__(self, container_name):
         super(Container_start_action, self).__init__()
@@ -311,25 +312,26 @@ class Container_start_action(Abstract_Async_Thread):
         
     def run(self):
         try:
-            logging.info('begin __start')
+            logging.info('begin start')
             self.__issue_start_action()
         except:
             self.threading_exception_queue.put(sys.exc_info())
 
     def __issue_start_action(self):
         start_rst, start_flag = {}, {}
-        logging.info('write __start flag')
+        logging.info('write start flag')
         start_flag = {'status':'starting', 'message':''}
         self.zkOper.write_container_status_by_containerName(self.container_name, start_flag)
-        self.docker_opers.__start(self.container_name)
+        client = Client()
+        client.start(self.container_name)
         stat = self.container_opers.get_container_stat(self.container_name)
         if stat == 'stopped':
-            message = '__start container %s failed' % self.container_name
+            message = 'start container %s failed' % self.container_name
         else:
             message = ''
         start_rst.setdefault('status', stat)
         start_rst.setdefault('message', message)
-        logging.info('write __start result')
+        logging.info('write start result')
         '''
         @todo:
         1. check the duplicate with above code? same as write_container_status_by_containerName
@@ -340,6 +342,7 @@ class Container_start_action(Abstract_Async_Thread):
 class Container_stop_action(Abstract_Async_Thread):
     
     docker_opers = Docker_Opers()
+    container_opers = Container_Opers()
     
     def __init__(self, container_name):
         super(Container_stop_action, self).__init__()
