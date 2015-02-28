@@ -159,14 +159,6 @@ class ContainerClusterHandler(APIHandler):
         args = self.get_all_arguments()
         logging.info(' args:%s' % str(args))
         
-        containerClusterName = args.get('containerClusterName')
-        exists = self.zkOper.check_containerCluster_exists(containerClusterName)
-        if exists:
-            content = 'containerCluster %s has existed, choose another containerCluster name' % containerClusterName
-            message = {'message' : content}
-            self.finish(message)
-            return
-        
         try:
             self.containerClusterOpers.create(args)
         except kazoo.exceptions.LockTimeout:
@@ -182,18 +174,6 @@ class ContainerClusterHandler(APIHandler):
         args = self.get_all_arguments()
         containerClusterName = args.get('containerClusterName')
         logging.info(' containerClusterName:%s' % containerClusterName)
-        if not containerClusterName:
-            raise HTTPAPIError(status_code=400, error_detail="no containerClusterName argument!",\
-                                notification = "direct", \
-                                log_message= "no containerClusterName argument!",\
-                                response =  "please check params!")
-        
-        exists = self.zkOper.check_containerCluster_exists(containerClusterName)
-        if not exists:
-            return_message = {}
-            return_message.setdefault("message", "cluster has not existed, no need do this operation!")
-            self.finish(return_message)
-            return
 
         self.containerClusterOpers.destory(containerClusterName)
         

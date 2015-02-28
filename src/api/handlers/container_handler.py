@@ -202,14 +202,8 @@ class RemoveContainerHandler(APIHandler):
             self.finish(massage)
             return
           
-        try:
-            self.container_opers.destroy(container_name)
-        except:
-            logging.error( str(traceback.format_exc()) )
-            raise HTTPAPIError(status_code=500, error_detail="container __start raise exception!",\
-                                notification = "direct", \
-                                log_message= "container __start raise exception",\
-                                response =  "container __start raise exception, please check!!")
+
+        self.container_opers.destroy(container_name)
           
         return_message = {}
         return_message.setdefault("message", "remove container has been done but need some time, please wait a moment and check the result!")

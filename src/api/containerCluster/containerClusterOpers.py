@@ -42,6 +42,11 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         containerCluster_stop_action.start()
 
     def destory(self, containerClusterName):
+        if not containerClusterName:
+            raise CommonException('param not correct, no containerClusterName param')            
+        exists = self.zkOper.check_containerCluster_exists(_containerClusterName)
+        if not exists:
+            raise CommonException('containerCluster %s not existe, no need to remove' % containerClusterName)
         containerCluster_destroy_action = ContainerCluster_destroy_Action(containerClusterName)
         containerCluster_destroy_action.start()
 

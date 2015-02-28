@@ -7,6 +7,9 @@ import logging
 import sys
 
 from tornado.options import options
+from tornado.web import asynchronous
+from tornado.gen import engine, Task
+from tornado.httpclient import HTTPRequest, AsyncHTTPClient
 from common.abstractAsyncThread import Abstract_Async_Thread
 from utils import _retrieve_userName_passwd
 from utils.autoutil import http_post
@@ -32,16 +35,13 @@ class ContainerCluster_Action_Base(Abstract_Async_Thread):
    
     def dispatch_container_tasks(self, params, admin_user, admin_passwd):
         logging.info('params: %s' % str(params))
-        for host_ip, container_name in params.items():
+        for host_ip, container_name_list in params.items():
             '''
             @todo: why use isinstance to compare?
             '''
-            if isinstance(container_name, str) or isinstance(container_name, unicode):
+            logging.info('container_name_list %s in host %s ' % (str(container_name_list), host_ip) )
+            for container_name in container_name_list:
                 self.post(host_ip, container_name, admin_user, admin_passwd)
-            elif isinstance(container_name, list):
-                logging.info('container_name_list : %s' % str(container_name))
-                for _name in container_name:
-                    self.post(host_ip, _name, admin_user, admin_passwd)
         
         if self.action == 'remove':
             container_ip_list = self.zkOper.retrieve_container_list(self.cluster)
@@ -50,15 +50,22 @@ class ContainerCluster_Action_Base(Abstract_Async_Thread):
     
     '''
     @todo: use Task way to replace to post() method sync.
-    '''      
+    '''
+    @asynchronous
+    @engine
     def post(self, host_ip, container_name, admin_user, admin_passwd):
         args = {}
         args.setdefault('containerName', container_name)
         request_uri = 'http://%s:%s/container/%s' % (host_ip, options.port, self.action)
         logging.info('post-----  url: %s, \n body: %s' % ( request_uri, str (args) ) )
-        ret = http_post(request_uri, args, admin_user, admin_passwd)
+        request = HTTPRequest(url=requesturi, method='POST', body=urllib.urlencode(args), connect_timeout=40, \
+                              request_timeout=40, auth_username = auth_username, auth_password = auth_password)
+        response = yield Task(async_client.fetch, request)
+        body = json.loads( response.body.strip())
+        ret =  body.get('response')
         logging.info('result: %s' % str(ret))
-    
+        
+
     def get_params(self):
         """
             two containers may be with a host_ip
@@ -73,11 +80,7 @@ class ContainerCluster_Action_Base(Abstract_Async_Thread):
             container_info = self.zkOper.retrieve_container_node_value(self.cluster, contaier_ip)
             container_name = container_info.get('containerName')
             host_ip = container_info.get('hostIp')
-            if host_ip in params:
-                container_name_list.append(params[host_ip])
-                container_name_list.append(container_name)
-                params[host_ip] = container_name_list
-            else:
-                params.setdefault(host_ip, container_name)
+            container_name_list.append(container_name)
+            params[host_ip] = container_name_list
         return params
         
