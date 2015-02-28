@@ -27,7 +27,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
     
     def create(self, arg_dict):
         _containerClusterName = arg_dict.get('containerClusterName')
-        exists = self.zkOper.check_containerCluster_exists(_containerClusterName)
+        exists = self.zkOper.check_containerCluster_exists(containerClusterName)
         if exists:
             raise CommonException('containerCluster %s has existed, choose another containerCluster name' % containerClusterName)
         containerCluster_create_action = ContainerCluster_create_Action(arg_dict)
@@ -44,7 +44,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
     def destory(self, containerClusterName):
         if not containerClusterName:
             raise CommonException('param not correct, no containerClusterName param')            
-        exists = self.zkOper.check_containerCluster_exists(_containerClusterName)
+        exists = self.zkOper.check_containerCluster_exists(containerClusterName)
         if not exists:
             raise CommonException('containerCluster %s not existe, no need to remove' % containerClusterName)
         containerCluster_destroy_action = ContainerCluster_destroy_Action(containerClusterName)

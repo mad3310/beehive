@@ -12,7 +12,6 @@ from tornado.gen import engine, Task
 from tornado.httpclient import HTTPRequest, AsyncHTTPClient
 from common.abstractAsyncThread import Abstract_Async_Thread
 from utils import _retrieve_userName_passwd
-from utils.autoutil import http_post
 
 class ContainerCluster_Action_Base(Abstract_Async_Thread):
     
@@ -26,7 +25,9 @@ class ContainerCluster_Action_Base(Abstract_Async_Thread):
             logging.info('do cluster %s ' % self.action)
             self._issue_action()
         except:
-            self.threading_exception_queue.put(sys.exc_info())
+#            self.threading_exception_queue.put(sys.exc_info())
+            import traceback
+            logging.error( str(traceback.format_exc()) )
     
     def _issue_action(self):
         params = self.get_params()
@@ -56,14 +57,18 @@ class ContainerCluster_Action_Base(Abstract_Async_Thread):
     def post(self, host_ip, container_name, admin_user, admin_passwd):
         args = {}
         args.setdefault('containerName', container_name)
-        request_uri = 'http://%s:%s/container/%s' % (host_ip, options.port, self.action)
-        logging.info('post-----  url: %s, \n body: %s' % ( request_uri, str (args) ) )
-        request = HTTPRequest(url=requesturi, method='POST', body=urllib.urlencode(args), connect_timeout=40, \
-                              request_timeout=40, auth_username = auth_username, auth_password = auth_password)
-        response = yield Task(async_client.fetch, request)
-        body = json.loads( response.body.strip())
-        ret =  body.get('response')
-        logging.info('result: %s' % str(ret))
+        async_client = AsyncHTTPClient()
+        try:
+            request_uri = 'http://%s:%s/container/%s' % (host_ip, options.port, self.action)
+            logging.info('post-----  url: %s, \n body: %s' % ( request_uri, str (args) ) )
+            request = HTTPRequest(url=requesturi, method='POST', body=urllib.urlencode(args), connect_timeout=40, \
+                                  request_timeout=40, auth_username = auth_username, auth_password = auth_password)
+            response = yield Task(async_client.fetch, request)
+            body = json.loads( response.body.strip())
+            ret =  body.get('response')
+            logging.info('result: %s' % str(ret))
+        finally:
+            async_client.close()
         
 
     def get_params(self):
