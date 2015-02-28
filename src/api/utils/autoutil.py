@@ -69,10 +69,6 @@ def async_http_post(url, body={}, _connect_timeout=40.0, _request_timeout=40.0, 
         response = yield Task(async_client.fetch, request)
         return_dict = json.loads( response.body.strip())
         logging.info('POST result :%s' % str(return_dict))
-        
-    except Exception, e:
-        logging.error(str(e))
-        return e
     finally:
         async_client.close()
 

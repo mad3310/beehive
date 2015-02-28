@@ -9,10 +9,9 @@ import urllib
 import json
 
 from tornado.options import options
-from tornado.gen import engine, Task
-from tornado.httpclient import HTTPRequest, AsyncHTTPClient
 from common.abstractAsyncThread import Abstract_Async_Thread
 from utils import _retrieve_userName_passwd
+from utils.autoutil import async_http_post
 
 
 class ContainerCluster_Action_Base(Abstract_Async_Thread):
@@ -46,22 +45,12 @@ class ContainerCluster_Action_Base(Abstract_Async_Thread):
             logging.info('container_ip_list:%s' % str(container_ip_list) )
             self.zkOper.recover_ips_to_pool(container_ip_list)
 
-    @engine
     def post(self, host_ip, container_name, admin_user, admin_passwd):
         args = {}
         args.setdefault('containerName', container_name)
-        async_client = AsyncHTTPClient()
-        try:
-            request_uri = 'http://%s:%s/container/%s' % (host_ip, options.port, self.action)
-            logging.info('post-----  url: %s, \n body: %s' % ( request_uri, str (args) ) )
-            request = HTTPRequest(url=request_uri, method='POST', body=urllib.urlencode(args), connect_timeout=40, \
-                                  request_timeout=40, auth_username = admin_user, auth_password = admin_passwd)
-            response = yield Task(async_client.fetch, request)
-            body = json.loads( response.body.strip())
-            ret =  body.get('response')
-            logging.info('result: %s' % str(ret))
-        finally:
-            async_client.close()
+        request_uri = 'http://%s:%s/container/%s' % (host_ip, options.port, self.action)
+        logging.info('post-----  url: %s, \n body: %s' % ( request_uri, str (args) ) )
+        async_http_post(request_uri, body=args, auth_username=admin_user, auth_password=admin_passwd)
 
     def get_params(self):
         """
