@@ -507,6 +507,54 @@ class ContainerLoad(object):
         under_oom_value = re.findall('.*under_oom (\d)$', value)[0]
         return int(under_oom_value)
 
+    def get_memory_stat_value(self):
+        value = self.get_file_value(self.memory_stat_path)
+        return value.split('\n')
+
+    def get_cpuacct_stat_value(self):
+        value = self.get_file_value(self.cpuacct_stat_path)
+        return value.split('\n')
+
+    def get_memory_stat_item(self):
+        mem_stat_dict = {}
+        mem_stat_items = self.get_memory_stat_value()
+        for item in mem_stat_items:
+            if 'total_rss' in item:
+                total_rss = item.split(' ')[1]
+                mem_stat_dict.setdefault('total_rss', total_rss)
+            elif 'total_swap ' in item:
+                total_swap = item.split(' ')[1]
+                mem_stat_dict.setdefault('total_swap', total_swap)
+            elif 'total_cache ' in item:
+                total_cache = item.split(' ')[1]
+                mem_stat_dict.setdefault('total_cache', total_cache)
+        return mem_stat_dict
+
+    def get_cpuacct_stat_item(self):
+        cpuacct_stat_dict = {}
+        cpuacct_stat_items = self.get_cpuacct_stat_value()
+        for item in cpuacct_stat_items:
+            if 'user' in item:
+                user = item.split(' ')[1]
+                cpuacct_stat_dict.setdefault('user', user)
+            elif 'system ' in item:
+                system = item.split(' ')[1]
+                cpuacct_stat_dict.setdefault('system', system)
+        return cpuacct_stat_dict
+
+    def get_network_io(self):
+        network_io_dict, RX_SUM, TX_SUM = {}, 0, 0
+        ivk_cmd = InvokeCommand()
+        cmd = "sh %s %s" % (options.network_io_sh, self.container_id)
+        content = ivk_cmd._runSysCmd(cmd)[0]
+        RTX_list = re.findall('.*peth0\s+\d+\s+\d+\s+(\d+)\s+\d+\s+\d+\s+\d+\s+(\d+).*', content)
+        for RX, TX in RTX_list:
+            RX_SUM += int(RX)
+            TX_SUM += int(TX)
+        network_io_dict.setdefault('RX', int(RX_SUM/1024/1024))
+        network_io_dict.setdefault('TX', int(TX_SUM/1024/1024))
+        return network_io_dict
+
     def get_oom_kill_disable_value(self): 
         value = self.get_file_value(self.under_oom_path)
         under_oom_value = re.findall('oom_kill_disable (\d)\\nunder_oom.*', value)[0]
