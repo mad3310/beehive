@@ -20,7 +20,7 @@ handlers = [
     (r"/serverCluster/containers/disk", GetherServersContainersDiskLoadHandler),
     (r"/serverCluster/containers/memory/add", AddServersMemoryHandler),
     (r"/server/resource", CollectServerResHandler),
-    (r"/server/containers/resource", CollectContainerResHandler),
+    (r"inner/server/containers/resource", CollectContainerResHandler),
     (r"/server/containers/memory/add", AddServerMemoryHandler),
     (r"/server/containers/under_oom", SwitchServerUnderoomHandler),
     (r"/server/containers/disk", GetherServerContainersDiskLoadHandler),
@@ -50,6 +50,6 @@ handlers = [
     (r"/monitor/status", ContainerStatus),
     (r"/monitor/serverCluster/containers/memory", CheckServersContainersMemLoad),
     (r"/monitor/serverCluster/containers/under_oom", CheckServersContainersUnderOom),
-    (r"/monitor/server/containers/memory", CheckServerContainersMemLoad),
-    (r"/monitor/server/containers/under_oom", CheckServerContainersUnderOom),
+    (r"/inner/monitor/server/containers/memory", CheckServerContainersMemLoad),
+    (r"/inner/monitor/server/containers/under_oom", CheckServerContainersUnderOom),
 ]

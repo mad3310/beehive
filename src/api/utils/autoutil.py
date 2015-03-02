@@ -13,6 +13,31 @@ from tornado.gen import engine, Task
 from tornado.httpclient import HTTPRequest, AsyncHTTPClient
 from utils import _request_fetch
 
+
+class FuncThread(threading.Thread):
+    def __init__(self, func, *params, **paramMap):
+        threading.Thread.__init__(self)
+        self.func = func
+        self.params = params
+        self.paramMap = paramMap
+        self.rst = None
+        self.finished = False
+
+    def run(self):
+        self.rst = self.func(*self.params, **self.paramMap)
+        self.finished = True
+
+    def getResult(self):
+        return self.rst
+
+    def isFinished(self):
+        return self.finished
+
+def doInThread(func, *params, **paramMap):
+    ft = FuncThread(func, *params, **paramMap)
+    ft.start()
+    return ft
+
 def getHostIp():
     out_ip = os.popen("ifconfig $(route -n|grep UG|awk '{print $NF}')|grep 'inet addr'|awk '{print $2}'").read()
     ip = out_ip.split('\n')[0]

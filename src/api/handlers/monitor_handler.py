@@ -75,7 +75,7 @@ class CheckServersContainersMemLoad(APIHandler):
         server_cons_mem_load = {}
         try:
             for server in server_list:
-                requesturi = 'http://%s:%s/monitor/server/containers/memory' % (server, options.port)
+                requesturi = 'http://%s:%s/inner/monitor/server/containers/memory' % (server, options.port)
                 logging.info('server requesturi: %s' % str(requesturi))
                 response = yield Task(async_client.fetch, requesturi)
                 logging.info('mem response body: %s' % str(response.body) )
@@ -131,7 +131,7 @@ class CheckServersContainersUnderOom(APIHandler):
         server_cons_under_oom = {}
         try:
             for server in server_list:
-                requesturi = 'http://%s:%s/monitor/server/containers/under_oom' % (server, options.port)
+                requesturi = 'http://%s:%s/inner/monitor/server/containers/under_oom' % (server, options.port)
                 logging.debug('server requesturi: %s' % str(requesturi))
                 response = yield Task(async_client.fetch, requesturi)
                 body = json.loads(response.body.strip())

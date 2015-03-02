@@ -9,7 +9,7 @@ from base import APIHandler
 from utils.exceptions import HTTPAPIError
 from tornado_letv.tornado_basic_auth import require_basic_auth
 from tornado.web import asynchronous
-from container.containerOpers import Container_Opers
+from container.containerOpers import Container_Opers, ContainerLoad
 from componentProxy.componentDockerModelFactory import ComponentDockerModelFactory
 
 
@@ -206,9 +206,11 @@ class RemoveContainerHandler(APIHandler):
 @require_basic_auth
 class GetherContainerMemeoyHandler(APIHandler):
     
+    container_opers = Container_Opers()
+    
     def get(self, container_name):
 
-        exists = check_container_exists(container_name)
+        exists = self.container_opers.check_container_exists(container_name)
         if not exists:
             massage = {}
             massage.setdefault("message", "container %s not exists" % container_name)
@@ -229,10 +231,12 @@ class GetherContainerMemeoyHandler(APIHandler):
 @require_basic_auth
 class GetherContainerCpuacctHandler(APIHandler):
     
+    container_opers = Container_Opers()
+    
     @asynchronous
     def get(self, container_name):
 
-        exists = check_container_exists(container_name)
+        exists = self.container_opers.check_container_exists(container_name)
         if not exists:
             massage = {}
             massage.setdefault("message", "container %s not exists" % container_name)
@@ -253,9 +257,11 @@ class GetherContainerCpuacctHandler(APIHandler):
 @require_basic_auth
 class GetherContainerNetworkioHandler(APIHandler):
     
+    container_opers = Container_Opers()
+    
     def get(self, container_name):
 
-        exists = check_container_exists(container_name)
+        exists = self.container_opers.check_container_exists(container_name)
         if not exists:
             massage = {}
             massage.setdefault("message", "container %s not exists" % container_name)
