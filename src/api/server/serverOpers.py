@@ -6,12 +6,7 @@ Created on Sep 10, 2014
 
 @author: root
 '''
-import sys
-import commands
 import logging
-import traceback
-import os
-import re
 
 from docker_letv.dockerOpers import Docker_Opers
 from zk.zkOpers import ZkOpers

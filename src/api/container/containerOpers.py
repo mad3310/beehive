@@ -12,6 +12,7 @@ import os
 import sys
 import logging
 import traceback
+import commands
 import pexpect
 import re
 
