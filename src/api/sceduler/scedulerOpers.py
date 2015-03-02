@@ -54,5 +54,4 @@ class Sceduler_Opers(object):
     def __create_worker_exception_handler(self):
         exception_hanlder_worker = Thread_Exception_Handler_Worker()
         exception_hanlder_worker.start()
-        
-        
+
