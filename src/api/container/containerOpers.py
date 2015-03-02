@@ -16,6 +16,7 @@ import commands
 import pexpect
 import re
 
+from tornado.options import options
 from common.abstractContainerOpers import Abstract_Container_Opers
 from common.abstractAsyncThread import Abstract_Async_Thread
 from docker_letv.dockerOpers import Docker_Opers
@@ -23,6 +24,7 @@ from container.container_module import Container
 from utils.exceptions import CommonException, RetryException
 from utils.log import _log_docker_run_command
 from utils import _is_ip, _is_mask, _mask_to_num
+from utils.invokeCommand import InvokeCommand
 from zk.zkOpers import ZkOpers
 from docker import Client
 
