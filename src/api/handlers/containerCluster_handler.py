@@ -9,11 +9,15 @@ Created on Sep 8, 2014
 import kazoo
 import logging
 import traceback
+import json
 
 from tornado.web import asynchronous
 from tornado.gen import engine, Task
-from base import APIHandler
+from tornado.httpclient import HTTPRequest, AsyncHTTPClient
+from tornado.options import options
 from tornado_letv.tornado_basic_auth import require_basic_auth
+from base import APIHandler
+from utils import _retrieve_userName_passwd
 from utils.exceptions import HTTPAPIError
 from containerCluster.containerClusterOpers import ContainerCluster_Opers, GetClustersChanges
 from componentProxy.db.mysql.mclusterOper import MclusterManager

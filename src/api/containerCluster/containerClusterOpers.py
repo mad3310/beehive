@@ -170,47 +170,14 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
                 check_rst_dict.setdefault('error_msg', 'create containers failed!')
             
             return check_rst_dict
-
-    def __rewrite_config(self, conf_dict):
-        check_mcluster = conf_dict.get('check_mcluster')
-        if check_mcluster:
-            conf_dict['check_mcluster'] = bool(check_mcluster)
-        
-        is_res_verify = conf_dict.get('is_res_verify')
-        if is_res_verify:
-            conf_dict['is_res_verify'] = bool(is_res_verify)
-        
-        mem_free_limit = conf_dict.get('mem_free_limit')
-        if mem_free_limit:
-            conf_dict['mem_free_limit'] = int(mem_free_limit)
-
-        nodeCount = conf_dict.get('nodeCount')
-        if nodeCount:
-            conf_dict['nodeCount'] = int(nodeCount)
-        return conf_dict
   
     def config(self, conf_dict={}):
         try:
             error_msg = ''
             logging.info('config args: %s' % conf_dict)
-            '''
-            @todo: remove normal and vip type, because the config item removed from zk.
-            '''
-            if 'type' in conf_dict:
-                _type = conf_dict.pop('type')
-                if _type == 'normal':
-                    conf_record = self.zkOper.retrieve_mcluster_info_from_config()
-                    re_conf_dict = self.__rewrite_conf_info(conf_dict, conf_record)
-                    self.zkOper.writeClusterNormalConf(re_conf_dict)
-                elif _type == 'vip':
-                    conf_record = self.zkOper.retrieve_mclustervip_info_from_config()
-                    re_conf_dict = self.__rewrite_conf_info(conf_dict, conf_record)
-                    self.zkOper.writeClusterVipConf(re_conf_dict)
-            elif 'servers' in conf_dict:
+
+            if 'servers' in conf_dict:
                 error_msg = self.__update_white_list(conf_dict)
-            elif 'nodeCount' in conf_dict:
-                conf_dict = self.__rewrite_config(conf_dict)
-                self.zkOper.writeConfigVerify(conf_dict)
             else:
                 error_msg = 'the key of the params is not correct'
         except:
