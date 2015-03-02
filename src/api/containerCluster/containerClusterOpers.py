@@ -260,9 +260,6 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         cluster_zk_info = {}
         container_ip_list = self.zkOper.retrieve_container_list(cluster_name)
         
-        if None == cluster_zk_info or {} == cluster_zk_info:
-            return cluster_zk_info
-        
         for container_ip in container_ip_list:
             container_node = {}
             create_info = self.zkOper.retrieve_container_node_value(cluster_name, container_ip)

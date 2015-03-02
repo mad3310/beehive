@@ -29,32 +29,24 @@ class Server_Opers(Abstract_Async_Thread):
     container_opers = Container_Opers()
     
     def update(self):
-        try:
-            logging.info('update server!')
-            host_ip = getHostIp()
-            logging.info('host_ip: %s' % host_ip)
-            server = UpdateServer(host_ip)
-            server.update()
-        except:
-            logging.info( str(traceback.format_exc()) )
-            self.threading_exception_queue.put(sys.exc_info())
+        logging.info('update server!')
+        host_ip = getHostIp()
+        logging.info('host_ip: %s' % host_ip)
+        server = UpdateServer(host_ip)
+        server.update()
 
     def get_all_containers_mem_load(self):
-        try:
-            load_dict = {}
-            containers = self.container_opers.get_all_containers(False)
-            for container in containers:
-                load = {}
-                conl = ContainerLoad(container)
-                mem_load = conl.get_mem_load()
-                memsw_load = conl.get_memsw_load()
-                load.update(mem_load)
-                load.update(memsw_load)
-                load_dict.setdefault(container, load)
-            return load_dict
-        except:
-            logging.info( str(traceback.format_exc()) )
-            self.threading_exception_queue.put(sys.exc_info())
+        load_dict = {}
+        containers = self.container_opers.get_all_containers(False)
+        for container in containers:
+            load = {}
+            conl = ContainerLoad(container)
+            mem_load = conl.get_mem_load()
+            memsw_load = conl.get_memsw_load()
+            load.update(mem_load)
+            load.update(memsw_load)
+            load_dict.setdefault(container, load)
+        return load_dict
 
     def get_all_containers_under_oom(self):
         containers = self.container_opers.get_all_containers(False)
@@ -73,69 +65,53 @@ class Server_Opers(Abstract_Async_Thread):
         return list ( set(host_cons) & set(container_name_list) )
 
     def open_containers_under_oom(self, container_name_list):
-        try:
-            result = {}
-            containers = self._get_containers(container_name_list)
-            for container in containers:
-                conl = ContainerLoad(container)
-                ret = conl.open_container_under_oom()
-                if not ret:
-                    logging.error('container %s under oom value open failed' % container)
-                result.setdefault(container, ret)
-            return result
-        except:
-            logging.info( str(traceback.format_exc()) )
-            self.threading_exception_queue.put(sys.exc_info())    
+        result = {}
+        containers = self._get_containers(container_name_list)
+        for container in containers:
+            conl = ContainerLoad(container)
+            ret = conl.open_container_under_oom()
+            if not ret:
+                logging.error('container %s under oom value open failed' % container)
+            result.setdefault(container, ret)
+        return result
 
     def shut_containers_under_oom(self, container_name_list):
-        try:
-            result = {}
-            containers = self._get_containers(container_name_list)
-            for container in containers:
-                conl = ContainerLoad(container)
-                ret = conl.shut_container_under_oom()
-                if not ret:
-                    logging.error('container %s under oom value shut down failed' % container)
-                result.setdefault(container, ret)
-            return result
-        except:
-            logging.info( str(traceback.format_exc()) )
-            self.threading_exception_queue.put(sys.exc_info()) 
+        result = {}
+        containers = self._get_containers(container_name_list)
+        for container in containers:
+            conl = ContainerLoad(container)
+            ret = conl.shut_container_under_oom()
+            if not ret:
+                logging.error('container %s under oom value shut down failed' % container)
+            result.setdefault(container, ret)
+        return result
 
     def add_containers_memory(self, container_name_list):
-        try:
-            add_ret = {}
-            containers = self._get_containers(container_name_list)
-            for container in containers:
-                con = Container(container)
-                inspect_limit_mem = con.memory()
-                conl = ContainerLoad(container)
-                con_limit_mem = conl.get_con_limit_mem()
-                if con_limit_mem == inspect_limit_mem *2:
-                    add_ret.setdefault(container, 'done before, do nothing!')
-                    continue
-                ret = conl.double_mem()
-                add_ret.setdefault(container, ret)
-            return add_ret
-        except:
-            logging.info( str(traceback.format_exc()) )
-            self.threading_exception_queue.put(sys.exc_info())
+        add_ret = {}
+        containers = self._get_containers(container_name_list)
+        for container in containers:
+            con = Container(container)
+            inspect_limit_mem = con.memory()
+            conl = ContainerLoad(container)
+            con_limit_mem = conl.get_con_limit_mem()
+            if con_limit_mem == inspect_limit_mem *2:
+                add_ret.setdefault(container, 'done before, do nothing!')
+                continue
+            ret = conl.double_mem()
+            add_ret.setdefault(container, ret)
+        return add_ret
 
     def get_containers_disk_load(self, container_name_list):
-        try:
-            result = {}
-            containers = self._get_containers(container_name_list)
-            for container in containers:
-                load = {}
-                conl = ContainerLoad(container)
-                root_mnt_size, mysql_mnt_size = conl.get_sum_disk_load()
-                load.setdefault('root_mount', root_mnt_size)
-                load.setdefault('mysql_mount', mysql_mnt_size)
-                result.setdefault(container, load)
-            return result
-        except:
-            logging.info( str(traceback.format_exc()) )
-            self.threading_exception_queue.put(sys.exc_info())
+        result = {}
+        containers = self._get_containers(container_name_list)
+        for container in containers:
+            load = {}
+            conl = ContainerLoad(container)
+            root_mnt_size, mysql_mnt_size = conl.get_sum_disk_load()
+            load.setdefault('root_mount', root_mnt_size)
+            load.setdefault('mysql_mount', mysql_mnt_size)
+            result.setdefault(container, load)
+        return result
 
 
 class ContainerLoad(object):

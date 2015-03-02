@@ -158,7 +158,7 @@ class GetherServersContainersDiskLoadHandler(APIHandler):
         
         auth_username, auth_password = _retrieve_userName_passwd()
         async_client = AsyncHTTPClient()
-        server_list = self.zkOpers.retrieve_servers_white_list()
+        server_list = self.zkOper.retrieve_servers_white_list()
 
         servers_cons_disk_load, cons_disk_load = {}, {}
         try:
@@ -206,7 +206,7 @@ class AddServersMemoryHandler(APIHandler):
         
         auth_username, auth_password = _retrieve_userName_passwd()
         async_client = AsyncHTTPClient()
-        server_list = self.zkOpers.retrieve_servers_white_list()
+        server_list = self.zkOper.retrieve_servers_white_list()
         
         add_mem_result, ret = {}, {}
         try:

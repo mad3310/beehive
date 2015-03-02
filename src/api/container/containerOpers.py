@@ -268,7 +268,6 @@ class Container_create_action(object):
         
         return ip,mask
         
-        
     def _get_container_info(self, docker_model):
         container_name = docker_model.name
         con = Container(container_name)
