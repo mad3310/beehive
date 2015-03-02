@@ -18,13 +18,14 @@ class Sceduler_Opers(object):
     '''
     
     def __init__(self, monitor_timeout=55):
-        '''
-        Constructor
+        '''PeriodicCallback class init  callback has no params
+           so add monitor_timrout  
+        
         '''
         
         self.monitor_timeout = monitor_timeout
         self.thread_exception_hanlder(5)
-        self.sced_monitor_handler(50)
+        self.sced_monitor_handler(55)
 
     def sced_monitor_handler(self, action_timeout = 30):
         """Create a periodic callback that tries to access async monitor interface
@@ -34,7 +35,7 @@ class Sceduler_Opers(object):
         
         if action_timeout > 0:
             _monitor_async_t = PeriodicCallback(self.__create_worker_check_monitor,
-                action_timeout * 1000)
+                                                action_timeout * 1000)
             _monitor_async_t.start()
     
     '''
@@ -47,7 +48,7 @@ class Sceduler_Opers(object):
     def thread_exception_hanlder(self, action_timeout = 5):
         if action_timeout > 0:
             _exception_async_t = PeriodicCallback(self.__create_worker_exception_handler,
-                action_timeout * 1000)
+                                                  action_timeout * 1000)
             _exception_async_t.start()
 
     def __create_worker_exception_handler(self):

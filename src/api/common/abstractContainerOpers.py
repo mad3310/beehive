@@ -10,7 +10,7 @@ Created on 2013-7-21
 
 class Abstract_Container_Opers(object):
     
-    zkOper = ZkOpers('127.0.0.1', 2181)
+    zkOper = ZkOpers()
     
     @abstractmethod
     def create(self, arg_dict):

@@ -11,7 +11,7 @@ from tornado.options import options
 
 class CheckSync():
     
-    zkOpers = ZkOpers('127.0.0.1', 2181)
+    zkOpers = ZkOpers()
     config_file_obj = ConfigFileOpers()
 
     '''

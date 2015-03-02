@@ -117,7 +117,7 @@ class Server_Opers(Abstract_Async_Thread):
 '''
 class UpdateServer(object):
 
-    zkOper = ZkOpers('127.0.0.1',2181)
+    zkOper = ZkOpers()
     docker_opers = Docker_Opers()
     container_opers = Container_Opers()
 
