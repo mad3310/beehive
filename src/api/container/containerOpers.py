@@ -12,9 +12,11 @@ import os
 import sys
 import logging
 import traceback
+import commands
 import pexpect
 import re
 
+from tornado.options import options
 from common.abstractContainerOpers import Abstract_Container_Opers
 from common.abstractAsyncThread import Abstract_Async_Thread
 from docker_letv.dockerOpers import Docker_Opers
@@ -22,6 +24,7 @@ from container.container_module import Container
 from utils.exceptions import CommonException, RetryException
 from utils.log import _log_docker_run_command
 from utils import _is_ip, _is_mask, _mask_to_num
+from utils.invokeCommand import InvokeCommand
 from zk.zkOpers import ZkOpers
 from docker import Client
 
@@ -114,6 +117,7 @@ class Container_create_action(object):
     
     def create(self, docker_model):
         
+        self.__make_mount_dir(docker_model)
         _log_docker_run_command(docker_model)
         '''
         orginal:
@@ -155,6 +159,15 @@ class Container_create_action(object):
         container_node_info = self._get_container_info(docker_model)
         logging.info('get container info: %s' % str(container_node_info))
         self.zkOper.write_container_node_info('started', container_node_info)
+
+    def __make_mount_dir(self, docker_model):
+        re_bind_arg = {}
+        binds = docker_model.binds
+        component_type = docker_model.component_type
+        for con_dir,server_dir in binds.items():
+            if 'mclusternode' == component_type and '/data/mcluster_data' in k:
+                if not os.path.exists(server_dir):
+                    os.makedirs(server_dir)
 
     def __check_create_status(self, docker_model):
         container_name = docker_model.name

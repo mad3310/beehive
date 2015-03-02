@@ -16,7 +16,7 @@ TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 
 class CheckStatusBase(object):
     
-    zkOper = ZkOpers('127.0.0.1',2181)
+    zkOper = ZkOpers()
     
     def __init__(self):
         if self.__class__ == CheckStatusBase:

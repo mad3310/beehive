@@ -27,7 +27,7 @@ class IpOpers(object):
     store_illegal_ips_queue = Queue.Queue()
     store_all_ips_queue = Queue.Queue()
 
-    zkOper = ZkOpers('127.0.0.1', 2181)
+    zkOper = ZkOpers()
     
     docker_opers = Docker_Opers()
     

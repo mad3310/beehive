@@ -6,12 +6,7 @@ Created on Sep 10, 2014
 
 @author: root
 '''
-import sys
-import commands
 import logging
-import traceback
-import os
-import re
 
 from docker_letv.dockerOpers import Docker_Opers
 from zk.zkOpers import ZkOpers
@@ -122,7 +117,7 @@ class Server_Opers(Abstract_Async_Thread):
 '''
 class UpdateServer(object):
 
-    zkOper = ZkOpers('127.0.0.1',2181)
+    zkOper = ZkOpers()
     docker_opers = Docker_Opers()
     container_opers = Container_Opers()
 

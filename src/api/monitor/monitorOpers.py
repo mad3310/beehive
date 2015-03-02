@@ -6,7 +6,7 @@ Created on 2013-7-21
 @author: asus
 '''
 
-from resource_letv.statusOpers import CheckContainersUnderOom, CheckResIpUsable, CheckResIpNum 
+from statusOpers import CheckContainersUnderOom, CheckResIpUsable, CheckResIpNum 
 
 import logging
 

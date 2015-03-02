@@ -9,7 +9,7 @@ from tornado.options import options
 
 class Abstract_Async_Thread(threading.Thread):
     
-    zkOper = ZkOpers('127.0.0.1',2181)
+    zkOper = ZkOpers()
     
     threading_exception_queue = Threading_Exception_Queue()
     

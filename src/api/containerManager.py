@@ -30,16 +30,17 @@ class Application(tornado.web.Application):
 def main():
     config_path = os.path.join(options.base_dir, "config")
     logging.config.fileConfig(config_path + '/logging.conf')
+
+    cs = CheckSync()
+    cs.sync()
+
     tornado.options.parse_command_line()
     http_server = tornado.httpserver.HTTPServer(Application())
     http_server.listen(options.port)
     
-    tornado.ioloop.IOLoop.instance().start()
-    
-    cs = CheckSync()
-    cs.sync()
-    
     Sceduler_Opers()
+    tornado.ioloop.IOLoop.instance().start()
+
 
 if __name__ == "__main__":
     try:
