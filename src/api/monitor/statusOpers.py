@@ -10,6 +10,7 @@ from zk.zkOpers import ZkOpers
 from resource_letv.ipOpers import IpOpers
 from server.serverOpers import Server_Opers
 from utils import _retrieve_userName_passwd
+from utils.autoutil import getHostIp
 
 TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 
