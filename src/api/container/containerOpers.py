@@ -165,7 +165,7 @@ class Container_create_action(object):
         binds = docker_model.binds
         component_type = docker_model.component_type
         for con_dir,server_dir in binds.items():
-            if 'mclusternode' == component_type and '/data/mcluster_data' in k:
+            if 'mclusternode' == component_type and '/data/mcluster_data' in con_dir:
                 if not os.path.exists(server_dir):
                     os.makedirs(server_dir)
 
