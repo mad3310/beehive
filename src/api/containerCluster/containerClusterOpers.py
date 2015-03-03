@@ -136,10 +136,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         create_info = con.create_info(container_node_value)
         return create_info
 
-    '''
-    @todo: why reason that need check_create_status? same as check method?
-    '''
-    def check_create_status(self, containerClusterName):
+    def create_status(self, containerClusterName):
         failed_rst = {'code':"000001"}
         succ_rst = {'code':"000000"}
         lack_rst = {'code':"000002"}
@@ -170,7 +167,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
                 check_rst_dict.setdefault('error_msg', 'create containers failed!')
             
             return check_rst_dict
-  
+
     def config(self, conf_dict={}):
         try:
             error_msg = ''

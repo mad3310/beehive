@@ -195,7 +195,7 @@ class CheckCreateClusterStatusHandler(APIHandler):
 
     def get(self, containerClusterName):        
         check_result = ''
-        check_result =  self.containerClusterOpers.check_create_status(containerClusterName)
+        check_result =  self.containerClusterOpers.create_status(containerClusterName)
         
         logging.info('check_result : %s, type: %s' % (str(check_result), type(check_result)) )
         if check_result.get('code') == '000002':
