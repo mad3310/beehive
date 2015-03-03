@@ -70,7 +70,7 @@ class CheckServersContainersMemLoad(APIHandler):
     def get(self):
         
         async_client = AsyncHTTPClient()
-        server_list = self.zkOpers.retrieve_servers_white_list()
+        server_list = self.zkOper.retrieve_servers_white_list()
         
         server_cons_mem_load = {}
         try:

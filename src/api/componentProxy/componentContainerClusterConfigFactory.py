@@ -18,6 +18,7 @@ class ComponentContainerClusterConfigFactory(object):
         '''
         
     def retrieve_config(self, args):
+        config = None
         _component_type = args.get('componentType')
         if "mclustervip" == _component_type:
             config = GbalancerContainerClusterConfig(args)

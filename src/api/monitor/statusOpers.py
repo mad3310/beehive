@@ -10,6 +10,7 @@ from zk.zkOpers import ZkOpers
 from resource_letv.ipOpers import IpOpers
 from server.serverOpers import Server_Opers
 from utils import _retrieve_userName_passwd
+from utils.autoutil import *
 
 TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 
@@ -109,7 +110,10 @@ class CheckResIpUsable(CheckStatusBase):
             '''
             @todo: if occurs exception, the code will be continue run?
             '''
-            logging.error( str(traceback.format_exc()) )
+            error_msg = str(traceback.format_exc())
+            logging.error(error_msg)
+            failed_count = 1
+            error_record.append(error_msg)
             
             
         alarm_level = self.retrieve_alarm_level(0, 0, failed_count)
@@ -150,8 +154,11 @@ class CheckContainersUnderOom(CheckStatusBase):
             '''
             @todo: exception will continue run? the zk will record error message or right message?
             '''
-            logging.error( str(traceback.format_exc()) )
-            
+            error_msg = str(traceback.format_exc())
+            logging.error(error_msg)
+            failed_count = 1
+            error_record.append(error_msg)
+        
         alarm_level = self.retrieve_alarm_level(0, 0, failed_count)
         super(CheckContainersUnderOom, self).write_status(0, 0, failed_count, 
                                                           alarm_level, error_record,
@@ -167,21 +174,14 @@ class CheckContainersUnderOom(CheckStatusBase):
     @todo: sync invoke these interface, will be block other server process?
     '''
     def _get(self):
-        try:
-            rst = {}
-            host_ip = getHostIp()
-            logging.info('host ip :%s' % host_ip)
-            adminUser, adminPasswd = _retrieve_userName_passwd()
-            uri = 'http://%s:%s/monitor/serverCluster/containers/under_oom' % (host_ip, options.port)
-            logging.info('get uri :%s' % uri)
-            ret = http_get(uri, _connect_timeout=40.0, _request_timeout=40.0, auth_username = adminUser, auth_password = adminPasswd)
-            rst = ret.get('response')
-        except:
-            error_msg = str(traceback.format_exc())
-            logging.error(error_msg)
-            rst.setdefault('code error', error_msg)
-        finally:
-            return rst
+        rst = {}
+        host_ip = getHostIp()
+        logging.info('host ip :%s' % host_ip)
+        adminUser, adminPasswd = _retrieve_userName_passwd()
+        uri = 'http://%s:%s/monitor/serverCluster/containers/under_oom' % (host_ip, options.port)
+        logging.info('get uri :%s' % uri)
+        ret = http_get(uri, _connect_timeout=40.0, _request_timeout=40.0, auth_username = adminUser, auth_password = adminPasswd)
+        return ret.get('response')
 
 
 class CheckContainersMemLoad(CheckStatusBase):

@@ -14,7 +14,7 @@ class IPHandler(APIHandler):
     
     ip_opers = IpOpers()
     
-    #curl --user root:root -d"ipSegment=10.200.85.xxx&&ipCount=50" http://localhost:8888/containerCluster/ips
+    #curl --user root:root -d"ipSegment=10.200.85.xxx&&ipCount=50" http://localhost:8888/admin/ips
     def post(self):
         args = self.get_all_arguments()
         try:
