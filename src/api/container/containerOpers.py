@@ -123,7 +123,7 @@ class Container_create_action(Abstract_Async_Thread):
 
     def __issue_create_action(self):
         
-        self.__make_mount_dir(self.docker_model)
+        self.__make_mount_dir()
         _log_docker_run_command(self.docker_model)
         '''
         orginal:
@@ -156,13 +156,13 @@ class Container_create_action(Abstract_Async_Thread):
 #                 logging.error(error_message)
 #                 raise CommonException(error_message)
         
-        result = self.__check_create_status(self.docker_model)
+        result = self.__check_create_status()
         if not result:
             error_message = 'the exception of creating container'
             logging.error(error_message)
             raise CommonException(error_message)
         
-        container_node_info = self._get_container_info(self.docker_model)
+        container_node_info = self._get_container_info()
         logging.info('get container info: %s' % str(container_node_info))
         self.zkOper.write_container_node_info('started', container_node_info)
 
