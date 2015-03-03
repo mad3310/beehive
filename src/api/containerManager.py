@@ -38,7 +38,7 @@ def main():
     http_server = tornado.httpserver.HTTPServer(Application())
     http_server.listen(options.port)
     
-    Sceduler_Opers()
+    #Sceduler_Opers()
     tornado.ioloop.IOLoop.instance().start()
 
 
