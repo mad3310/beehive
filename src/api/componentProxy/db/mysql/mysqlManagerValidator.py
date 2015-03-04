@@ -1,6 +1,5 @@
 #-*- coding: utf-8 -*-
 
-import time
 import logging
 from tornado.options import options
 from utils.autoutil import http_get
@@ -10,8 +9,7 @@ class MclusterManagerValidator():
     
     def validate_manager_status(self, container_model_list, num):
         
-        logging.info('wait 5 seconds...')
-        time.sleep(5)
+
         
         while num:
             stat = True

@@ -55,12 +55,18 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         containerCluster_destroy_action.start()
 
     def check(self, containerClusterName):
+        if not self.check_cluster_in_zk(containerClusterName):
+            return 'not exist'
         component_type = self.__get_component_type(containerClusterName)
         cluster_status = {}
         cluster_status = self.component_container_cluster_validator.container_cluster_status_validator(component_type,
                                                                                                        containerClusterName)
         return cluster_status
 
+    def check_cluster_in_zk(self, containerClusterName):
+        container_ip_list = self.zkOper.retrieve_container_list(containerClusterName)
+        return len(container_ip_list) != 0
+        
     def __get_component_type(self, containerClusterName):
         container_ip_list = self.zkOper.retrieve_container_list(containerClusterName)
         container_ip = container_ip_list[0]

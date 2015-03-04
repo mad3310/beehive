@@ -111,11 +111,14 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
 
     def __check_cluster_started(self, component_container_cluster_config):
         container_cluster_name = component_container_cluster_config.container_cluster_name
-        return handleTimeout(__get_cluster_started, 120)
+        return handleTimeout(self.__get_cluster_started, 120, container_cluster_name)
     
     def __get_cluster_started(self, container_cluster_name):
-        uri = '/containerCluster/status/%s' % container_cluster_name
-        ret = http_get(uri)
+        adminUser, adminPasswd = _retrieve_userName_passwd()
+        uri_get = '/containerCluster/status/%s' % container_cluster_name
+        uri = 'http://localhost:%s%s' % (options.port, uri_get)
+        
+        ret = http_get(uri, auth_username=adminUser, auth_password=adminPasswd)
         status = ret.get('response').get('status')
         return status == 'started'
 

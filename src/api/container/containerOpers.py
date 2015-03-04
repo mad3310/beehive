@@ -170,9 +170,9 @@ class Container_create_action(Abstract_Async_Thread):
         re_bind_arg = {}
         binds = self.docker_model.binds
         component_type = self.docker_model.component_type
-        for con_dir,server_dir in binds.items():
-            if 'mclusternode' == component_type and '/data/mcluster_data' in con_dir:
-                if not os.path.exists(con_dir):
+        for server_dir,con_dir in binds.items():
+            if 'mclusternode' == component_type and '/data/mcluster_data' in server_dir:
+                if not os.path.exists(server_dir):
                     os.makedirs(server_dir)
             
             """other component_type have different logic, use elif and else to diff 
