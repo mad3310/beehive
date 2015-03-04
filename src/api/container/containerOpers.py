@@ -405,6 +405,7 @@ class Container_stop_action(Abstract_Async_Thread):
 class Container_destroy_action(Abstract_Async_Thread):
     
     docker_opers = Docker_Opers()
+    container_opers = Container_Opers()
     
     def __init__(self, container_name):
         super(Container_destroy_action, self).__init__()
@@ -433,7 +434,7 @@ class Container_destroy_action(Abstract_Async_Thread):
         if os.path.exists(mount_dir):
             os.system('rm -rf %s' % mount_dir)
             
-        exists = self.docker_opers.check_container_exists(self.container_name)
+        exists = self.container_opers.check_container_exists(self.container_name)
         
         if exists:
             message = 'destroy container %s failed' % self.container_name

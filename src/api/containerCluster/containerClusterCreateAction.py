@@ -71,6 +71,8 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         _component_container_cluster_config = self.component_container_cluster_config_factory.retrieve_config(args)
         args.setdefault('component_config', _component_container_cluster_config)
         
+        self.__create_container_cluser_info(_component_container_cluster_config)
+        
         is_res_verify = _component_container_cluster_config.is_res_verify
         logging.info('is_res_verify : %s' % str(is_res_verify) )
         
@@ -91,7 +93,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         logging.info('show args to get create containers args list: %s' % str(args) )
         container_model_list = self.component_container_model_factory.create(args)
         
-        self.__write_container_cluser_info(_component_container_cluster_config)
+        
         
         self.__dispatch_create_container_task(container_model_list)
         
@@ -114,7 +116,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         elif 'port' == _network_mode:
             ip_port_resource_list = self.port_opers.retrieve_port_resource(containerCount)
         return ip_port_resource_list
-    
+
     def __update_zk_info_when_process_complete(self, _containerClusterName, create_result='failed', error_msg=''):
         if _containerClusterName is None or '' == _containerClusterName:
             raise CommonException('_containerClusterName should be not null,in __updatez_zk_info_when_process_complete')
@@ -122,16 +124,17 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         _container_cluster_info = self.zkOper.retrieve_container_cluster_info(_containerClusterName)
         _container_cluster_info.setdefault('start_flag', create_result)
         _container_cluster_info.setdefault('error_msg', error_msg)
+        _container_cluster_info.setdefault('containerClusterName', _containerClusterName)
         self.zkOper.write_container_cluster_info(_container_cluster_info)
-    
-    def __write_container_cluser_info(self, component_container_cluster_config):
+
+    def __create_container_cluser_info(self, component_container_cluster_config):
         _container_cluster_info = {}
         containerCount = component_container_cluster_config.nodeCount
         containerClusterName = component_container_cluster_config.container_cluster_name
         _container_cluster_info.setdefault('containerCount', containerCount)
         _container_cluster_info.setdefault('containerClusterName', containerClusterName)
         self.zkOper.write_container_cluster_info(_container_cluster_info)
-    
+
     @tornado.gen.engine
     def __dispatch_create_container_task(self, container_model_list):
         http_client = tornado.httpclient.AsyncHTTPClient()

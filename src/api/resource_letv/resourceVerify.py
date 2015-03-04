@@ -32,7 +32,7 @@ class ResourceVerify(object):
             raise CommonException('ips are not enough!')
         
         elect_server = ElectServer()
-        usable_hostip_num_list = elect_server.elect_server_list(_component_container_cluster_config)
+        usable_hostip_num_list = elect_server.elect_server_list(component_container_cluster_config)
         logging.info('usable_hostip_num_list:%s' % str(usable_hostip_num_list))
         
         num = 0
@@ -90,12 +90,12 @@ class ElectServer(object):
     
     zkOper = ZkOpers()
     
-    def elect_server_list(self, _component_container_cluster_config):
+    def elect_server_list(self, component_container_cluster_config):
         score_dict, score_list, ips_result  = {}, [], []
         host_ip_list = self.zkOper.retrieve_servers_white_list()
         available_dict = {}
         for host_ip in host_ip_list:
-            host_score, available_host_num = self.__get_score(host_ip, _component_container_cluster_config)
+            host_score, available_host_num = self.__get_score(host_ip, component_container_cluster_config)
             if host_score != 0 :
                 score_dict.setdefault(host_ip, host_score)
                 available_dict.setdefault(host_ip, available_host_num)
@@ -110,23 +110,23 @@ class ElectServer(object):
                     break
         return ips_result
     
-    def __get_score(self, host_ip, _component_container_cluster_config={}):
+    def __get_score(self, host_ip, component_container_cluster_config={}):
         """
         return score and the num of avaliable hosts
         """
         '''
-        @todo: use _component_container_cluster_config to replace to zkOpers operaion,
+        @todo: use component_container_cluster_config to replace to zkOpers operaion,
         foucs on mem_limit
         what means mem_limit and mem_free_limit?
         '''
         
-        _mem_limit = _component_container_cluster_config.mem_limit
+        _mem_limit = component_container_cluster_config.mem_limit
         mem_limit = _mem_limit/(1024*1024)
         
         server_url = 'http://%s:%s/server/resource' % (host_ip, options.port)
         server_res = http_get(server_url)
         logging.info('server_res: %s' % str(server_res) )
-        mem_free_limit = _component_container_cluster_config.mem_free_limit
+        mem_free_limit = component_container_cluster_config.mem_free_limit
         
         mem_usable = float(server_res["response"]["mem_res"]["free"]) - mem_free_limit/(1024*1024)
         logging.info('mem_usable:%s' %  mem_usable)
