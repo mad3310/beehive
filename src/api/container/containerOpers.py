@@ -149,12 +149,12 @@ class Container_create_action(Abstract_Async_Thread):
         '''
         @todo: need to open these code
         '''
-#         if self.docker_model.use_ip:
-#             init_con_ret = self.set_ip_add_route_retry(3, container_name)
-#             if not init_con_ret:
-#                 error_message = 'set_ip_add_route_retry container failed'
-#                 logging.error(error_message)
-#                 raise CommonException(error_message)
+        if self.docker_model.use_ip:
+            init_con_ret = self.set_ip_add_route_retry(3, container_name)
+            if not init_con_ret:
+                error_message = 'set_ip_add_route_retry container failed'
+                logging.error(error_message)
+                raise CommonException(error_message)
         
         result = self.__check_create_status()
         if not result:
@@ -209,7 +209,10 @@ class Container_create_action(Abstract_Async_Thread):
     def __set_ip_add_route(self, container_name=None):
         timeout = 5
         
-        ip,mask = self.__retrieve_container_ip_mask(container_name)
+        _inspect = self.docker_opers.inspect_container(container_name)
+        con = Container(_inspect)
+        ip = con.ip()
+        mask = con.netmask()
         
         real_route = ''
         for i in range(0,4):
@@ -266,30 +269,6 @@ class Container_create_action(Abstract_Async_Thread):
             raise RetryException(error_message)
         
         return r_list
-
-    '''
-    @todo: 
-    1. check the duplicate with Container's logic? can be remove?
-    '''
-    def __retrieve_container_ip_mask(self, container_name):
-        re_info = self.docker_opers.inspect_container(container_name)
-        for env in re_info['Config']['Env']:
-            if re.match(r"^IP=", env):
-                key, ip = re.split(r"=", env)
-            if re.match(r"^NETMASK=", env):
-                key, mask = re.split(r"=", env)
-                
-        if not _is_ip(ip):
-            error_message = "get IP error: %s" % ip
-            logging.error(error_message)
-            raise RetryException(error_message)
-        
-        if not _is_mask(mask):
-            error_message = "get MASK error: %s" % mask
-            logging.error(error_message)
-            raise RetryException(error_message)
-        
-        return ip,mask
 
     def _get_container_info(self):
         container_name = self.docker_model.name

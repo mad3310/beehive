@@ -18,10 +18,13 @@ from utils import _retrieve_userName_passwd
 from container.container_module import Container
 from zk.zkOpers import ZkOpers
 from containerCluster.baseContainerAction import ContainerCluster_Action_Base
-from containerCluster.containerClusterCreateAction import ContainerCluster_create_Action 
+from containerCluster.containerClusterCreateAction import ContainerCluster_create_Action
+from componentProxy.componentContainerClusterValidator import ComponentContainerClusterValidator
 
 
 class ContainerCluster_Opers(Abstract_Container_Opers):
+    
+    component_container_cluster_validator = ComponentContainerClusterValidator()
         
     def __init__(self):
         super(ContainerCluster_Opers, self).__init__()
@@ -52,82 +55,88 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         containerCluster_destroy_action.start()
 
     def check(self, containerClusterName):
-        try:
-            cluster_status = {}
-            normal, vip, nodes_stat = [], [], {}
-            container_ip_list = self.zkOper.retrieve_container_list(containerClusterName)
-            for container_ip in container_ip_list:
-                status = self.zkOper.retrieve_container_status_value(containerClusterName, container_ip)
-                logging.info('get container status dict: %s' % str(status) )
-                con_info = self.zkOper.retrieve_container_node_value(containerClusterName, container_ip)
-                '''
-                @todo: put component issues to Factory
-                '''
-                node_type = con_info.get('type')
-                if node_type == 'mclusternode':
-                    normal.append(status.get('status'))
-                    nodes_stat.setdefault('normal', normal)
-                elif node_type == 'mclustervip':
-                    vip.append(status.get('status'))
-                    nodes_stat.setdefault('vip', vip)
-            
-            ret = self.__get_cluster_status(nodes_stat)
-            cluster_status.setdefault('status', ret)
-            
-            '''
-            @todo: why put destroyed method on check logic?
-            '''
-            if ret == 'destroyed':
-                logging.info('delete containerCluster: %s' % containerClusterName)
-                self.zkOper.delete_container_cluster(containerClusterName)
-        except:
-            '''
-            @todo: check method will be invoked by sync or async method? how to issue with this exception?
-            '''
-            logging.error(str( traceback.format_exc()) )
-            
+        component_type = self.__get_component_type(containerClusterName)
+        cluster_status = {}
+        cluster_status = self.component_container_cluster_validator.container_cluster_status_validator(component_type,
+                                                                                                       containerClusterName)
         return cluster_status
-    
-    def __get_cluster_status(self, nodes_stat):
-        
-        stat_set = ['starting', 'started', 'stopping', 'stopped', 'destroying', 'destroyed']
-        normal_nodes_stat, all_nodes_stat = [], []
-        if not isinstance(nodes_stat, dict):
-            cluster_stat = 'failed'
-            
-        '''
-        @todo: put component type issues to Factory
-        '''
-        vip = nodes_stat.get('vip')
-        normal = nodes_stat.get('normal')
-        if vip:
-            vip_node = vip[0]
-            logging.info('vip:%s' % str(vip_node))
-            all_nodes_stat.append(vip_node)
-        if normal:
-            for normal_node in normal:
-                normal_nodes_stat.append(normal_node)
-                all_nodes_stat.append(normal_node)
 
-        stat_set_list = list(set(all_nodes_stat))
-        if len(stat_set_list) == 1:
-            stat = stat_set_list[0]
-            if stat_set_list[0] in stat_set:
-                cluster_stat = stat
-            else:
-                cluster_stat = 'failed'
-        else:
-            i = 0
-            for normal_node in normal_nodes_stat:
-                if normal_node == 'started':
-                    i += 1
-            if i == 2:
-                cluster_stat = 'danger'
-            elif i ==1:
-                cluster_stat = 'crisis'
-            else:
-                cluster_stat = 'failed'
-        return cluster_stat
+    def __get_component_type(self, containerClusterName):
+        container_ip_list = self.zkOper.retrieve_container_list(containerClusterName)
+        container_ip = container_ip_list[0]
+        con_info = self.zkOper.retrieve_container_node_value(containerClusterName, container_ip)
+        return con_info.get('type')
+
+#     def check(self, containerClusterName):
+#         cluster_status = {}
+#         normal, vip, nodes_stat = [], [], {}
+#         container_ip_list = self.zkOper.retrieve_container_list(containerClusterName)
+#         for container_ip in container_ip_list:
+#             status = self.zkOper.retrieve_container_status_value(containerClusterName, container_ip)
+#             logging.info('get container status dict: %s' % str(status) )
+#             con_info = self.zkOper.retrieve_container_node_value(containerClusterName, container_ip)
+#             '''
+#             @todo: put component issues to Factory
+#             '''
+#             node_type = con_info.get('type')
+#             if node_type == 'mclusternode':
+#                 normal.append(status.get('status'))
+#                 nodes_stat.setdefault('normal', normal)
+#             elif node_type == 'mclustervip':
+#                 vip.append(status.get('status'))
+#                 nodes_stat.setdefault('vip', vip)
+#         
+#         ret = self.__get_cluster_status(nodes_stat)
+#         cluster_status.setdefault('status', ret)
+#         
+#         '''
+#         @todo: why put destroyed method on check logic?
+#         '''
+#         if ret == 'destroyed':
+#             logging.info('delete containerCluster: %s' % containerClusterName)
+#             self.zkOper.delete_container_cluster(containerClusterName)
+#         return cluster_status
+#     
+#     def __get_cluster_status(self, nodes_stat):
+#         
+#         stat_set = ['starting', 'started', 'stopping', 'stopped', 'destroying', 'destroyed']
+#         normal_nodes_stat, all_nodes_stat = [], []
+#         if not isinstance(nodes_stat, dict):
+#             cluster_stat = 'failed'
+#             
+#         '''
+#         @todo: put component type issues to Factory
+#         '''
+#         vip = nodes_stat.get('vip')
+#         normal = nodes_stat.get('normal')
+#         if vip:
+#             vip_node = vip[0]
+#             logging.info('vip:%s' % str(vip_node))
+#             all_nodes_stat.append(vip_node)
+#         if normal:
+#             for normal_node in normal:
+#                 normal_nodes_stat.append(normal_node)
+#                 all_nodes_stat.append(normal_node)
+# 
+#         stat_set_list = list(set(all_nodes_stat))
+#         if len(stat_set_list) == 1:
+#             stat = stat_set_list[0]
+#             if stat_set_list[0] in stat_set:
+#                 cluster_stat = stat
+#             else:
+#                 cluster_stat = 'failed'
+#         else:
+#             i = 0
+#             for normal_node in normal_nodes_stat:
+#                 if normal_node == 'started':
+#                     i += 1
+#             if i == 2:
+#                 cluster_stat = 'danger'
+#             elif i ==1:
+#                 cluster_stat = 'crisis'
+#             else:
+#                 cluster_stat = 'failed'
+#         return cluster_stat
 
     def __get_create_info(self, containerClusterName, container_node):
         create_info = {}

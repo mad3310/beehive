@@ -35,11 +35,11 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
     component_container_model_factory = ComponentContainerModelFactory()
     
     component_container_cluster_config_factory = ComponentContainerClusterConfigFactory()
-    
+
     def __init__(self, arg_dict={}):
         super(ContainerCluster_create_Action, self).__init__()
         self._arg_dict = arg_dict
-        
+
     def run(self):
         __action_result = 'failed'
         __error_message = ''
@@ -49,8 +49,6 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
             __action_result, __error_message = self.__issue_create_action(self._arg_dict)
         except:
             self.threading_exception_queue.put(sys.exc_info())
-#            import traceback
-#            logging.error(str(traceback.format_exc()))
         finally:
             '''
             set the action result to zk, if throw exception, the process will be shut and set 'failed' to zk. 
@@ -59,7 +57,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
             ***when container cluster is created failed, then such code will get a exception(handle this later)
             '''
             self.__update_zk_info_when_process_complete(_containerClusterName, __action_result, __error_message)
-    
+
     def __issue_create_action(self, args={}):
         logging.info('args:%s' % str(args))
         _component_type = args.get('componentType')
@@ -80,7 +78,8 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         if is_res_verify:
             try:
                 usable_hostip_num_list = self.res_verify.check_resource(_component_container_cluster_config)
-                host_ip_list = self.res_verify.get_create_containers_hostip_list(usable_hostip_num_list)
+                host_ip_list = self.res_verify.get_create_containers_hostip_list(usable_hostip_num_list,
+                                                                                 _component_container_cluster_config)
             except CommonException as e:
                 return ('lack_resource', e)
         
@@ -92,8 +91,6 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         
         logging.info('show args to get create containers args list: %s' % str(args) )
         container_model_list = self.component_container_model_factory.create(args)
-        
-        
         
         self.__dispatch_create_container_task(container_model_list)
         
@@ -109,7 +106,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
 
     def __get_ip_port_resource(self, component_container_cluster_config):
         containerCount = component_container_cluster_config.nodeCount
-        network_mode = component_container_cluster_config.network_mode 
+        _network_mode = component_container_cluster_config.network_mode 
         ip_port_resource_list = []
         if 'ip' == _network_mode:
             ip_port_resource_list = self.ip_opers.retrieve_ip_resource(containerCount)
@@ -176,5 +173,4 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
                 logging.info('all container create successful')
                     
         finally:
-            http_client.close()    
-    
+            http_client.close()
