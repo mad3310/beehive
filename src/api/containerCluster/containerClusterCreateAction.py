@@ -122,7 +122,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         uri = 'http://localhost:%s%s' % (options.port, uri_get)
         
         ret = http_get(uri, auth_username=adminUser, auth_password=adminPasswd)
-        logging.info('get cluster is started result :%s, type:%s' % (str(ret)), type(ret))
+        logging.info('get cluster is started result :%s, type:%s' % (str(ret), type(ret)) )
         status = ret.get('response').get('status')
         return status == 'started'
 
