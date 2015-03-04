@@ -293,7 +293,8 @@ class Container_create_action(Abstract_Async_Thread):
 
     def _get_container_info(self):
         container_name = self.docker_model.name
-        con = Container(container_name)
+        _inspect = self.docker_opers.inspect_container(container_name)
+        con = Container(_inspect)
         container_node_info= {}
         container_node_info.setdefault('containerName', container_name)
         container_node_info.setdefault('inspect', con.inspect)
@@ -451,7 +452,8 @@ class Container_destroy_action(Abstract_Async_Thread):
 
     def __get_normal_node_mount_dir(self):
         mount_dir = ''
-        con = Container(self.container_name)
+        _inspect = self.docker_opers.inspect_container(self.container_name)
+        con = Container(_inspect)
         type = con.type()
         '''
         @todo: if other component need to delete these volumn?
@@ -471,6 +473,8 @@ class Container_destroy_action(Abstract_Async_Thread):
 
 
 class ContainerLoad(object):
+    
+    docker_opers = Docker_Opers()
 
     def __init__(self, container_name):
         self.container_name = container_name
@@ -487,7 +491,8 @@ class ContainerLoad(object):
         self.cpuacct_stat_path = '/cgroup/cpuacct/lxc/%s/cpuacct.stat' % self.container_id
         
     def get_container_id(self):
-        con = Container(self.container_name)
+        _inspect = self.docker_opers.inspect_container(self.container_name)
+        con = Container(_inspect)
         return con.id()
 
     def get_file_value(self, file_path):
@@ -627,7 +632,8 @@ class ContainerLoad(object):
 
     def get_mysql_mnt_size(self):
         mysql_mnt_path = ''
-        con = Container(self.container_name)
+        _inspect = self.docker_opers.inspect_container(self.container_name)
+        con = Container(_inspect)
         volumes = con.volumes()
         type = con.type()
         if volumes:

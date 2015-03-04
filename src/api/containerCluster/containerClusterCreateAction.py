@@ -62,46 +62,36 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
     
     def __issue_create_action(self, args={}):
         logging.info('args:%s' % str(args))
-        _containerClusterName = args.get('containerClusterName')
         _component_type = args.get('componentType')
-        _network_mode = args.get('network_mode')
         
-        logging.info('containerClusterName : %s' % str(_containerClusterName))
+        logging.info('containerClusterName : %s' % str(args.get('containerClusterName')))
         logging.info('_component_type : %s' % str(_component_type))
-        logging.info('_network_mode : %s' % str(_network_mode))
+        logging.info('_network_mode : %s' % str(args.get('network_mode')))
         
         _component_container_cluster_config = self.component_container_cluster_config_factory.retrieve_config(args)
         args.setdefault('component_config', _component_container_cluster_config)
         
         is_res_verify = _component_container_cluster_config.is_res_verify
-        containerCount = _component_container_cluster_config.nodeCount
-        logging.info('is_res_verify : %s, containerCount:%s' % (str(is_res_verify), containerCount))
-        self.__create_container_cluser_info(containerCount, _containerClusterName)
+        logging.info('is_res_verify : %s' % str(is_res_verify) )
         
-        host_ip_list, _error_msg = [], ''
+        host_ip_list = []
         if is_res_verify:
-            '''
-            @todo: 
-            1. split check_resource and retrieve the host ip methods
-            '''
             try:
-                ret = self.res_verify.check_resource(_component_container_cluster_config)
+                usable_hostip_num_list = self.res_verify.check_resource(_component_container_cluster_config)
+                host_ip_list = self.res_verify.get_create_containers_hostip_list(usable_hostip_num_list)
             except CommonException as e:
-                _error_msg = e
-
-            if _error_msg:
-                return ('lack_resource', _error_msg)
-            else:
-                host_ip_list = ret.get('select_ip_list')
-                logging.info('host_ip_list:%s' % str(host_ip_list))
+                return ('lack_resource', e)
         
+        logging.info('host_ip_list:%s' % str(host_ip_list))
         args.setdefault('host_ip_list', host_ip_list)
         
-        ip_port_resource_list = self.__get_ip_port_resource(_network_mode, containerCount)
+        ip_port_resource_list = self.__get_ip_port_resource(_component_container_cluster_config)
         args.setdefault('ip_port_resource_list', ip_port_resource_list)
         
         logging.info('show args to get create containers args list: %s' % str(args) )
         container_model_list = self.component_container_model_factory.create(args)
+        
+        self.__write_container_cluser_info(_component_container_cluster_config)
         
         self.__dispatch_create_container_task(container_model_list)
         
@@ -115,7 +105,9 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         
         return (_action_result, '')
 
-    def __get_ip_port_resource(self, _network_mode, containerCount):
+    def __get_ip_port_resource(self, component_container_cluster_config):
+        containerCount = component_container_cluster_config.nodeCount
+        network_mode = component_container_cluster_config.network_mode 
         ip_port_resource_list = []
         if 'ip' == _network_mode:
             ip_port_resource_list = self.ip_opers.retrieve_ip_resource(containerCount)
@@ -132,8 +124,10 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         _container_cluster_info.setdefault('error_msg', error_msg)
         self.zkOper.write_container_cluster_info(_container_cluster_info)
     
-    def __create_container_cluser_info(self, containerCount, containerClusterName):
+    def __write_container_cluser_info(self, component_container_cluster_config):
         _container_cluster_info = {}
+        containerCount = component_container_cluster_config.nodeCount
+        containerClusterName = component_container_cluster_config.container_cluster_name
         _container_cluster_info.setdefault('containerCount', containerCount)
         _container_cluster_info.setdefault('containerClusterName', containerClusterName)
         self.zkOper.write_container_cluster_info(_container_cluster_info)

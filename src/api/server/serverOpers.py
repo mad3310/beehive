@@ -22,6 +22,7 @@ class Server_Opers(Abstract_Async_Thread):
     '''
     
     container_opers = Container_Opers()
+    docker_opers = Docker_Opers()
     
     def update(self):
         logging.info('update server!')
@@ -47,7 +48,8 @@ class Server_Opers(Abstract_Async_Thread):
         containers = self.container_opers.get_all_containers(False)
         alarm_item = []
         for container in containers:
-            con = Container(container)
+            _inspect = self.docker_opers.inspect_container(container)
+            con = Container(_inspect)
             container_id = con.id()
             conl = ContainerLoad(container)
             under_oom = conl.get_under_oom_value()
@@ -85,7 +87,8 @@ class Server_Opers(Abstract_Async_Thread):
         add_ret = {}
         containers = self._get_containers(container_name_list)
         for container in containers:
-            con = Container(container)
+            _inspect = self.docker_opers.inspect_container(container)
+            con = Container(_inspect)
             inspect_limit_mem = con.memory()
             conl = ContainerLoad(container)
             con_limit_mem = conl.get_con_limit_mem()
@@ -204,7 +207,8 @@ class UpdateServer(object):
 
     def _get_container_info_as_zk(self, container_name):
         create_info = {}
-        con = Container(container_name)
+        _inspect = self.docker_opers.inspect_container(container_name)
+        con = Container(_inspect)
         
         create_info.setdefault('hostIp', self.host_ip)
         image = con.image()

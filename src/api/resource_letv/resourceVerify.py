@@ -23,56 +23,56 @@ class ResourceVerify(object):
         constructor
         '''
     
-    def check_resource(self, _component_container_cluster_config):
-        result_dict = {}
-        error_msg = ''
-        select_ip_list = []
-        nodeCount = _component_container_cluster_config.nodeCount
+    def check_resource(self, component_container_cluster_config):
+        usable_hostip_num_list = []
+        nodeCount = component_container_cluster_config.nodeCount
         ip_list = self.zkOper.get_ips_from_ipPool()
-        '''
-        @todo: if check occurs failed, the program will be continue running?
-        '''
+        
         if len(ip_list) < nodeCount:
             raise CommonException('ips are not enough!')
         
         elect_server = ElectServer()
-        host_ip_list = elect_server.elect_server_list(_component_container_cluster_config)
-        logging.info('host_ip_list:%s' % str(host_ip_list))
+        usable_hostip_num_list = elect_server.elect_server_list(_component_container_cluster_config)
+        logging.info('usable_hostip_num_list:%s' % str(usable_hostip_num_list))
         
         num = 0
-        for weighted_value, available_host_num in host_ip_list:
+        for weighted_value, available_host_num in usable_hostip_num_list:
             num += available_host_num
         
         if num < nodeCount:
-            raise CommonException('server resource are not enough!')
-        
-        select_ip_list = self.get_host_ip_list(host_ip_list, nodeCount)
-        
-        logging.info('select_ip_list:%s' % str(select_ip_list))
-        if not self.check_hosts_illegal(select_ip_list, nodeCount):
-            raise CommonException('two mcluster data nodes are on a server, illegal!')
+            raise CommonException('usable servers are not enough!')
             
         '''
         @todo: add the ckeck logic for the rest value of disk,if the disk usage > 70%, then throw exception
         '''
-        result_dict.setdefault('error_msg', error_msg)
-        result_dict.setdefault('select_ip_list', select_ip_list)
-        return result_dict
+        return usable_hostip_num_list
 
-    def check_hosts_illegal(self, select_ip_list, node_count):
+    def get_create_containers_hostip_list(self, usable_hostip_num_list, component_container_cluster_config):
+        nodeCount = component_container_cluster_config.nodeCount
+        select_ip_list = self.__get_host_ip_list(usable_hostip_num_list, nodeCount)
+        
+        if not self.check_hosts_illegal(select_ip_list, component_container_cluster_config):
+            raise CommonException('two mcluster data nodes are on a server, illegal!')
+        return select_ip_list
+
+    def check_hosts_illegal(self, select_ip_list, component_container_cluster_config):
         """mcluster data nodes can't be on a server 
         
         """
-        data_node_count = node_count - 1
         is_illegal = True
-        if len(select_ip_list) <= (data_node_count -1):
-            is_illegal = False
-        data_hosts = select_ip_list[:data_node_count]
-        if len( set(data_hosts) ) != data_node_count:
-            is_illegal = False
+        component_type = component_container_cluster_config.component_type
+        if component_type =='mclusternode':
+            nodeCount = component_container_cluster_config.nodeCount
+            if len(select_ip_list) != nodeCount:
+                is_illegal = False
+        elif component_type =='mclustervip':
+            pass
+        else:
+            pass
         return is_illegal
 
-    def get_host_ip_list(self, host_ip_list, container_num):
+
+    def __get_host_ip_list(self, host_ip_list, container_num):
 
         ip_list = []
         
