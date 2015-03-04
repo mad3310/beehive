@@ -16,6 +16,7 @@ from resource_letv.ipOpers import IpOpers
 from resource_letv.portOpers import PortOpers
 from resource_letv.resourceVerify import ResourceVerify
 from utils import _get_property_dict
+from utils.autoutil import handleTimeout, http_get
 from utils.exceptions import CommonException
 from utils import _retrieve_userName_passwd
 from componentProxy.componentManagerValidator import ComponentManagerStatusValidator
@@ -94,15 +95,29 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         
         self.__dispatch_create_container_task(container_model_list)
         
+        started = self.__check_cluster_started(_component_container_cluster_config)
+        if not started:
+            return ('failed', '')
+        
         _action_flag = False
-#         if _component_container_cluster_config.need_validate_manager_status:
-#             _action_flag = self.component_manager_status_validator.start_Status_Validator(_component_type, container_model_list, 6)
-#         else:
-#             _action_flag = True
+        if _component_container_cluster_config.need_validate_manager_status:
+            _action_flag = self.component_manager_status_validator.start_Status_Validator(_component_type, container_model_list, 6)
+        else:
+            _action_flag = True
             
         _action_result = 'failed' if not _action_flag else 'succeed'
         
         return (_action_result, '')
+
+    def __check_cluster_started(self, component_container_cluster_config):
+        container_cluster_name = component_container_cluster_config.container_cluster_name
+        return handleTimeout(__get_cluster_started, 120)
+    
+    def __get_cluster_started(self, container_cluster_name):
+        uri = '/containerCluster/status/%s' % container_cluster_name
+        ret = http_get(uri)
+        status = ret.get('response').get('status')
+        return status == 'started'
 
     def __get_ip_port_resource(self, component_container_cluster_config):
         containerCount = component_container_cluster_config.nodeCount
