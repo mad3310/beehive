@@ -7,6 +7,7 @@ import logging
 import sys
 import tornado
 import urllib
+import time
 
 from tornado.options import options
 from tornado.gen import Callback, Wait
@@ -110,6 +111,8 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         return (_action_result, '')
 
     def __check_cluster_started(self, component_container_cluster_config):
+        logging.info('time sleep 8 seconds')
+        time.sleep(8)
         container_cluster_name = component_container_cluster_config.container_cluster_name
         return handleTimeout(self.__get_cluster_started, 120, container_cluster_name)
     
@@ -119,6 +122,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         uri = 'http://localhost:%s%s' % (options.port, uri_get)
         
         ret = http_get(uri, auth_username=adminUser, auth_password=adminPasswd)
+        logging.info('get cluster is started result :%s, type:%s' % (str(ret)), type(ret))
         status = ret.get('response').get('status')
         return status == 'started'
 

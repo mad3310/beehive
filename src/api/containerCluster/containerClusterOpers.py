@@ -56,7 +56,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
 
     def check(self, containerClusterName):
         if not self.check_cluster_in_zk(containerClusterName):
-            return 'not exist'
+            return {'status':'not exist'}
         component_type = self.__get_component_type(containerClusterName)
         cluster_status = {}
         cluster_status = self.component_container_cluster_validator.container_cluster_status_validator(component_type,
