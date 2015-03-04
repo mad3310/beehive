@@ -150,7 +150,7 @@ class Container_create_action(Abstract_Async_Thread):
         @todo: need to open these code
         '''
         if self.docker_model.use_ip:
-            init_con_ret = self.set_ip_add_route_retry(3, container_name)
+            init_con_ret = self.set_ip_add_route_retry(3)
             if not init_con_ret:
                 error_message = 'set_ip_add_route_retry container failed'
                 logging.error(error_message)
@@ -187,10 +187,9 @@ class Container_create_action(Abstract_Async_Thread):
         else:
             return False
 
-    def set_ip_add_route_retry(self, retryCount, container_name=None):
+    def set_ip_add_route_retry(self, retryCount):
         
-        if container_name is None:
-            return False
+        container_name = self.docker_model.name
         
         ret = False
         

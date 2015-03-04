@@ -94,7 +94,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         
         self.__dispatch_create_container_task(container_model_list)
         
-#         _action_flag = False
+        _action_flag = False
 #         if _component_container_cluster_config.need_validate_manager_status:
 #             _action_flag = self.component_manager_status_validator.start_Status_Validator(_component_type, container_model_list, 6)
 #         else:
