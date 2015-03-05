@@ -11,7 +11,7 @@ import time
 
 from tornado.options import options
 from tornado.gen import Callback, Wait
-from tornado.httpclient import HTTPRequest
+from tornado.httpclient import HTTPRequest, AsyncHTTPClient
 from common.abstractAsyncThread import Abstract_Async_Thread
 from resource_letv.ipOpers import IpOpers
 from resource_letv.portOpers import PortOpers
@@ -192,7 +192,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
             if _error_record_dict.__len__() <> 0:
                 raise CommonException('not all container succeed created %s' % str(_error_record_dict))
             else:
-                logging.info('all container create successful')
+                logging.info('task create all containers are dispatched!')
                     
         finally:
             http_client.close()

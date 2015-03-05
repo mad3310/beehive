@@ -178,7 +178,7 @@ class ContainerClusterHandler(APIHandler):
         args = self.get_all_arguments()
         containerClusterName = args.get('containerClusterName')
         logging.info(' containerClusterName:%s' % containerClusterName)
-
+        
         self.containerClusterOpers.destory(containerClusterName)
         
         return_message = {}
