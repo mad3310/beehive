@@ -7,15 +7,17 @@ import logging
 import sys
 import tornado
 import urllib
+import time
 
 from tornado.options import options
 from tornado.gen import Callback, Wait
-from tornado.httpclient import HTTPRequest
+from tornado.httpclient import HTTPRequest, AsyncHTTPClient
 from common.abstractAsyncThread import Abstract_Async_Thread
 from resource_letv.ipOpers import IpOpers
 from resource_letv.portOpers import PortOpers
 from resource_letv.resourceVerify import ResourceVerify
 from utils import _get_property_dict
+from utils.autoutil import handleTimeout, http_get
 from utils.exceptions import CommonException
 from utils import _retrieve_userName_passwd
 from componentProxy.componentManagerValidator import ComponentManagerStatusValidator
@@ -35,11 +37,11 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
     component_container_model_factory = ComponentContainerModelFactory()
     
     component_container_cluster_config_factory = ComponentContainerClusterConfigFactory()
-    
+
     def __init__(self, arg_dict={}):
         super(ContainerCluster_create_Action, self).__init__()
         self._arg_dict = arg_dict
-        
+
     def run(self):
         __action_result = 'failed'
         __error_message = ''
@@ -49,8 +51,6 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
             __action_result, __error_message = self.__issue_create_action(self._arg_dict)
         except:
             self.threading_exception_queue.put(sys.exc_info())
-#            import traceback
-#            logging.error(str(traceback.format_exc()))
         finally:
             '''
             set the action result to zk, if throw exception, the process will be shut and set 'failed' to zk. 
@@ -59,51 +59,46 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
             ***when container cluster is created failed, then such code will get a exception(handle this later)
             '''
             self.__update_zk_info_when_process_complete(_containerClusterName, __action_result, __error_message)
-    
+
     def __issue_create_action(self, args={}):
         logging.info('args:%s' % str(args))
-        _containerClusterName = args.get('containerClusterName')
         _component_type = args.get('componentType')
-        _network_mode = args.get('network_mode')
         
-        logging.info('containerClusterName : %s' % str(_containerClusterName))
+        logging.info('containerClusterName : %s' % str(args.get('containerClusterName')))
         logging.info('_component_type : %s' % str(_component_type))
-        logging.info('_network_mode : %s' % str(_network_mode))
+        logging.info('_network_mode : %s' % str(args.get('network_mode')))
         
         _component_container_cluster_config = self.component_container_cluster_config_factory.retrieve_config(args)
         args.setdefault('component_config', _component_container_cluster_config)
         
+        self.__create_container_cluser_info(_component_container_cluster_config)
+        
         is_res_verify = _component_container_cluster_config.is_res_verify
-        containerCount = _component_container_cluster_config.nodeCount
-        logging.info('is_res_verify : %s, containerCount:%s' % (str(is_res_verify), containerCount))
-        self.__create_container_cluser_info(containerCount, _containerClusterName)
+        logging.info('is_res_verify : %s' % str(is_res_verify) )
         
-        host_ip_list, _error_msg = [], ''
+        host_ip_list = []
         if is_res_verify:
-            '''
-            @todo: 
-            1. split check_resource and retrieve the host ip methods
-            '''
             try:
-                ret = self.res_verify.check_resource(_component_container_cluster_config)
+                usable_hostip_num_list = self.res_verify.check_resource(_component_container_cluster_config)
+                host_ip_list = self.res_verify.get_create_containers_hostip_list(usable_hostip_num_list,
+                                                                                 _component_container_cluster_config)
             except CommonException as e:
-                _error_msg = e
-
-            if _error_msg:
-                return ('lack_resource', _error_msg)
-            else:
-                host_ip_list = ret.get('select_ip_list')
-                logging.info('host_ip_list:%s' % str(host_ip_list))
+                return ('lack_resource', e)
         
+        logging.info('host_ip_list:%s' % str(host_ip_list))
         args.setdefault('host_ip_list', host_ip_list)
         
-        ip_port_resource_list = self.__get_ip_port_resource(_network_mode, containerCount)
+        ip_port_resource_list = self.__get_ip_port_resource(_component_container_cluster_config)
         args.setdefault('ip_port_resource_list', ip_port_resource_list)
         
         logging.info('show args to get create containers args list: %s' % str(args) )
         container_model_list = self.component_container_model_factory.create(args)
         
         self.__dispatch_create_container_task(container_model_list)
+        
+        started = self.__check_cluster_started(_component_container_cluster_config)
+        if not started:
+            return ('failed', '')
         
         _action_flag = False
         if _component_container_cluster_config.need_validate_manager_status:
@@ -115,14 +110,32 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         
         return (_action_result, '')
 
-    def __get_ip_port_resource(self, _network_mode, containerCount):
+    def __check_cluster_started(self, component_container_cluster_config):
+        logging.info('time sleep 8 seconds')
+        time.sleep(8)
+        container_cluster_name = component_container_cluster_config.container_cluster_name
+        return handleTimeout(self.__get_cluster_started, 120, container_cluster_name)
+    
+    def __get_cluster_started(self, container_cluster_name):
+        adminUser, adminPasswd = _retrieve_userName_passwd()
+        uri_get = '/containerCluster/status/%s' % container_cluster_name
+        uri = 'http://localhost:%s%s' % (options.port, uri_get)
+        
+        ret = http_get(uri, auth_username=adminUser, auth_password=adminPasswd)
+        logging.info('get cluster is started result :%s, type:%s' % (str(ret), type(ret)) )
+        status = ret.get('response').get('status')
+        return status == 'started'
+
+    def __get_ip_port_resource(self, component_container_cluster_config):
+        containerCount = component_container_cluster_config.nodeCount
+        _network_mode = component_container_cluster_config.network_mode 
         ip_port_resource_list = []
         if 'ip' == _network_mode:
             ip_port_resource_list = self.ip_opers.retrieve_ip_resource(containerCount)
         elif 'port' == _network_mode:
             ip_port_resource_list = self.port_opers.retrieve_port_resource(containerCount)
         return ip_port_resource_list
-    
+
     def __update_zk_info_when_process_complete(self, _containerClusterName, create_result='failed', error_msg=''):
         if _containerClusterName is None or '' == _containerClusterName:
             raise CommonException('_containerClusterName should be not null,in __updatez_zk_info_when_process_complete')
@@ -130,14 +143,17 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         _container_cluster_info = self.zkOper.retrieve_container_cluster_info(_containerClusterName)
         _container_cluster_info.setdefault('start_flag', create_result)
         _container_cluster_info.setdefault('error_msg', error_msg)
+        _container_cluster_info.setdefault('containerClusterName', _containerClusterName)
         self.zkOper.write_container_cluster_info(_container_cluster_info)
-    
-    def __create_container_cluser_info(self, containerCount, containerClusterName):
+
+    def __create_container_cluser_info(self, component_container_cluster_config):
         _container_cluster_info = {}
+        containerCount = component_container_cluster_config.nodeCount
+        containerClusterName = component_container_cluster_config.container_cluster_name
         _container_cluster_info.setdefault('containerCount', containerCount)
         _container_cluster_info.setdefault('containerClusterName', containerClusterName)
         self.zkOper.write_container_cluster_info(_container_cluster_info)
-    
+
     @tornado.gen.engine
     def __dispatch_create_container_task(self, container_model_list):
         http_client = tornado.httpclient.AsyncHTTPClient()
@@ -176,8 +192,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
             if _error_record_dict.__len__() <> 0:
                 raise CommonException('not all container succeed created %s' % str(_error_record_dict))
             else:
-                logging.info('all container create successful')
+                logging.info('task create all containers are dispatched!')
                     
         finally:
-            http_client.close()    
-    
+            http_client.close()

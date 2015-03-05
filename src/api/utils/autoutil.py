@@ -33,6 +33,24 @@ class FuncThread(threading.Thread):
     def isFinished(self):
         return self.finished
 
+def __isExcept(e, eType = Exception):
+    return isinstance(e, eType)
+
+def handleTimeout(func, timeout, *params, **paramMap):
+    
+    interval = 0.6
+    if type(timeout) == tuple:
+        timeout, interval = timeout
+    rst = None
+    while timeout > 0:
+        t = time.time()
+        rst = func(*params, **paramMap)
+        if rst and not __isExcept(rst):
+            break
+        time.sleep(interval)
+        timeout -= time.time() - t
+    return rst
+
 def doInThread(func, *params, **paramMap):
     ft = FuncThread(func, *params, **paramMap)
     ft.start()

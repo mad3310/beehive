@@ -29,7 +29,15 @@ class MysqlContainerClusterConfig(object):
         self.image = image if image else 'letv/mcluster:0.0.2'
         
         container_cluster_name = params.get('containerClusterName')
-        data_bind = '/data/mcluster_data/d-mcl-%s' % container_cluster_name
+        self.container_cluster_name = container_cluster_name
+        data_bind = '/data/mcluster_data/d-mcl-%s' % self.container_cluster_name
         self.mount_dir = {'/srv/mcluster':'', '/data/mcluster_data':data_bind}
         self.ports = [2181,2888,3306,3888,4567,4568,4569]
         
+        """
+        params below need to get from post request
+        """
+        component_type = params.get('componentType')
+        self.component_type = component_type
+        network_mode = params.get('network_mode')
+        self.network_mode = network_mode

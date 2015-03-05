@@ -37,19 +37,19 @@ class Container_Opers(Abstract_Container_Opers):
         '''
         Constructor
         '''
-        
-    def create(self, arg_dict={}):
-        container_create_action = Container_create_action()
-        container_create_action.create(arg_dict)
-   
+
+    def create(self, docker_model):
+        container_create_action = Container_create_action(docker_model)
+        container_create_action.start()
+ 
     def stop(self, container_name):
         container_stop_action = Container_stop_action(container_name)
         container_stop_action.start()
-    
+
     def start(self, container_name):
         container_start_action = Container_start_action(container_name)
         container_start_action.start()
-    
+
     def destroy(self, container_name):
         container_destroy_action = Container_destroy_action(container_name)
         container_destroy_action.start()
@@ -62,7 +62,7 @@ class Container_Opers(Abstract_Container_Opers):
         result.setdefault('status', status)
         result.setdefault('message', message)
         return result
-    
+
     def get_container_stat(self, container_name):
         """
         """
@@ -95,30 +95,36 @@ class Container_Opers(Abstract_Container_Opers):
             name = name.replace('/', '')
             container_name_list.append(name)
         return container_name_list
-    
+
     def check_container_exists(self, container_name):
         container_name_list = self.get_all_containers()
         return_result = container_name in container_name_list
         return return_result
-    
+
 '''
 @todo: need to check if the async? or sync? extend object?
 '''    
-class Container_create_action(object):
+class Container_create_action(Abstract_Async_Thread):
     
     docker_opers = Docker_Opers()
     container_opers = Container_Opers()
     zkOper = ZkOpers()
-        
-    def __init__(self):
-        '''
-            constructor
-        '''
     
-    def create(self, docker_model):
+    def __init__(self, docker_model):
+        super(Container_create_action, self).__init__()
+        self.docker_model = docker_model
+
+    def run(self):
+        try:
+            logging.info('begin create container')
+            self.__issue_create_action()
+        except:
+            self.threading_exception_queue.put(sys.exc_info())
+
+    def __issue_create_action(self):
         
-        self.__make_mount_dir(docker_model)
-        _log_docker_run_command(docker_model)
+        self.__make_mount_dir()
+        _log_docker_run_command(self.docker_model)
         '''
         orginal:
             image=image_name, 
@@ -129,7 +135,7 @@ class Container_create_action(object):
             mem_limit=_mem_limit, 
             volumes=_volumes
         '''
-        self.docker_opers.create(docker_model)
+        self.docker_opers.create(self.docker_model)
         
         '''
         orginal:
@@ -138,49 +144,52 @@ class Container_create_action(object):
             network_mode='bridge', 
             binds=_binds
         '''
-        self.docker_opers.start(docker_model)
+        self.docker_opers.start(self.docker_model)
         
         '''
         @todo: need to open these code
         '''
-#         if docker_model.use_ip:
-#             init_con_ret = self.set_ip_add_route_retry(3, container_name)
-#             if not init_con_ret:
-#                 error_message = 'set_ip_add_route_retry container failed'
-#                 logging.error(error_message)
-#                 raise CommonException(error_message)
+        if self.docker_model.use_ip:
+            init_con_ret = self.set_ip_add_route_retry(3)
+            if not init_con_ret:
+                error_message = 'set_ip_add_route_retry container failed'
+                logging.error(error_message)
+                raise CommonException(error_message)
         
-        result = self.__check_create_status(docker_model)
+        result = self.__check_create_status()
         if not result:
             error_message = 'the exception of creating container'
             logging.error(error_message)
             raise CommonException(error_message)
         
-        container_node_info = self._get_container_info(docker_model)
+        container_node_info = self._get_container_info()
         logging.info('get container info: %s' % str(container_node_info))
         self.zkOper.write_container_node_info('started', container_node_info)
 
-    def __make_mount_dir(self, docker_model):
+    def __make_mount_dir(self):
         re_bind_arg = {}
-        binds = docker_model.binds
-        component_type = docker_model.component_type
-        for con_dir,server_dir in binds.items():
-            if 'mclusternode' == component_type and '/data/mcluster_data' in con_dir:
+        binds = self.docker_model.binds
+        component_type = self.docker_model.component_type
+        for server_dir,con_dir in binds.items():
+            if 'mclusternode' == component_type and '/data/mcluster_data' in server_dir:
                 if not os.path.exists(server_dir):
                     os.makedirs(server_dir)
+            
+            """other component_type have different logic, use elif and else to diff 
+               
+            """
 
-    def __check_create_status(self, docker_model):
-        container_name = docker_model.name
+    def __check_create_status(self):
+        container_name = self.docker_model.name
         stat = self.container_opers.get_container_stat(container_name)
         if stat == 'started':
             return True
         else:
             return False
 
-    def set_ip_add_route_retry(self, retryCount, container_name=None):
+    def set_ip_add_route_retry(self, retryCount):
         
-        if container_name is None:
-            return False
+        container_name = self.docker_model.name
         
         ret = False
         
@@ -195,11 +204,14 @@ class Container_create_action(object):
             break
             retryCount -= 1
         return ret
-        
+
     def __set_ip_add_route(self, container_name=None):
         timeout = 5
         
-        ip,mask = self.__retrieve_container_ip_mask(container_name)
+        _inspect = self.docker_opers.inspect_container(container_name)
+        con = Container(_inspect)
+        ip = con.ip()
+        mask = con.netmask()
         
         real_route = ''
         for i in range(0,4):
@@ -233,7 +245,7 @@ class Container_create_action(object):
                 pass
         finally:
             child.close()
-        
+
     def __retrieve_route_list(self, child, timeout=5):
         get_route_cmd = r"route -n|grep -w 'UG'"
         child.sendline(get_route_cmd)
@@ -256,41 +268,18 @@ class Container_create_action(object):
             raise RetryException(error_message)
         
         return r_list
-    
-    '''
-    @todo: 
-    1. check the duplicate with Container's logic? can be remove?
-    '''
-    def __retrieve_container_ip_mask(self, container_name):
-        re_info = self.docker_opers.inspect_container(container_name)
-        for env in re_info['Config']['Env']:
-            if re.match(r"^IP=", env):
-                key, ip = re.split(r"=", env)
-            if re.match(r"^NETMASK=", env):
-                key, mask = re.split(r"=", env)
-                
-        if not _is_ip(ip):
-            error_message = "get IP error: %s" % ip
-            logging.error(error_message)
-            raise RetryException(error_message)
-        
-        if not _is_mask(mask):
-            error_message = "get MASK error: %s" % mask
-            logging.error(error_message)
-            raise RetryException(error_message)
-        
-        return ip,mask
-        
-    def _get_container_info(self, docker_model):
-        container_name = docker_model.name
-        con = Container(container_name)
+
+    def _get_container_info(self):
+        container_name = self.docker_model.name
+        _inspect = self.docker_opers.inspect_container(container_name)
+        con = Container(_inspect)
         container_node_info= {}
         container_node_info.setdefault('containerName', container_name)
         container_node_info.setdefault('inspect', con.inspect)
-        container_node_info.setdefault('hostIp', docker_model.host_ip)
-        container_node_info.setdefault('type', docker_model.component_type)
+        container_node_info.setdefault('hostIp', self.docker_model.host_ip)
+        container_node_info.setdefault('type', self.docker_model.component_type)
         return container_node_info
-    
+
     def __get_route_dicts(self, route_list=None):
         if route_list is None:
             return { 'false': 'route_list is None' }
@@ -394,6 +383,7 @@ class Container_stop_action(Abstract_Async_Thread):
 class Container_destroy_action(Abstract_Async_Thread):
     
     docker_opers = Docker_Opers()
+    container_opers = Container_Opers()
     
     def __init__(self, container_name):
         super(Container_destroy_action, self).__init__()
@@ -422,7 +412,7 @@ class Container_destroy_action(Abstract_Async_Thread):
         if os.path.exists(mount_dir):
             os.system('rm -rf %s' % mount_dir)
             
-        exists = self.docker_opers.check_container_exists(self.container_name)
+        exists = self.container_opers.check_container_exists(self.container_name)
         
         if exists:
             message = 'destroy container %s failed' % self.container_name
@@ -441,7 +431,8 @@ class Container_destroy_action(Abstract_Async_Thread):
 
     def __get_normal_node_mount_dir(self):
         mount_dir = ''
-        con = Container(self.container_name)
+        _inspect = self.docker_opers.inspect_container(self.container_name)
+        con = Container(_inspect)
         type = con.type()
         '''
         @todo: if other component need to delete these volumn?
@@ -461,6 +452,8 @@ class Container_destroy_action(Abstract_Async_Thread):
 
 
 class ContainerLoad(object):
+    
+    docker_opers = Docker_Opers()
 
     def __init__(self, container_name):
         self.container_name = container_name
@@ -477,7 +470,8 @@ class ContainerLoad(object):
         self.cpuacct_stat_path = '/cgroup/cpuacct/lxc/%s/cpuacct.stat' % self.container_id
         
     def get_container_id(self):
-        con = Container(self.container_name)
+        _inspect = self.docker_opers.inspect_container(self.container_name)
+        con = Container(_inspect)
         return con.id()
 
     def get_file_value(self, file_path):
@@ -617,7 +611,8 @@ class ContainerLoad(object):
 
     def get_mysql_mnt_size(self):
         mysql_mnt_path = ''
-        con = Container(self.container_name)
+        _inspect = self.docker_opers.inspect_container(self.container_name)
+        con = Container(_inspect)
         volumes = con.volumes()
         type = con.type()
         if volumes:

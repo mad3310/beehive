@@ -18,10 +18,13 @@ from utils import _retrieve_userName_passwd
 from container.container_module import Container
 from zk.zkOpers import ZkOpers
 from containerCluster.baseContainerAction import ContainerCluster_Action_Base
-from containerCluster.containerClusterCreateAction import ContainerCluster_create_Action 
+from containerCluster.containerClusterCreateAction import ContainerCluster_create_Action
+from componentProxy.componentContainerClusterValidator import ComponentContainerClusterValidator
 
 
 class ContainerCluster_Opers(Abstract_Container_Opers):
+    
+    component_container_cluster_validator = ComponentContainerClusterValidator()
         
     def __init__(self):
         super(ContainerCluster_Opers, self).__init__()
@@ -52,82 +55,23 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         containerCluster_destroy_action.start()
 
     def check(self, containerClusterName):
-        try:
-            cluster_status = {}
-            normal, vip, nodes_stat = [], [], {}
-            container_ip_list = self.zkOper.retrieve_container_list(containerClusterName)
-            for container_ip in container_ip_list:
-                status = self.zkOper.retrieve_container_status_value(containerClusterName, container_ip)
-                logging.info('get container status dict: %s' % str(status) )
-                con_info = self.zkOper.retrieve_container_node_value(containerClusterName, container_ip)
-                '''
-                @todo: put component issues to Factory
-                '''
-                node_type = con_info.get('type')
-                if node_type == 'mclusternode':
-                    normal.append(status.get('status'))
-                    nodes_stat.setdefault('normal', normal)
-                elif node_type == 'mclustervip':
-                    vip.append(status.get('status'))
-                    nodes_stat.setdefault('vip', vip)
-            
-            ret = self.__get_cluster_status(nodes_stat)
-            cluster_status.setdefault('status', ret)
-            
-            '''
-            @todo: why put destroyed method on check logic?
-            '''
-            if ret == 'destroyed':
-                logging.info('delete containerCluster: %s' % containerClusterName)
-                self.zkOper.delete_container_cluster(containerClusterName)
-        except:
-            '''
-            @todo: check method will be invoked by sync or async method? how to issue with this exception?
-            '''
-            logging.error(str( traceback.format_exc()) )
-            
+        if not self.check_cluster_in_zk(containerClusterName):
+            return {'status':'not exist'}
+        component_type = self.__get_component_type(containerClusterName)
+        cluster_status = {}
+        cluster_status = self.component_container_cluster_validator.container_cluster_status_validator(component_type,
+                                                                                                       containerClusterName)
         return cluster_status
-    
-    def __get_cluster_status(self, nodes_stat):
-        
-        stat_set = ['starting', 'started', 'stopping', 'stopped', 'destroying', 'destroyed']
-        normal_nodes_stat, all_nodes_stat = [], []
-        if not isinstance(nodes_stat, dict):
-            cluster_stat = 'failed'
-            
-        '''
-        @todo: put component type issues to Factory
-        '''
-        vip = nodes_stat.get('vip')
-        normal = nodes_stat.get('normal')
-        if vip:
-            vip_node = vip[0]
-            logging.info('vip:%s' % str(vip_node))
-            all_nodes_stat.append(vip_node)
-        if normal:
-            for normal_node in normal:
-                normal_nodes_stat.append(normal_node)
-                all_nodes_stat.append(normal_node)
 
-        stat_set_list = list(set(all_nodes_stat))
-        if len(stat_set_list) == 1:
-            stat = stat_set_list[0]
-            if stat_set_list[0] in stat_set:
-                cluster_stat = stat
-            else:
-                cluster_stat = 'failed'
-        else:
-            i = 0
-            for normal_node in normal_nodes_stat:
-                if normal_node == 'started':
-                    i += 1
-            if i == 2:
-                cluster_stat = 'danger'
-            elif i ==1:
-                cluster_stat = 'crisis'
-            else:
-                cluster_stat = 'failed'
-        return cluster_stat
+    def check_cluster_in_zk(self, containerClusterName):
+        container_ip_list = self.zkOper.retrieve_container_list(containerClusterName)
+        return len(container_ip_list) != 0
+        
+    def __get_component_type(self, containerClusterName):
+        container_ip_list = self.zkOper.retrieve_container_list(containerClusterName)
+        container_ip = container_ip_list[0]
+        con_info = self.zkOper.retrieve_container_node_value(containerClusterName, container_ip)
+        return con_info.get('type')
 
     def __get_create_info(self, containerClusterName, container_node):
         create_info = {}
@@ -136,10 +80,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         create_info = con.create_info(container_node_value)
         return create_info
 
-    '''
-    @todo: why reason that need check_create_status? same as check method?
-    '''
-    def check_create_status(self, containerClusterName):
+    def create_status(self, containerClusterName):
         failed_rst = {'code':"000001"}
         succ_rst = {'code':"000000"}
         lack_rst = {'code':"000002"}
@@ -148,7 +89,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         
         container_cluster_info = self.zkOper.retrieve_container_cluster_info(containerClusterName)
         start_flag = container_cluster_info.get('start_flag')
-
+        
         if not start_flag:
             return failed_rst
         else:
@@ -170,12 +111,12 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
                 check_rst_dict.setdefault('error_msg', 'create containers failed!')
             
             return check_rst_dict
-  
+
     def config(self, conf_dict={}):
         try:
             error_msg = ''
             logging.info('config args: %s' % conf_dict)
-
+            
             if 'servers' in conf_dict:
                 error_msg = self.__update_white_list(conf_dict)
             else:
@@ -185,7 +126,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
             logging.error( error_msg )
         finally:
             return error_msg
-    
+
     def __update_white_list(self, conf_dict):
         error_msg = ''
         conf_white_str = conf_dict.get('servers')
@@ -204,7 +145,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         for item in delete:
             self.zkOper.del_server_from_white_list(item)
         return error_msg      
-            
+
     def __rewrite_conf_info(self, conf_dict, conf_record):
         for key, value in conf_dict.items():
             if key == 'mem_limit':
@@ -214,7 +155,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
             else:
                 conf_record.setdefault(key, value)
         return conf_record
-    
+
     def get_clusters_zk(self):
         clusters_zk_info = {}
         cluster_name_list = self.zkOper.retrieve_cluster_list()
@@ -222,7 +163,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
             cluster_info_dict = self.get_cluster_zk(cluster_name)
             clusters_zk_info.setdefault(cluster_name, cluster_info_dict)
         return clusters_zk_info
-    
+
     def get_cluster_zk(self, cluster_name):
         cluster_zk_info = {}
         container_ip_list = self.zkOper.retrieve_container_list(cluster_name)
@@ -235,10 +176,10 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
             container_node.setdefault('status', status)
             cluster_zk_info.setdefault(container_ip, container_node)
         return cluster_zk_info
-     
+
 
 class ContainerCluster_stop_Action(ContainerCluster_Action_Base):
-    
+
     def __init__(self, containerClusterName):
         super(ContainerCluster_stop_Action, self).__init__(containerClusterName, 'stop')
 
@@ -247,7 +188,7 @@ class ContainerCluster_start_Action(ContainerCluster_Action_Base):
     
     def __init__(self, containerClusterName):
         super(ContainerCluster_start_Action, self).__init__(containerClusterName, 'start')
-        
+
 
 class ContainerCluster_destroy_Action(ContainerCluster_Action_Base):
     

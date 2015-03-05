@@ -20,7 +20,6 @@ from utils.configFileOpers import ConfigFileOpers
 from tornado_letv.tornado_basic_auth import require_basic_auth
 from utils import _retrieve_userName_passwd
 from serverCluster.serverClusterOpers import ServerCluster_Opers
-from utils.autoutil import http_get
 from utils.exceptions import HTTPAPIError
 from base import APIHandler
 
