@@ -23,7 +23,7 @@ from docker_letv.dockerOpers import Docker_Opers
 from container.container_module import Container
 from utils.exceptions import CommonException, RetryException
 from utils.log import _log_docker_run_command
-from utils import _is_ip, _is_mask, _mask_to_num
+from utils import _mask_to_num
 from utils.invokeCommand import InvokeCommand
 from zk.zkOpers import ZkOpers
 from docker import Client
@@ -172,9 +172,8 @@ class Container_create_action(Abstract_Async_Thread):
         binds = self.docker_model.binds
         component_type = self.docker_model.component_type
         for server_dir,con_dir in binds.items():
-            if 'mclusternode' == component_type and '/data/mcluster_data' in server_dir:
-                if not os.path.exists(server_dir):
-                    os.makedirs(server_dir)
+            if not os.path.exists(server_dir):
+                os.makedirs(server_dir)
             
             """other component_type have different logic, use elif and else to diff 
                

@@ -1,9 +1,7 @@
 #!/usr/bin/env python 2.6.6
 import re
-import logging
 
 from utils.autoutil import *
-from docker_letv.dockerOpers import Docker_Opers
 
 
 class Container():
@@ -45,11 +43,7 @@ class Container():
                 return self.__get_value(item)
 
     def __get_value(self, item):
-        try:
-            value = re.findall('.*=(.*)', item)[0]
-            return value
-        except:
-            logging.error( str(traceback.format_exc()) )
+        return re.findall('.*=(.*)', item)[0]
 
     def image(self):
         return self.inspect.get('Config').get('Image')

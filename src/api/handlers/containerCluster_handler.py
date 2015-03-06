@@ -21,7 +21,7 @@ from utils import _retrieve_userName_passwd
 from utils.exceptions import HTTPAPIError
 from containerCluster.containerClusterOpers import ContainerCluster_Opers, GetClustersChanges
 from componentProxy.db.mysql.mclusterOper import MclusterManager
-from concurrent.futures.thread import ThreadPoolExecutor
+from status.status_enum import Status
 
 
 @require_basic_auth
@@ -322,16 +322,15 @@ class ContainerClusterStopHandler(APIHandler):
 @todo: remove? mulit-component need to provide this manager?
 '''
 class MclusterManagerHandler(APIHandler):
-    
+
     mcluster_manager = MclusterManager()
-    thread_pool_executor = ThreadPoolExecutor(1)
     
     @asynchronous
     def get(self, container_name):
-        future_obj = None
-        future_obj = self.thread_pool_executor.submit(self.mcluster_manager.mcluster_manager_status, container_name)
+        ret = ''
+        ret = self.mcluster_manager.mcluster_manager_status(container_name)
         return_message = {}
-        return_message.setdefault("message", future_obj)
+        return_message.setdefault("message", ret)
         self.finish(return_message)
 
 

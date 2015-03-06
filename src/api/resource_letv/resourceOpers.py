@@ -7,14 +7,12 @@ Created on Sep 8, 2014
 @author: Wangzhen
 '''
 
-import os, time, re
-import logging, traceback
+import os, time
+import logging
 import docker
-import threading
 
 from utils.autoutil import *
 from utils.invokeCommand import InvokeCommand
-from tornado.options import options
 from docker_letv.dockerOpers import Docker_Opers
 
 

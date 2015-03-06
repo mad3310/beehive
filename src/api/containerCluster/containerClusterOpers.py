@@ -11,7 +11,6 @@ import logging, traceback
 
 from utils.autoutil import getHostIp, http_get
 from tornado.options import options
-from common.abstractAsyncThread import Abstract_Async_Thread
 from common.abstractContainerOpers import Abstract_Container_Opers
 from utils.exceptions import CommonException
 from utils import _retrieve_userName_passwd

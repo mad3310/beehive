@@ -31,21 +31,6 @@ class CheckStatusBase(object):
     @abstractmethod
     def retrieve_alarm_level(self, total_count, success_count, failed_count):
         raise NotImplementedError, "Cannot call abstract method"
-        
-        '''
-        @todo: these code can be issued? After raise?
-        '''
-        result_dict = {}
-        format_str = "total=%s, success count=%s, failed count=%s"
-        format_values = (total_count, success_count, failed_count)
-        message = format_str % format_values
-        dt = datetime.datetime.now()
-        result_dict.setdefault("message", message)
-        result_dict.setdefault("alarm", alarm_level)
-        result_dict.setdefault("error_record", error_record)
-        result_dict.setdefault("ctime", dt.strftime(TIME_FORMAT))
-        
-        self.zkOper.write_monitor_status(monitor_type, monitor_key, result_dict)
 
     def write_status(self, total_count, success_count, failed_count, alarm_level, error_record, monitor_type, monitor_key):
         logging.info('write status!')
