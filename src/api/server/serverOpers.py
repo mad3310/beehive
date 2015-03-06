@@ -22,6 +22,11 @@ class Server_Opers(Abstract_Async_Thread):
     '''
     
     container_opers = Container_Opers()
+    
+    '''
+    @todo: please notice that:Server opers don't reference docker opers.
+    whether associated method should be move them into container opers?
+    '''
     docker_opers = Docker_Opers()
     
     def update(self):

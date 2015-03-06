@@ -146,9 +146,6 @@ class Container_create_action(Abstract_Async_Thread):
         '''
         self.docker_opers.start(self.docker_model)
         
-        '''
-        @todo: need to open these code
-        '''
         if self.docker_model.use_ip:
             init_con_ret = self.set_ip_add_route_retry(3)
             if not init_con_ret:

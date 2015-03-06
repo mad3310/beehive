@@ -60,6 +60,10 @@ class ResourceVerify(object):
         
         """
         is_illegal = True
+        
+        '''
+        @todo: this is common logic,please move the if else to associated component proxy class
+        '''
         component_type = component_container_cluster_config.component_type
         if component_type =='mclusternode':
             nodeCount = component_container_cluster_config.nodeCount

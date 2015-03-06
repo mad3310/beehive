@@ -19,6 +19,9 @@ class GbalancerContainerModelCreator(AbstractContainerModelCreator):
         '''
         Constructor
         '''
+        '''
+        @todo: what means?
+        '''
         self.container_model_list = container_model_list
         
     def create(self, args):
