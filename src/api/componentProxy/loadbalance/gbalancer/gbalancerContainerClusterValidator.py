@@ -3,6 +3,7 @@
 import logging
 
 from zk.zkOpers import ZkOpers
+from status.status_enum import Status
 
 
 class GbalancerContainerClusterValidator():
@@ -16,7 +17,7 @@ class GbalancerContainerClusterValidator():
         status = status.get('status')
         
         cluster_status.setdefault('status', status)
-        if status == 'destroyed':
+        if status == Status.destroyed:
             logging.info('delete containerCluster: %s' % containerClusterName)
             self.zk_oper.delete_container_cluster(containerClusterName)
         return cluster_status

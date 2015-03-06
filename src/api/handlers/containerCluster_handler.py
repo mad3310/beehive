@@ -21,6 +21,7 @@ from utils import _retrieve_userName_passwd
 from utils.exceptions import HTTPAPIError
 from containerCluster.containerClusterOpers import ContainerCluster_Opers, GetClustersChanges
 from componentProxy.db.mysql.mclusterOper import MclusterManager
+from concurrent.futures.thread import ThreadPoolExecutor
 
 
 @require_basic_auth
@@ -219,7 +220,7 @@ class CheckContainerClusterStatusHandler(APIHandler):
         
         exists = self.zkOper.check_containerCluster_exists(containerClusterName)
         if not exists:
-            status = {'status' : 'not exist'}
+            status = {'status' : Status.not_exist}
             self.finish(status)
             return
         
@@ -320,16 +321,17 @@ class ContainerClusterStopHandler(APIHandler):
 '''
 @todo: remove? mulit-component need to provide this manager?
 '''
-class StartMclusterManagerHandler(APIHandler):
-
+class MclusterManagerHandler(APIHandler):
+    
     mcluster_manager = MclusterManager()
+    thread_pool_executor = ThreadPoolExecutor(1)
     
     @asynchronous
     def get(self, container_name):
-        ret = ''
-        ret = self.mcluster_manager.mcluster_manager_status(container_name)
+        future_obj = None
+        future_obj = self.thread_pool_executor.submit(self.mcluster_manager.mcluster_manager_status, container_name)
         return_message = {}
-        return_message.setdefault("message", ret)
+        return_message.setdefault("message", future_obj)
         self.finish(return_message)
 
 

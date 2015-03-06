@@ -20,6 +20,7 @@ from zk.zkOpers import ZkOpers
 from containerCluster.baseContainerAction import ContainerCluster_Action_Base
 from containerCluster.containerClusterCreateAction import ContainerCluster_create_Action
 from componentProxy.componentContainerClusterValidator import ComponentContainerClusterValidator
+from status.status_enum import Status
 
 
 class ContainerCluster_Opers(Abstract_Container_Opers):
@@ -56,7 +57,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
 
     def check(self, containerClusterName):
         if not self.check_cluster_in_zk(containerClusterName):
-            return {'status':'not exist'}
+            return {'status': Status.not_exist}
         component_type = self.__get_component_type(containerClusterName)
         cluster_status = {}
         cluster_status = self.component_container_cluster_validator.container_cluster_status_validator(component_type,
@@ -93,7 +94,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         if not start_flag:
             return failed_rst
         else:
-            if start_flag == 'succeed':
+            if start_flag == Status.succeed:
                 for container_node in container_node_list:
                     container_node_value = self.__get_create_info(containerClusterName, container_node)
                     message_list.append(container_node_value)
@@ -106,7 +107,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
                 check_rst_dict.setdefault('error_msg', container_cluster_info.get('error_msg'))
                 logging.info('return info:%s' % str(check_rst_dict))
             
-            elif start_flag == 'failed':
+            elif start_flag == Status.failed:
                 check_rst_dict.update(lack_rst)
                 check_rst_dict.setdefault('error_msg', 'create containers failed!')
             
@@ -258,10 +259,10 @@ class GetClustersChanges(object):
         n = 0
         for _,container_info in nodes.items():
             stat = container_info.get('status').get('status')
-            if stat == 'destroyed':
+            if stat == Status.destroyed:
                 n += 1
         if n == len(nodes):
-            exist = 'destroyed'
+            exist = Status.destroyed
         else:
-            exist = 'alive'
+            exist = Status.alive
         return exist

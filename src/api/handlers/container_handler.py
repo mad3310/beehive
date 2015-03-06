@@ -92,7 +92,7 @@ class StartContainerHandler(APIHandler):
                                 response =  "please check!")
         
         stat = self.container_opers.get_container_stat(container_name)
-        if stat == 'started':
+        if stat == Status.started:
             massage = {}
             massage.setdefault("status", stat)
             massage.setdefault("message", "no need this operation, the container has been started!")
@@ -130,7 +130,7 @@ class StopContainerHandler(APIHandler):
                                 response =  "please check!")
         
         stat = self.container_opers.get_container_stat(container_name)
-        if stat == 'stopped':
+        if stat == Status.stopped:
             massage = {}
             massage.setdefault("status", stat)
             massage.setdefault("message", "no need this operation, the container has been stopped!")

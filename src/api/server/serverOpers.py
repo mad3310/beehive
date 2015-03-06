@@ -14,6 +14,7 @@ from container.container_module import Container
 from container.containerOpers import Container_Opers, ContainerLoad
 from common.abstractAsyncThread import Abstract_Async_Thread
 from utils.autoutil import getHostIp
+from status.status_enum import Status
 
 
 class Server_Opers(object):
@@ -160,7 +161,7 @@ class ServerUpdateAction(Abstract_Async_Thread):
         self._write_container_into_zk(container_name, create_info)
 
     def update_del_node(self, container_name):
-        status = {'status': 'destroyed', 'message': ''}
+        status = {'status': Status.destroyed, 'message': ''}
         self.zkOper.write_container_status_by_containerName(container_name, status)
 
     def _get_containers_from_host(self):

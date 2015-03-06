@@ -27,6 +27,7 @@ from utils import _is_ip, _is_mask, _mask_to_num
 from utils.invokeCommand import InvokeCommand
 from zk.zkOpers import ZkOpers
 from docker import Client
+from status.status_enum import Status
 
 
 class Container_Opers(Abstract_Container_Opers):
@@ -68,7 +69,7 @@ class Container_Opers(Abstract_Container_Opers):
         """
         exists = self.check_container_exists(container_name)
         if not exists:
-            return 'destroyed'
+            return Status.destroyed
         
         container_info_list = self.docker_opers.containers(all=True)
         
@@ -78,9 +79,9 @@ class Container_Opers(Abstract_Container_Opers):
             if name == container_name:
                 stat = container_info.get('Status')
                 if 'Up' in stat:
-                    return 'started'
+                    return Status.started
                 elif 'Exited' in stat:
-                    return 'stopped'
+                    return Status.stopped
 
     def get_all_containers(self, is_all=True):
         """get all containers on some server
@@ -164,7 +165,7 @@ class Container_create_action(Abstract_Async_Thread):
         
         container_node_info = self._get_container_info()
         logging.info('get container info: %s' % str(container_node_info))
-        self.zkOper.write_container_node_info('started', container_node_info)
+        self.zkOper.write_container_node_info(Status.started, container_node_info)
 
     def __make_mount_dir(self):
         re_bind_arg = {}
@@ -182,7 +183,7 @@ class Container_create_action(Abstract_Async_Thread):
     def __check_create_status(self):
         container_name = self.docker_model.name
         stat = self.container_opers.get_container_stat(container_name)
-        if stat == 'started':
+        if stat == Status.started:
             return True
         else:
             return False
@@ -321,12 +322,12 @@ class Container_start_action(Abstract_Async_Thread):
     def __issue_start_action(self):
         start_rst, start_flag = {}, {}
         logging.info('write start flag')
-        start_flag = {'status':'starting', 'message':''}
+        start_flag = {'status': Status.starting, 'message':''}
         self.zkOper.write_container_status_by_containerName(self.container_name, start_flag)
         client = Client()
         client.start(self.container_name)
         stat = self.container_opers.get_container_stat(self.container_name)
-        if stat == 'stopped':
+        if stat == Status.stopped:
             message = 'start container %s failed' % self.container_name
         else:
             message = ''
@@ -359,16 +360,16 @@ class Container_stop_action(Abstract_Async_Thread):
     def __issue_stop_action(self):
         stop_rst, stop_flag = {}, {}
         logging.info('write stop flag')
-        stop_flag = {'status':'stopping', 'message':''}
+        stop_flag = {'status':Status.stopping, 'message':''}
         self.zkOper.write_container_status_by_containerName(self.container_name, stop_flag)
         
         self.docker_opers.stop(self.container_name, 30)
         stat = self.container_opers.get_container_stat(self.container_name)
-        if stat == 'started':
-            status = 'failed'
+        if stat == Status.started:
+            status = Status.failed
             message = 'stop container %s failed' % self.container_name
         else:
-            status = 'stopped'
+            status = Status.stopped
             message = ''
         stop_rst.setdefault('status', status)
         stop_rst.setdefault('message', message)
@@ -403,7 +404,7 @@ class Container_destroy_action(Abstract_Async_Thread):
 
         destroy_rst, destroy_flag = {}, {}
         logging.info('write destroy flag')
-        destroy_flag = {'status':'destroying', 'message':''}
+        destroy_flag = {'status':Status.destroying, 'message':''}
         self.zkOper.write_container_status_by_containerName(self.container_name, destroy_flag)
         mount_dir = self.__get_normal_node_mount_dir()
         self.docker_opers.destroy(self.container_name)
@@ -416,11 +417,11 @@ class Container_destroy_action(Abstract_Async_Thread):
         
         if exists:
             message = 'destroy container %s failed' % self.container_name
-            destroy_rst.setdefault('status', 'failed')
+            destroy_rst.setdefault('status', Status.failed)
             destroy_rst.setdefault('message', message)
             logging.error('destroy container %s failed' % self.container_name)
         else:
-            destroy_rst.setdefault('status', 'destroyed')
+            destroy_rst.setdefault('status', Status.destroyed)
             destroy_rst.setdefault('message', '')
             
         '''
