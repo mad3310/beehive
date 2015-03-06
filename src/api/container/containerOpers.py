@@ -168,9 +168,7 @@ class Container_create_action(Abstract_Async_Thread):
         self.zkOper.write_container_node_info(Status.started, container_node_info)
 
     def __make_mount_dir(self):
-        re_bind_arg = {}
         binds = self.docker_model.binds
-        component_type = self.docker_model.component_type
         for server_dir,con_dir in binds.items():
             if not os.path.exists(server_dir):
                 os.makedirs(server_dir)
