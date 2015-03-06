@@ -22,14 +22,7 @@ class UpdateServerHandler(APIHandler):
     server_opers = Server_Opers()
     
     def get(self):
-        try:
-            self.server_opers.update()
-        except:
-            error_message = str(traceback.format_exc())
-            raise HTTPAPIError(status_code=500, error_detail="update server failed!",\
-                                notification = "direct", \
-                                log_message= "update server failed!",\
-                                response =  "update server failed! %s" % (error_message))
+        self.server_opers.update()
         return_message = {}
         return_message.setdefault("message", "update server successful")
         self.finish(return_message)

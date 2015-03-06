@@ -105,7 +105,8 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
             _action_flag = self.component_manager_status_validator.start_Status_Validator(_component_type, container_model_list, 6)
         else:
             _action_flag = True
-            
+        
+        logging.info('validator manager status result:%s' % str(_action_flag))
         _action_result = 'failed' if not _action_flag else 'succeed'
         
         return (_action_result, '')
@@ -114,9 +115,9 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         logging.info('time sleep 8 seconds')
         time.sleep(8)
         container_cluster_name = component_container_cluster_config.container_cluster_name
-        return handleTimeout(self.__get_cluster_started, 120, container_cluster_name)
+        return handleTimeout(self.__is_cluster_started, 120, container_cluster_name)
     
-    def __get_cluster_started(self, container_cluster_name):
+    def __is_cluster_started(self, container_cluster_name):
         adminUser, adminPasswd = _retrieve_userName_passwd()
         uri_get = '/containerCluster/status/%s' % container_cluster_name
         uri = 'http://localhost:%s%s' % (options.port, uri_get)
