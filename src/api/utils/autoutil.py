@@ -4,7 +4,6 @@
 import urllib
 import time
 import logging
-import traceback
 import threading
 import json
 import os, re

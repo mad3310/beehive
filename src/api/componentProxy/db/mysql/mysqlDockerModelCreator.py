@@ -3,7 +3,6 @@ Created on 2015-2-1
 
 @author: asus
 '''
-import os
 
 from componentProxy.abstractDockerModelCreator import AbstractContainerModelCreator
 from docker_letv.docker_model import Docker_Model

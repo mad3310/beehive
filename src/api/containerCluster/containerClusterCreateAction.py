@@ -24,6 +24,7 @@ from componentProxy.componentManagerValidator import ComponentManagerStatusValid
 from container.container_model import Container_Model
 from componentProxy.componentContainerModelFactory import ComponentContainerModelFactory
 from componentProxy.componentContainerClusterConfigFactory import ComponentContainerClusterConfigFactory
+from status.status_enum import Status
 
 
 class ContainerCluster_create_Action(Abstract_Async_Thread): 
@@ -43,7 +44,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         self._arg_dict = arg_dict
 
     def run(self):
-        __action_result = 'failed'
+        __action_result = Status.failed
         __error_message = ''
         _containerClusterName = self._arg_dict.get('containerClusterName')
         try:
@@ -98,15 +99,16 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         
         started = self.__check_cluster_started(_component_container_cluster_config)
         if not started:
-            return ('failed', '')
+            return (Status.failed, '')
         
         _action_flag = False
         if _component_container_cluster_config.need_validate_manager_status:
             _action_flag = self.component_manager_status_validator.start_Status_Validator(_component_type, container_model_list, 6)
         else:
             _action_flag = True
-            
-        _action_result = 'failed' if not _action_flag else 'succeed'
+        
+        logging.info('validator manager status result:%s' % str(_action_flag))
+        _action_result = Status.failed if not _action_flag else Status.succeed
         
         return (_action_result, '')
 
@@ -114,9 +116,9 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         logging.info('time sleep 8 seconds')
         time.sleep(8)
         container_cluster_name = component_container_cluster_config.container_cluster_name
-        return handleTimeout(self.__get_cluster_started, 120, container_cluster_name)
+        return handleTimeout(self.__is_cluster_started, 120, container_cluster_name)
     
-    def __get_cluster_started(self, container_cluster_name):
+    def __is_cluster_started(self, container_cluster_name):
         adminUser, adminPasswd = _retrieve_userName_passwd()
         uri_get = '/containerCluster/status/%s' % container_cluster_name
         uri = 'http://localhost:%s%s' % (options.port, uri_get)
@@ -124,7 +126,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         ret = http_get(uri, auth_username=adminUser, auth_password=adminPasswd)
         logging.info('get cluster is started result :%s, type:%s' % (str(ret), type(ret)) )
         status = ret.get('response').get('status')
-        return status == 'started'
+        return status == Status.started
 
     def __get_ip_port_resource(self, component_container_cluster_config):
         containerCount = component_container_cluster_config.nodeCount

@@ -5,8 +5,6 @@ Created on 2015-2-2
 '''
 import logging
 import sys
-import urllib
-import json
 
 from tornado.options import options
 from common.abstractAsyncThread import Abstract_Async_Thread

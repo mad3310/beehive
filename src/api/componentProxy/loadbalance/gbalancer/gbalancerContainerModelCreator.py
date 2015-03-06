@@ -3,7 +3,6 @@ Created on 2015-2-5
 
 @author: asus
 '''
-import logging
 
 from componentProxy.abstractContainerModelCreator import AbstractContainerModelCreator
 from container.container_model import Container_Model
@@ -26,8 +25,6 @@ class GbalancerContainerModelCreator(AbstractContainerModelCreator):
         
     def create(self, args):
     
-        component_type = args.get('componentType')
-        network_mode = args.get('network_mode')
         component_container_cluster_config = args.get('component_config')
         containerClusterName = args.get('containerClusterName')
         container_ip_list = args.get('ip_port_resource_list')

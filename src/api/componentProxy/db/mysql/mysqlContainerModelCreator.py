@@ -3,7 +3,6 @@ Created on 2015-2-5
 
 @author: asus
 '''
-import logging
 
 from componentProxy.abstractContainerModelCreator import AbstractContainerModelCreator
 from container.container_model import Container_Model

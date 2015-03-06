@@ -3,7 +3,7 @@
 import pexpect
 import commands
 import time
-import logging
+
 
 class MclusterManager(object):
     

@@ -1,24 +1,25 @@
 #-*- coding: utf-8 -*-
 
 import logging
+import tornado
+
 from tornado.options import options
 from utils.autoutil import http_get
 from tornado.gen import Callback, Wait
 from tornado.httpclient import HTTPRequest, AsyncHTTPClient
 
 
-class MclusterManagerValidator():
+class MclusterManagerValidator(object):
     
     def __init__(self, container_model_list):
         self.container_model_list = container_model_list
     
     def validate_manager_status(self, num):
-        
+        logging.info('begin validate manager status!')
         while num:
-            stat = True
+            logging.info('self.container_model_list length :%s' % len(self.container_model_list))
             if self.container_model_list:
-                for i in len(self.container_model_list):
-                    self.__dispatch_task()
+                self.__dispatch_task()
             else:
                 logging.info('successful!!!')
                 return True
@@ -36,16 +37,16 @@ class MclusterManagerValidator():
 #         logging.debug('get reslut: %s, type: %s' % ( str(ret), type(ret) ))
 #         return ret
     
+    @tornado.gen.engine
     def __dispatch_task(self):
-        http_client = tornado.httpclient.AsyncHTTPClient()
+        http_client = AsyncHTTPClient()
         succ_list = []
         try:
             _key_sets = set()
-            for index, container_model in enumerate(self.container_model_list):
-                property_dict = _get_property_dict(container_model)
+            for container_model in self.container_model_list:
                 host_ip = container_model.host_ip
                 container_name = container_model.container_name
-                url_get = "/inner/MclusterManager/status/%s" % containerName
+                url_get = "/inner/MclusterManager/status/%s" % container_name
                 requesturi = "http://%s:%s%s" % (host_ip, options.port, url_get)
                 logging.info('get request,  requesturi:%s' % requesturi)
                 request = HTTPRequest(url=requesturi, method='GET', connect_timeout=40, request_timeout=40)
@@ -53,7 +54,7 @@ class MclusterManagerValidator():
                 _key_sets.add(callback_key)
                 http_client.fetch(request, callback=(yield Callback(callback_key)))
             
-            for container_model in len(self.container_model_list):
+            for container_model in self.container_model_list:
                 callback_key = _key_sets.pop()
                 response = yield Wait(callback_key)
                 
@@ -74,9 +75,4 @@ class MclusterManagerValidator():
                     
         finally:
             http_client.close()
-        
-        
-        
-        
-    
     

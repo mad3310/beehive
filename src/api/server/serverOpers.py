@@ -14,9 +14,10 @@ from container.container_module import Container
 from container.containerOpers import Container_Opers, ContainerLoad
 from common.abstractAsyncThread import Abstract_Async_Thread
 from utils.autoutil import getHostIp
+from status.status_enum import Status
 
 
-class Server_Opers(Abstract_Async_Thread):
+class Server_Opers(object):
     '''
     classdocs
     '''
@@ -30,11 +31,9 @@ class Server_Opers(Abstract_Async_Thread):
     docker_opers = Docker_Opers()
     
     def update(self):
-        logging.info('update server!')
         host_ip = getHostIp()
-        logging.info('host_ip: %s' % host_ip)
-        server = UpdateServer(host_ip)
-        server.update()
+        server_update_action = ServerUpdateAction(host_ip)
+        server_update_action.start()
 
     def get_all_containers_mem_load(self):
         load_dict = {}
@@ -117,13 +116,7 @@ class Server_Opers(Abstract_Async_Thread):
         return result
 
 
-
-
-
-'''
-@todo: what means for this class?
-'''
-class UpdateServer(object):
+class ServerUpdateAction(Abstract_Async_Thread):
 
     zkOper = ZkOpers()
     docker_opers = Docker_Opers()
@@ -132,7 +125,14 @@ class UpdateServer(object):
     def __init__(self, host_ip):
         self.host_ip = host_ip
 
-    def update(self):
+    def run(self):
+        try:
+            logging.info('do update on server : %s' % self.host_ip)
+            self.__update()
+        except:
+            self.threading_exception_queue.put(sys.exc_info())
+
+    def __update(self):
         host_containers = self._get_containers_from_host()
         zk_containers = self._get_containers_from_zookeeper()
         add, delete, both = self._compare(host_containers, zk_containers)
@@ -166,7 +166,7 @@ class UpdateServer(object):
         self._write_container_into_zk(container_name, create_info)
 
     def update_del_node(self, container_name):
-        status = {'status': 'destroyed', 'message': ''}
+        status = {'status': Status.destroyed, 'message': ''}
         self.zkOper.write_container_status_by_containerName(container_name, status)
 
     def _get_containers_from_host(self):

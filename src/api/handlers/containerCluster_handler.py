@@ -21,6 +21,7 @@ from utils import _retrieve_userName_passwd
 from utils.exceptions import HTTPAPIError
 from containerCluster.containerClusterOpers import ContainerCluster_Opers, GetClustersChanges
 from componentProxy.db.mysql.mclusterOper import MclusterManager
+from status.status_enum import Status
 
 
 @require_basic_auth
@@ -219,7 +220,7 @@ class CheckContainerClusterStatusHandler(APIHandler):
         
         exists = self.zkOper.check_containerCluster_exists(containerClusterName)
         if not exists:
-            status = {'status' : 'not exist'}
+            status = {'status' : Status.not_exist}
             self.finish(status)
             return
         
@@ -320,7 +321,7 @@ class ContainerClusterStopHandler(APIHandler):
 '''
 @todo: remove? mulit-component need to provide this manager?
 '''
-class StartMclusterManagerHandler(APIHandler):
+class MclusterManagerHandler(APIHandler):
 
     mcluster_manager = MclusterManager()
     

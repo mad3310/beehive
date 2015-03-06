@@ -101,7 +101,7 @@ class Container_Model(object):
     def image(self):
         return self._image
     
-    @env.setter
+    @image.setter
     def image(self, image):
         self._image = image
 
@@ -109,7 +109,7 @@ class Container_Model(object):
     def ports(self):
         return self._ports
     
-    @env.setter
+    @ports.setter
     def ports(self, ports):
         self._ports = ports
 
@@ -117,7 +117,7 @@ class Container_Model(object):
     def mem_limit(self):
         return self._mem_limit
     
-    @env.setter
+    @mem_limit.setter
     def mem_limit(self, mem_limit):
         self._mem_limit = mem_limit
 
@@ -125,7 +125,7 @@ class Container_Model(object):
     def network_mode(self):
         return self._network_mode
     
-    @env.setter
+    @network_mode.setter
     def network_mode(self, network_mode):
         self._network_mode = network_mode
 
