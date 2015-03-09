@@ -7,7 +7,7 @@ Created on 2015-2-1
 from componentProxy.abstractDockerModelCreator import AbstractContainerModelCreator
 from docker_letv.docker_model import Docker_Model
 
-class GbalancerDockerModelCreator(AbstractContainerModelCreator):
+class NginxDockerModelCreator(AbstractContainerModelCreator):
     '''
     classdocs
     '''
@@ -19,9 +19,7 @@ class GbalancerDockerModelCreator(AbstractContainerModelCreator):
         '''
 
     def create(self, arg_dict):
-
         _container_name = arg_dict.get('container_name')
-        _containerClusterName = arg_dict.get('container_cluster_name')
         _env = eval( arg_dict.get('env') )
         _image = arg_dict.get('image')
         _mem_limit = int(arg_dict.get('mem_limit'))

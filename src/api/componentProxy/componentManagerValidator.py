@@ -5,6 +5,7 @@ Created on 2015-2-4
 '''
 from componentProxy.db.mysql.mysqlManagerValidator import MclusterManagerValidator
 from componentProxy.loadbalance.gbalancer.gbalancerManagerValidator import GbalanceManagerValidator
+from componentProxy.webcontainer.nginx.nginxManagerValidator import NginxManagerValidator
 
 
 class ComponentManagerStatusValidator(object):
@@ -23,6 +24,8 @@ class ComponentManagerStatusValidator(object):
             manager_validator = MclusterManagerValidator(container_model_list)
         elif "mclustervip" == _component_type:
             manager_validator = GbalanceManagerValidator(container_model_list)
+        elif "nginx" == _component_type:
+            manager_validator = NginxManagerValidator(container_model_list)
         else:
             manager_validator = None
             

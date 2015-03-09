@@ -4,7 +4,9 @@ Created on Sep 8, 2014
 @author: root
 '''
 
+from utils import _get_property_dict
 from docker import Client as client
+
 
 class Docker_Opers(client):
     '''
@@ -17,53 +19,101 @@ class Docker_Opers(client):
         
 
     def create(self, docker_model):
-        image = docker_model.image
-        hostname = docker_model.hostname
-        user = 'root'
-        name = docker_model.name
-        environment = docker_model.environment
-        tty = True
-        ports = docker_model.ports
-        stdin_open = True
-        mem_limit = docker_model.mem_limit
-        volumes = docker_model.volumes
         
-        container_id = self.client.create_container(image=image, 
-                                                    hostname=hostname, 
-                                                    user=user,
-                                                    name=name, 
-                                                    environment=environment, 
-                                                    tty=tty, 
-                                                    ports=ports, 
-                                                    stdin_open=stdin_open,
-                                                    mem_limit=mem_limit, 
-                                                    volumes=volumes)
-        return container_id
-    
+        entry = _get_property_dict(docker_model)
+        image = entry['image']
+        
+        tty = entry['tty'] if 'tty' in entry else True
+        stdin_open = entry['stdin_open'] if 'stdin_open' in entry else True
+        
+        kwargs = {
+            'image': image,
+            'user': 'root',
+            'detach': False,
+            'tty' : tty,
+            'stdin_open':stdin_open,
+        }
+
+        if 'name' in entry:
+            kwargs['name'] = entry['name']
+
+        if 'volumes' in entry:
+            kwargs['volumes'] = entry['volumes']
+
+        if 'environment' in entry:
+            kwargs['environment'] = entry['environment']
+
+        if 'hostname' in entry:
+            kwargs['hostname'] = entry['hostname']
+
+        if 'cpu_shares' in entry:
+            kwargs['cpu_shares'] = entry['cpu_shares']
+
+        if 'mem_limit' in entry:
+            kwargs['mem_limit'] = entry['mem_limit']
+
+        if 'entrypoint' in entry:
+            kwargs['entrypoint'] = entry['entrypoint']
+
+        if 'command' in entry:
+            kwargs['command'] = entry['command']
+
+        if 'ports' in entry:
+            kwargs['ports'] = entry['ports']
+
+        if 'portMappings' in entry:
+            kwargs['ports'] = [p['containerPort'] for p in entry['portMappings']]
+            
+        container = self.client.create_container(**kwargs)
+        
+        #self.docker_start(docker_model)
+        
+        return container['Id']
+           
     def start(self, docker_model):
-        container = docker_model.name
-        binds = docker_model.binds
-        port_bindings = None 
-        lxc_conf = None
-        publish_all_ports = False
-        links = None
-        privileged=True
-        dns=None
-        dns_search=None
-        volumes_from=None
-        network_mode='bridge'
         
-        self.client.start(container=container, 
-                            binds=binds, 
-                            port_bindings=port_bindings, 
-                            lxc_conf=lxc_conf, 
-                            publish_all_ports=publish_all_ports, 
-                            links=links,
-                            privileged=privileged, 
-                            dns=dns, 
-                            dns_search=dns_search, 
-                            volumes_from=volumes_from, 
-                            network_mode=network_mode)
+        container = docker_model.name
+        entry = _get_property_dict(docker_model)
+        privileged = entry['privileged'] if 'privileged' in entry else True
+        network_mode = entry['network_mode'] if 'network_mode' in entry else 'bridge'
+        
+        kwargs = {
+            'container': container,
+            'network_mode':network_mode, 
+            'privileged' : privileged
+        }
+
+        if 'binds' in entry:
+            kwargs['binds'] = entry['binds']
+
+        if 'network' in entry:
+            kwargs['network_mode'] = entry['network']
+
+        if 'privileged' in entry:
+            kwargs['privileged'] = entry['privileged']
+
+        if 'lxc_conf' in entry:
+            kwargs['lxc_conf'] = entry['lxc_conf']
+
+        if 'volumes_from' in entry:
+            kwargs['volumes_from'] = entry['volumes_from']
+
+        if 'port_bindings' in entry:
+            kwargs['port_bindings'] = entry['port_bindings']
+
+        if 'links' in entry:
+            kwargs['links'] = entry['links']
+
+        if 'dns' in entry:
+            kwargs['dns'] = entry['dns']
+
+        if 'dns_search' in entry:
+            kwargs['dns_search'] = entry['dns_search']
+
+        if 'publish_all_ports' in entry:
+            kwargs['publish_all_ports'] = entry['publish_all_ports']
+
+        self.client.start(**kwargs);
        
     def stop(self, container, timeout=20):
         self.client.stop(container, timeout)

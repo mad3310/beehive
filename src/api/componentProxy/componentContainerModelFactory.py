@@ -4,6 +4,7 @@ Created on 2015-2-1
 @author: asus
 '''
 from componentProxy.db.mysql.mysqlContainerModelCreator import MySQLContainerModelCreator
+from componentProxy.webcontainer.nginx.nginxContainerModelCreator import NginxContainerModelCreator
 from componentProxy.loadbalance.gbalancer.gbalancerContainerModelCreator import GbalancerContainerModelCreator
 
 class ComponentContainerModelFactory(object):
@@ -24,6 +25,8 @@ class ComponentContainerModelFactory(object):
             creator = GbalancerContainerModelCreator()
         elif "mclusternode" == _component_type:
             creator = MySQLContainerModelCreator()
+        elif "nginx" == _component_type:
+            creator = NginxContainerModelCreator()
         
         _arg_list = creator.create(args)
         return _arg_list

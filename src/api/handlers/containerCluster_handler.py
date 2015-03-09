@@ -21,6 +21,7 @@ from utils import _retrieve_userName_passwd
 from utils.exceptions import HTTPAPIError
 from containerCluster.containerClusterOpers import ContainerCluster_Opers, GetClustersChanges
 from componentProxy.db.mysql.mclusterOper import MclusterManager
+from componentProxy.webcontainer.nginx.nginxOper import NginxManager
 from status.status_enum import Status
 
 
@@ -318,9 +319,7 @@ class ContainerClusterStopHandler(APIHandler):
         massage.setdefault("message", "due to stop a container cluster need a lot time, please wait and check the result~")
         self.finish(massage)
 
-'''
-@todo: remove? mulit-component need to provide this manager?
-'''
+
 class MclusterManagerHandler(APIHandler):
 
     mcluster_manager = MclusterManager()
@@ -329,6 +328,18 @@ class MclusterManagerHandler(APIHandler):
     def get(self, container_name):
         ret = ''
         ret = self.mcluster_manager.mcluster_manager_status(container_name)
+        return_message = {}
+        return_message.setdefault("message", ret)
+        self.finish(return_message)
+
+
+class NginxManagerHandler(APIHandler):
+
+    nginx_manager = NginxManager()
+    
+    def get(self, container_name):
+        ret = ''
+        ret = self.nginx_manager.nginx_manager_status(container_name)
         return_message = {}
         return_message.setdefault("message", ret)
         self.finish(return_message)

@@ -5,12 +5,13 @@ Created on 2015-2-1
 '''
 from componentProxy.db.mysql.mysqlDockerModelCreator import MysqlDockerModelCreator
 from componentProxy.loadbalance.gbalancer.gbalancerDockerModelCreator import GbalancerDockerModelCreator
+from componentProxy.webcontainer.nginx.nginxDockerModelCreator import NginxDockerModelCreator
+
 
 class ComponentDockerModelFactory(object):
     '''
     classdocs
     '''
-
 
     def __init__(self):
         '''
@@ -23,6 +24,9 @@ class ComponentDockerModelFactory(object):
             
         elif 'mclustervip' == _component_type:
             creator = GbalancerDockerModelCreator()
-    
+        
+        elif 'nginx' == _component_type:
+            creator = NginxDockerModelCreator()
+            
         docker_py_model = creator.create(arg_dict)
         return docker_py_model

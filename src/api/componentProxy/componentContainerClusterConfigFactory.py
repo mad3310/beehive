@@ -5,6 +5,7 @@ Created on 2015-2-5
 '''
 from componentProxy.db.mysql.mysqlContainerClusterConfig import MysqlContainerClusterConfig
 from componentProxy.loadbalance.gbalancer.gbalancerContainerClusterConfig import GbalancerContainerClusterConfig
+from componentProxy.webcontainer.nginx.nginxContainerClusterConfig import NginxContainerClusterConfig
 
 class ComponentContainerClusterConfigFactory(object):
     '''
@@ -24,5 +25,9 @@ class ComponentContainerClusterConfigFactory(object):
             config = GbalancerContainerClusterConfig(args)
         elif "mclusternode" == _component_type:
             config = MysqlContainerClusterConfig(args)
-        
+        elif "mclusternode" == _component_type:
+            config = NginxContainerClusterConfig(args)
+        else:
+            pass
+            
         return config
