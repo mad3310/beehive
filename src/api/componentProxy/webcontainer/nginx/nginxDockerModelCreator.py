@@ -24,10 +24,14 @@ class NginxDockerModelCreator(AbstractContainerModelCreator):
         _image = arg_dict.get('image')
         _mem_limit = int(arg_dict.get('mem_limit'))
         _network_mode = arg_dict.get('network_mode')
+        _host_ip = arg_dict.get('host_ip')
+        _component_type = arg_dict.get('component_type')
         
         _docker_model = Docker_Model()
         _docker_model.image = _image
         _docker_model.mem_limit = _mem_limit
+        _docker_model.host_ip = _host_ip
+        _docker_model.component_type = _component_type
         _docker_model.volumes = None
         _docker_model.binds = None
         _docker_model.privileged = True

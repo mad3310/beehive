@@ -26,6 +26,8 @@ class GbalancerDockerModelCreator(AbstractContainerModelCreator):
         _image = arg_dict.get('image')
         _mem_limit = int(arg_dict.get('mem_limit'))
         _network_mode = arg_dict.get('network_mode')
+        _host_ip = arg_dict.get('host_ip')
+        _component_type = arg_dict.get('component_type')
         
         _docker_model = Docker_Model()
         _docker_model.image = _image
@@ -37,6 +39,8 @@ class GbalancerDockerModelCreator(AbstractContainerModelCreator):
         _docker_model.name = _container_name
         _docker_model.environment = _env
         _docker_model.hostname = _container_name
+        _docker_model.host_ip = _host_ip
+        _docker_model.component_type = _component_type
         _docker_model.ports = None
         if 'ip' == _network_mode:
             _docker_model.use_ip = True

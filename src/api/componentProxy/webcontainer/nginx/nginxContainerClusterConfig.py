@@ -40,7 +40,9 @@ class NginxContainerClusterConfig(object):
         
         image = params.get('image')
         self.image = image if image else 'letv/mcluster_vip_gbalancer:0.0.3'
-        
+
+        container_cluster_name = params.get('containerClusterName')
+        self.container_cluster_name = container_cluster_name
         component_type = params.get('componentType')
         self.component_type = component_type
         network_mode = params.get('network_mode')

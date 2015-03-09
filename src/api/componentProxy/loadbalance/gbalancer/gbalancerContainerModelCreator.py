@@ -14,11 +14,10 @@ class GbalancerContainerModelCreator(AbstractContainerModelCreator):
     '''
 
 
-    def __init__(self, container_model_list):
+    def __init__(self):
         '''
         Constructor
         '''
-        self.container_model_list = container_model_list
         
     def create(self, args):
     

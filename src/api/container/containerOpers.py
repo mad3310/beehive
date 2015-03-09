@@ -169,9 +169,10 @@ class Container_create_action(Abstract_Async_Thread):
 
     def __make_mount_dir(self):
         binds = self.docker_model.binds
-        for server_dir,con_dir in binds.items():
-            if not os.path.exists(server_dir):
-                os.makedirs(server_dir)
+        if binds:
+            for server_dir,con_dir in binds.items():
+                if not os.path.exists(server_dir):
+                    os.makedirs(server_dir)
             
             """other component_type have different logic, use elif and else to diff 
                

@@ -25,7 +25,7 @@ class ComponentContainerClusterConfigFactory(object):
             config = GbalancerContainerClusterConfig(args)
         elif "mclusternode" == _component_type:
             config = MysqlContainerClusterConfig(args)
-        elif "mclusternode" == _component_type:
+        elif "nginx" == _component_type:
             config = NginxContainerClusterConfig(args)
         else:
             pass
