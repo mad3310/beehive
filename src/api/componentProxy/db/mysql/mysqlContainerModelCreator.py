@@ -40,7 +40,6 @@ class MySQLContainerModelCreator(AbstractContainerModelCreator):
             container_model.container_ip = container_ip_list[i]
             container_name = 'd-mcl-%s-n-%s' % (containerClusterName, str(i+1))
             container_model.container_name = container_name
-            container_model.component_type = 'mclusternode'
             container_model.volumes = volumes
             container_model.binds = binds
             container_model.image = _component_container_cluster_config.image

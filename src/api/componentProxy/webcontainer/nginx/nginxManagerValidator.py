@@ -36,12 +36,12 @@ class NginxManagerValidator(object):
             num -= 1
 
     def __get(self, containerName, container_node):
-        url_post = "/inner/MclusterManager/status/%s" % containerName
+        url_post = "/inner/nginxManager/status/%s" % containerName
         requesturi = "http://%s:%s%s" % (container_node, options.port, url_post)
-        logging.debug('requesturi: %s' % requesturi)
+        logging.info('requesturi: %s' % requesturi)
         fetch_ret = http_get(requesturi)
         logging.info('fetch_ret:%s' % str(fetch_ret))
         ret = fetch_ret.get('response').get('message')
-        logging.debug('fetch_ret.get response :%s' % type(fetch_ret.get('response')))
-        logging.debug('get reslut: %s, type: %s' % ( str(ret), type(ret) ))
+        logging.info('fetch_ret.get response :%s' % type(fetch_ret.get('response')))
+        logging.info('get reslut: %s, type: %s' % ( str(ret), type(ret) ))
         return ret
