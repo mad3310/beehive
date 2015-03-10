@@ -42,12 +42,23 @@ class AbstractContainerModelCreator(object):
         
         if _binds:
             _docker_model.binds = eval(_binds)
+        else:
+            _docker_model.binds = None
+        
         if _volumes:
             _docker_model.volumes = eval(_volumes)
+        else:
+            _docker_model.volumes = None
+        
         if _env:
             _docker_model.environment = eval(_env)
+        else:
+            _docker_model.environment = None
+        
         if _ports:
             _docker_model.ports = eval(_ports)
+        else:
+            _docker_model.ports = None
         
         if 'ip' == _network_mode:
             _docker_model.use_ip = True

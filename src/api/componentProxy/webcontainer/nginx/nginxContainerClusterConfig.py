@@ -47,3 +47,4 @@ class NginxContainerClusterConfig(object):
         self.component_type = component_type
         network_mode = params.get('network_mode')
         self.network_mode = network_mode
+        self.ports = [2181]    ##for test

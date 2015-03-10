@@ -60,9 +60,6 @@ class Docker_Opers(client):
 
         if 'ports' in entry:
             kwargs['ports'] = entry['ports']
-
-        if 'portMappings' in entry:
-            kwargs['ports'] = [p['containerPort'] for p in entry['portMappings']]
             
         container = self.client.create_container(**kwargs)
         
