@@ -35,6 +35,7 @@ class NginxContainerModelCreator(AbstractContainerModelCreator):
             container_model.container_cluster_name = containerClusterName
             container_name = 'd-ngx-%s-n-%s' % (containerClusterName, str(i+1))
             container_model.container_name = container_name
+            container_model.host_ip = host_ip_list[i]
             container_model.component_type = 'nginx'
             container_model.image = component_container_cluster_config.image
             ports = component_container_cluster_config.ports
@@ -46,7 +47,6 @@ class NginxContainerModelCreator(AbstractContainerModelCreator):
                 container_model.port_bindings = port_bindings
             else:
                 env = {}
-                container_model.host_ip = host_ip_list[i]
                 env.setdefault('NETMASK', '255.255.0.0')
                 gateway = _get_gateway_from_ip(ip_port_list[0])
                 env.setdefault('GATEWAY', gateway)

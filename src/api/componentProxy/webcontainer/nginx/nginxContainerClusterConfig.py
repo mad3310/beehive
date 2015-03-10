@@ -39,7 +39,7 @@ class NginxContainerClusterConfig(object):
         self.mem_limit = mem_limit if mem_limit else 512*1024*1024
         
         image = params.get('image')
-        self.image = image if image else 'letv/mcluster_vip_gbalancer:0.0.3'
+        self.image = image if image else 'nginx/mcluster:0.0.1'
         
         container_cluster_name = params.get('containerClusterName')
         self.container_cluster_name = container_cluster_name

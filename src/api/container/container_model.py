@@ -129,4 +129,12 @@ class Container_Model(object):
     def network_mode(self, network_mode):
         self._network_mode = network_mode
 
+    @property
+    def port_bindings(self):
+        return self._port_bindings
+    
+    @port_bindings.setter
+    def port_bindings(self, port_bindings):
+        self._network_mode = port_bindings
+
         

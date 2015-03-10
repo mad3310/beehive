@@ -134,7 +134,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         ip_port_resource_list = []
         if 'ip' == _network_mode:
             ip_port_resource_list = self.ip_opers.retrieve_ip_resource(containerCount)
-        elif 'port' == _network_mode:
+        elif 'bridge' == _network_mode:
             ip_port_resource_list = self.port_opers.retrieve_port_resource(containerCount)
         return ip_port_resource_list
 
