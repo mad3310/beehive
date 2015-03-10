@@ -141,5 +141,5 @@ class Docker_Model(object):
     
     @port_bindings.setter
     def port_bindings(self, port_bindings):
-        self._network_mode = port_bindings
+        self._port_bindings = port_bindings
         
