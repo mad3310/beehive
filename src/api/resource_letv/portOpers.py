@@ -29,16 +29,16 @@ class PortOpers(object):
 #                 self.zkOper.unLock_assign_port(lock)
 #         return port_dict
 
-    
+
     def write_into_portPool(self, args):
         host_ip = args.get('hostIp')
-        port_count = args.get('portCount')
-        start_port = args.get('startPort')
+        port_count = int(args.get('portCount'))
+        start_port = int(args.get('startPort'))
 
         choosed_ports = self.__get_needed_ports(start_port, port_count)
         for port in choosed_ports:
-            self.zkOper.write_port_into_portPool(host_ip, port)
-    
+            self.zkOper.write_port_into_portPool(host_ip, str(port) )
+
     def __get_needed_ports(self, start_port, port_count):
         port_list = []
         while True:
@@ -50,8 +50,7 @@ class PortOpers(object):
             if len(port_list) >= port_count:
                 break
         return port_list
-    
-    
+
     def __is_port_usable(self, port):
         """
             @todo

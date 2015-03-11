@@ -25,9 +25,10 @@ class PortHandler(APIHandler):
         return_message.setdefault("message", "write port to ip pools successfully!")
         self.finish(return_message)
 
+    #curl -X GET http://localhost:8888:/admin/ports?hostIp=10.154.156.150
     def get(self):
         args = self.get_all_arguments()
-        host_ip = args.get('host_ip')
+        host_ip = args.get('hostIp')
         logging.info('get server %s ports' % host_ip)
         return_message = {}
         ports = self.zkOper.get_ports_from_portPool(host_ip)

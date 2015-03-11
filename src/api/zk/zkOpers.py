@@ -189,24 +189,29 @@ class ZkOpers(object):
         @todo: put other issues to containerOpers or containerClusterOpers?
         '''
         inspect = containerProps.get('inspect')
+        is_use_ip =  containerProps.get('isUseIp')
         con = Container(inspect=inspect)
         container_name = con.name()
         cluster = con.cluster(container_name)
         logging.info('get container cluster :%s' % cluster)
-        container_ip = con.ip()
-        logging.info('get container ip :%s' % container_ip)
-        if not (container_ip and cluster):
-            logging.error('get container ip or cluster name failed, not write this info')
-            logging.info('inspect : %s' % str(inspect) )
-            return
+        if is_use_ip:
+            container_ip = con.ip()
+            logging.info('get container ip :%s' % container_ip)
+            if not (container_ip and cluster):
+                logging.error('get container ip or cluster name failed, not write this info')
+                logging.info('inspect : %s' % str(inspect) )
+                return
+            container_node = container_ip
+        else:
+            container_node = container_name
         clusterUUID = self.getClusterUUID()
-        path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + cluster + "/" + container_ip
+        path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + cluster + "/" + container_node
         self.zk.ensure_path(path)
         self.zk.set(path, str(containerProps))
         stat = {}
         stat.setdefault('status', status)
         stat.setdefault('message', '')
-        self.__write_container_status(cluster, container_ip, stat)
+        self.__write_container_status(cluster, container_node, stat)
     
     def check_containerCluster_exists(self, containerClusterName):
         clusterUUID = self.getClusterUUID()
@@ -383,12 +388,12 @@ class ZkOpers(object):
     
     def write_port_into_portPool(self, host_ip, port):
         clusterUUID = self.getClusterUUID()
-        path = self.rootPath + '/' + clusterUUID + '/' + host_ip + '/' + port
+        path = self.rootPath + '/' + clusterUUID + "/dataNode/" + host_ip + '/' + port
         self.zk.ensure_path(path)
             
     def get_ports_from_portPool(self, host_ip):
         clusterUUID = self.getClusterUUID()
-        path = self.rootPath + '/' + clusterUUID + '/' + host_ip
+        path = self.rootPath + '/' + clusterUUID + "/dataNode/" + host_ip
         return self._return_children_to_list(path)
 
     '''
