@@ -29,6 +29,7 @@ class AbstractContainerModelCreator(object):
         _volumes = arg_dict.get('volumes')
         _binds = arg_dict.get('binds')
         _ports = arg_dict.get('ports')
+        _port_bindings = arg_dict.get('port_bindings')
 
         _docker_model = Docker_Model()
         _docker_model.image = _image
@@ -59,6 +60,11 @@ class AbstractContainerModelCreator(object):
             _docker_model.ports = eval(_ports)
         else:
             _docker_model.ports = None
+
+        if _port_bindings:
+            _docker_model.port_bindings = eval(_port_bindings)
+        else:
+            _docker_model.port_bindings = None
         
         if 'ip' == _network_mode:
             _docker_model.use_ip = True

@@ -43,7 +43,8 @@ class NginxContainerModelCreator(AbstractContainerModelCreator):
             container_model.mem_limit = component_container_cluster_config.mem_limit
             
             if 'bridge' == network_mode:
-                port_bindings = dict(zip(ports, ip_port_list))
+                port_list = [('0.0.0.0', item) for item in ip_port_list]    
+                port_bindings = dict(zip(ports, port_list))
                 container_model.port_bindings = port_bindings
             else:
                 env = {}
@@ -56,3 +57,4 @@ class NginxContainerModelCreator(AbstractContainerModelCreator):
             create_container_arg_list.append(container_model)
         
         return create_container_arg_list
+        

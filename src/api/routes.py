@@ -6,7 +6,8 @@ from handlers.server_handler import *
 from handlers.containerCluster_handler import *
 from handlers.container_handler import *
 from handlers.monitor_handler import *
-from handlers.ip import *
+from handlers.ip import IPHandler
+from handlers.port import PortHandler
 from handlers.admin import AdminConf, AdminUser, AdminReset
 
 handlers = [
@@ -14,6 +15,7 @@ handlers = [
     (r"/admin/user", AdminUser),
     (r"/admin/reset", AdminReset),
     (r"/admin/ips", IPHandler),
+    (r"/admin/ports", PortHandler),
     (r"/serverCluster", ServerClusterHandler),
     (r"/serverCluster/update", UpdateServerClusterHandler),
     (r"/serverCluster/containers/under_oom", SwitchServersUnderoomHandler),

@@ -383,11 +383,14 @@ class ZkOpers(object):
     
     def write_port_into_portPool(self, host_ip, port):
         clusterUUID = self.getClusterUUID()
-        path = "%s/%s/portPool/%s/%s" % (self.rootPath, clusterUUID, host_ip, port)
+        path = self.rootPath + '/' + clusterUUID + '/' + host_ip + '/' + port
         self.zk.ensure_path(path)
             
-            
-            
+    def get_ports_from_portPool(self, host_ip):
+        clusterUUID = self.getClusterUUID()
+        path = self.rootPath + '/' + clusterUUID + '/' + host_ip
+        return self._return_children_to_list(path)
+
     '''
     *********************************************Lock**********************************************
     '''
