@@ -373,7 +373,7 @@ class ZkOpers(object):
 
     def retrieve_port(self, host_ip, port_count):
         clusterUUID = self.getClusterUUID()
-        path = "%s/%s/portPool/%s" % (self.rootPath, clusterUUID, host_ip)
+        path = "%s/%s/dataNode/%s" % (self.rootPath, clusterUUID, host_ip)
         rest_port_list = self._return_children_to_list(path)
         assign_port_list = []
 

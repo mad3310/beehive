@@ -24,7 +24,7 @@ class NginxContainerModelCreator(AbstractContainerModelCreator):
         
         component_container_cluster_config = args.get('component_config')
         containerClusterName = args.get('containerClusterName')
-        ip_port_list = args.get('ip_port_resource_list')
+        ip_port_resource = args.get('ip_port_resource_list')
         host_ip_list = args.get('host_ip_list')
         containerCount = component_container_cluster_config.nodeCount
         network_mode = component_container_cluster_config.network_mode
@@ -35,7 +35,8 @@ class NginxContainerModelCreator(AbstractContainerModelCreator):
             container_model.container_cluster_name = containerClusterName
             container_name = 'd-ngx-%s-n-%s' % (containerClusterName, str(i+1))
             container_model.container_name = container_name
-            container_model.host_ip = host_ip_list[i]
+            host_ip = host_ip_list[i]
+            container_model.host_ip = host_ip
             container_model.component_type = 'nginx'
             container_model.image = component_container_cluster_config.image
             ports = component_container_cluster_config.ports
@@ -43,16 +44,17 @@ class NginxContainerModelCreator(AbstractContainerModelCreator):
             container_model.mem_limit = component_container_cluster_config.mem_limit
             
             if 'bridge' == network_mode:
-                port_list = [('0.0.0.0', item) for item in ip_port_list]    
+                port_list = ip_port_resource.get(host_ip)
+                port_list = [('0.0.0.0', item) for item in port_list]    
                 port_bindings = dict(zip(ports, port_list))
                 container_model.port_bindings = port_bindings
             else:
                 env = {}
                 env.setdefault('NETMASK', '255.255.0.0')
-                gateway = _get_gateway_from_ip(ip_port_list[0])
+                gateway = _get_gateway_from_ip(ip_port_resource[0])
                 env.setdefault('GATEWAY', gateway)
                 env.setdefault('HOSTNAME', container_name)
-                env.setdefault('IP', ip_port_list[i])
+                env.setdefault('IP', ip_port_resource[i])
                 container_model.env = env
             create_container_arg_list.append(container_model)
         
