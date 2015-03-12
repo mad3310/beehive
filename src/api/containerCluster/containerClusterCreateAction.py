@@ -63,15 +63,16 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
     def __issue_create_action(self, args={}):
         logging.info('args:%s' % str(args))
         _component_type = args.get('componentType')
+        _network_mode = args.get('network_mode')
         
         logging.info('containerClusterName : %s' % str(args.get('containerClusterName')))
         logging.info('_component_type : %s' % str(_component_type))
-        logging.info('_network_mode : %s' % str(args.get('network_mode')))
+        logging.info('_network_mode : %s' % str(_network_mode))
         
         _component_container_cluster_config = self.component_container_cluster_config_factory.retrieve_config(args)
         args.setdefault('component_config', _component_container_cluster_config)
         
-        self.__create_container_cluser_info(_component_container_cluster_config)
+        self.__create_container_cluser_info(_network_mode, _component_container_cluster_config)
         
         is_res_verify = _component_container_cluster_config.is_res_verify
         logging.info('is_res_verify : %s' % str(is_res_verify) )
@@ -148,12 +149,16 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         _container_cluster_info.setdefault('containerClusterName', _containerClusterName)
         self.zkOper.write_container_cluster_info(_container_cluster_info)
 
-    def __create_container_cluser_info(self, component_container_cluster_config):
+    def __create_container_cluser_info(self, network_mode, component_container_cluster_config):
         _container_cluster_info = {}
         containerCount = component_container_cluster_config.nodeCount
         containerClusterName = component_container_cluster_config.container_cluster_name
         _container_cluster_info.setdefault('containerCount', containerCount)
         _container_cluster_info.setdefault('containerClusterName', containerClusterName)
+        use_ip = True
+        if 'bridge' == network_mode:
+            use_ip = False
+        _container_cluster_info.setdefault('use_ip', use_ip)
         self.zkOper.write_container_cluster_info(_container_cluster_info)
 
     @tornado.gen.engine

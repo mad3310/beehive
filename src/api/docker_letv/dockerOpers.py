@@ -162,6 +162,18 @@ class Docker_Opers(client):
                     ip_list.append(item.split("=")[1])
         return ip_list
     
+    def image_name_list(self):
+        image_list = []
+        images = self.client.images()
+        for image in images:
+            for k,v in image.items():
+                if k == 'RepoTags':
+                    image_list.append(v)
+        return image_list
+
+    def image_id_list(self):
+        self.client.images(quiet=True)
+
 if __name__ == '__main__':
     d = Docker_Opers()
     print d.inspect_container('d-mcl-djimlwy-n-1')

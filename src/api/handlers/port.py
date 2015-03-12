@@ -17,7 +17,7 @@ class PortHandler(APIHandler):
     port_opers = PortOpers()
     zkOper = ZkOpers()
     
-    #curl --user root:root -d"startPort=28888&portCount=100&hostIp=10.154.156.150" http://localhost:8888/admin/ports
+    #curl --user root:root -d"startPort=38888&portCount=100&hostIp=10.154.156.150" http://localhost:8888/admin/ports
     def post(self):
         args = self.get_all_arguments()
         self.port_opers.write_into_portPool(args)
