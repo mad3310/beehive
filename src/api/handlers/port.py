@@ -25,7 +25,7 @@ class PortHandler(APIHandler):
         return_message.setdefault("message", "write port to ip pools successfully!")
         self.finish(return_message)
 
-    #curl -X GET http://localhost:8888:/admin/ports?hostIp=10.154.156.150
+    #curl --user root:root -X GET http://localhost:8888/admin/ports?hostIp=10.154.156.150
     def get(self):
         args = self.get_all_arguments()
         host_ip = args.get('hostIp')

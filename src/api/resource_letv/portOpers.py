@@ -29,7 +29,6 @@ class PortOpers(object):
                 self.zkOper.unLock_assign_port(lock)
         return port_dict
 
-
     def write_into_portPool(self, args):
         host_ip = args.get('hostIp')
         port_count = int(args.get('portCount'))

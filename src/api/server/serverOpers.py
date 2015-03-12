@@ -48,9 +48,6 @@ class Server_Opers(object):
         containers = self.container_opers.get_all_containers(False)
         alarm_item = []
         for container in containers:
-            _inspect = self.docker_opers.inspect_container(container)
-            con = Container(_inspect)
-            container_id = con.id()
             conl = ContainerLoad(container)
             under_oom = conl.get_under_oom_value()
             if under_oom:
@@ -119,6 +116,7 @@ class ServerUpdateAction(Abstract_Async_Thread):
     container_opers = Container_Opers()
 
     def __init__(self, host_ip):
+        super(ServerUpdateAction, self).__init__()
         self.host_ip = host_ip
 
     def run(self):
@@ -156,7 +154,6 @@ class ServerUpdateAction(Abstract_Async_Thread):
             self.zkOper.write_container_status_by_containerName(container_name, status)
 
     def update_add_node(self, container_name):
-        status = {}
         create_info = self._get_container_info_as_zk(container_name)
         logging.info('create_info as zk: \n%s' % str( create_info ) )
         self._write_container_into_zk(container_name, create_info)

@@ -14,12 +14,12 @@ class MclusterManagerValidator(object):
     def __init__(self, container_model_list):
         self.container_model_list = container_model_list
 
-    def validate_manager_status(self, container_model_list, num):
+    def validate_manager_status(self, num):
         
         while num:
             stat = True
             succ = []
-            for index, container_model in enumerate(container_model_list):
+            for index, container_model in enumerate(self.container_model_list):
                 host_ip = container_model.host_ip
                 container_name = container_model.container_name
                 logging.info('host_ip:%s, container_name:%s' % (host_ip, container_name) )
@@ -35,7 +35,7 @@ class MclusterManagerValidator(object):
                 return True
             
             for container_model in succ:
-                container_model_list.remove(container_model)
+                self.container_model_list.remove(container_model)
             num -= 1
 
     def __get(self, containerName, container_node):

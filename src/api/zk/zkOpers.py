@@ -373,27 +373,28 @@ class ZkOpers(object):
 
     def retrieve_port(self, host_ip, port_count):
         clusterUUID = self.getClusterUUID()
-        path = "%s/%s/dataNode/%s" % (self.rootPath, clusterUUID, host_ip)
+        path = "%s/%s/portPool/%s" % (self.rootPath, clusterUUID, host_ip)
         rest_port_list = self._return_children_to_list(path)
         assign_port_list = []
 
         for port in rest_port_list:
             port_path = path + "/" + port
             self.zk.delete(port_path)
-            if not nc_ip_port_available(host_ip, port):
-                assign_port_list.append(port)
+#             if not nc_ip_port_available(host_ip, port):
+#                 assign_port_list.append(port)
+            assign_port_list.append(port)
             if len(assign_port_list) == port_count:
                 break
         return assign_port_list
-    
+
     def write_port_into_portPool(self, host_ip, port):
         clusterUUID = self.getClusterUUID()
-        path = self.rootPath + '/' + clusterUUID + "/dataNode/" + host_ip + '/' + port
+        path = self.rootPath + '/' + clusterUUID + "/portPool/" + host_ip + '/' + port
         self.zk.ensure_path(path)
-            
+
     def get_ports_from_portPool(self, host_ip):
         clusterUUID = self.getClusterUUID()
-        path = self.rootPath + '/' + clusterUUID + "/dataNode/" + host_ip
+        path = self.rootPath + '/' + clusterUUID + "/portPool/" + host_ip
         return self._return_children_to_list(path)
 
     '''

@@ -21,7 +21,6 @@ from utils.autoutil import handleTimeout, http_get
 from utils.exceptions import CommonException
 from utils import _retrieve_userName_passwd
 from componentProxy.componentManagerValidator import ComponentManagerStatusValidator
-from container.container_model import Container_Model
 from componentProxy.componentContainerModelFactory import ComponentContainerModelFactory
 from componentProxy.componentContainerClusterConfigFactory import ComponentContainerClusterConfigFactory
 from status.status_enum import Status
@@ -159,7 +158,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
 
     @tornado.gen.engine
     def __dispatch_create_container_task(self, container_model_list):
-        http_client = tornado.httpclient.AsyncHTTPClient()
+        http_client = AsyncHTTPClient()
         _error_record_dict = {}
         adminUser, adminPasswd = _retrieve_userName_passwd()
         try:

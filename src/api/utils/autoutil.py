@@ -69,7 +69,11 @@ def ping_ip_able(ip):
         return True
     
     return False
-    
+
+
+"""
+@todo check port usable
+"""
 def nc_ip_port_available(host_ip, port):
     cmd = 'nc -z -W1 %s %s' % (host_ip, port)
     _nc_ret = os.system(cmd)
