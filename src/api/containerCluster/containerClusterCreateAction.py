@@ -102,51 +102,15 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
             return (Status.failed, '')
         
         _action_flag = False
-#         if _component_container_cluster_config.need_validate_manager_status:
-#             _action_flag = self.component_manager_status_validator.start_Status_Validator(_component_type, container_model_list, 6)
-#         else:
-#             _action_flag = True
-
-        self.__dispatch_create_container_task(container_model_list)
+        if _component_container_cluster_config.need_validate_manager_status:
+            _action_flag = self.component_manager_status_validator.start_Status_Validator(_component_type, container_model_list, 6)
+        else:
+            _action_flag = True
         
         logging.info('validator manager status result:%s' % str(_action_flag))
         _action_result = Status.failed if not _action_flag else Status.succeed
         
         return (_action_result, '')
-
-    @tornado.gen.engine
-    def __dispatch_task(self, container_model_list):
-        http_client = AsyncHTTPClient()
-        succ_list = []
-        try:
-            _key_sets = set()
-            for container_model in container_model_list:
-                host_ip = container_model.host_ip
-                container_name = container_model.container_name
-                url_get = "/inner/MclusterManager/status/%s" % container_name
-                requesturi = "http://%s:%s%s" % (host_ip, options.port, url_get)
-                logging.info('get request,  requesturi:%s' % requesturi)
-                request = HTTPRequest(url=requesturi, method='GET', connect_timeout=40, request_timeout=40)
-                callback_key = "%s_%s" % ("create_container", host_ip)
-                _key_sets.add(callback_key)
-                http_client.fetch(request, callback=(yield Callback(callback_key)))
-             
-            for container_model in container_model_list:
-                callback_key = _key_sets.pop()
-                response = yield Wait(callback_key)
-                ret = '' 
-                
-                if response.error:
-                    return_result = False
-                    error_record_msg = "remote access,the key:%s,error message:%s" % (callback_key,response.error)
-                else:
-                    return_result = response.body.strip()
-                    logging.info('mcluster status result:%s' % str(return_result) )
-                    ret = return_result.get('response').get('message')
-                    logging.debug('get reslut: %s, type: %s' % ( str(ret), type(ret) ))
-                     
-        finally:
-            http_client.close()
 
     def __check_cluster_started(self, component_container_cluster_config):
         logging.info('time sleep 8 seconds')
