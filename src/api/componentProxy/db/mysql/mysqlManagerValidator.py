@@ -13,7 +13,7 @@ class MclusterManagerValidator(object):
     def __init__(self, container_model_list):
         self.container_model_list = container_model_list
 
-    def validate_manager_status1(self, num):
+    def validate_manager_status(self, num):
         
         url_list = []
         for container_model in self.container_model_list:
