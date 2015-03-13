@@ -144,7 +144,7 @@ class ZkOpers(object):
         
     def write_container_cluster_info(self, containerClusterProps):
         containerClusterName = containerClusterProps['containerClusterName']
-        cluster_info_before = self.retrieve_container_cluster_info()
+        cluster_info_before = self.retrieve_container_cluster_info(containerClusterName)
         cluster_info_before.update(containerClusterProps)
         clusterUUID = self.getClusterUUID()
         path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + containerClusterName
