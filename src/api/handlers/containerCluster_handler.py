@@ -225,14 +225,7 @@ class CheckContainerClusterStatusHandler(APIHandler):
             self.finish(status)
             return
         
-        try:
-            check_result =  self.containerClusterOpers.check(containerClusterName)
-        except kazoo.exceptions.LockTimeout:
-            raise HTTPAPIError(status_code=578, error_detail="lock by other thread on assign ip processing",\
-                                notification = "direct", \
-                                log_message= "lock by other thread on assign ip processing",\
-                                response =  "current operation is using by other people, please wait a moment to try again!")
-        
+        check_result =  self.containerClusterOpers.check(containerClusterName)
         self.finish(check_result)
 
 

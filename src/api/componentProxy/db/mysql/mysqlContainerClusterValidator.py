@@ -19,9 +19,9 @@ class MysqlContainerClusterValidator():
         
         ret = self.__get_cluster_status(status_list)
         cluster_status.setdefault('status', ret)
-        if ret == Status.destroyed:
-            logging.info('delete containerCluster: %s' % cluster)
-            self.zk_oper.delete_container_cluster(cluster)
+#         if ret == Status.destroyed:
+#             logging.info('delete containerCluster: %s' % cluster)
+#             self.zk_oper.delete_container_cluster(cluster)
         return cluster_status
 
     def __get_cluster_status(self, status_list):
