@@ -49,9 +49,6 @@ class ContainerCluster_Action_Base(Abstract_Async_Thread):
             logging.info('container_ip_list:%s' % str(container_ip_list) )
             self.zkOper.recover_ips_to_pool(container_ip_list)
 
-        logging.info('delete containerCluster: %s' % self.cluster)
-        self.zk_oper.delete_container_cluster(self.cluster)
-
     def post(self, host_ip, container_name, admin_user, admin_passwd):
         args = {}
         args.setdefault('containerName', container_name)
