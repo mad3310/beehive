@@ -69,7 +69,11 @@ def ping_ip_able(ip):
         return True
     
     return False
-    
+
+
+"""
+@todo check port usable
+"""
 def nc_ip_port_available(host_ip, port):
     cmd = 'nc -z -W1 %s %s' % (host_ip, port)
     _nc_ret = os.system(cmd)
@@ -116,8 +120,8 @@ def async_http_post(url, body={}, _connect_timeout=40.0, _request_timeout=40.0, 
 
 def get_containerClusterName_from_containerName(container_name):
     containerClusterName = ''
-    if 'd-mcl' in container_name:
-        containerClusterName = re.findall('d-mcl-(.*)-n-\d', container_name)[0]
+    if 'd-' in container_name:
+        containerClusterName = re.findall('d-\w{3,}-(.*)-n-\d', container_name)[0]
     elif 'd_mcl' in container_name:
         containerClusterName = re.findall('d_mcl_(.*)_node_\d', container_name)[0]
     elif 'vip' in container_name:

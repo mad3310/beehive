@@ -39,6 +39,12 @@ class ContainerCluster_Action_Base(Abstract_Async_Thread):
                 self.post(host_ip, container_name, admin_user, admin_passwd)
         
         if self.action == 'remove':
+            self.__do_when_remove_cluster()
+            
+    def __do_when_remove_cluster(self):
+        cluster_info = self.zkOper.retrieve_container_cluster_info(self.cluster)
+        use_ip = cluster_info.get('use_ip')
+        if use_ip:
             container_ip_list = self.zkOper.retrieve_container_list(self.cluster)
             logging.info('container_ip_list:%s' % str(container_ip_list) )
             self.zkOper.recover_ips_to_pool(container_ip_list)

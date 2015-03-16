@@ -144,10 +144,12 @@ class ZkOpers(object):
         
     def write_container_cluster_info(self, containerClusterProps):
         containerClusterName = containerClusterProps['containerClusterName']
+        cluster_info_before = self.retrieve_container_cluster_info(containerClusterName)
+        cluster_info_before.update(containerClusterProps)
         clusterUUID = self.getClusterUUID()
         path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + containerClusterName
         self.zk.ensure_path(path)
-        self.zk.set(path, str(containerClusterProps))
+        self.zk.set(path, str(cluster_info_before))
 
     def write_container_node_value(self, cluster, container_ip, containerProps):
         """write container node value not write status value
@@ -189,24 +191,32 @@ class ZkOpers(object):
         @todo: put other issues to containerOpers or containerClusterOpers?
         '''
         inspect = containerProps.get('inspect')
+        is_use_ip =  containerProps.get('isUseIp')
         con = Container(inspect=inspect)
         container_name = con.name()
         cluster = con.cluster(container_name)
         logging.info('get container cluster :%s' % cluster)
-        container_ip = con.ip()
-        logging.info('get container ip :%s' % container_ip)
-        if not (container_ip and cluster):
-            logging.error('get container ip or cluster name failed, not write this info')
-            logging.info('inspect : %s' % str(inspect) )
-            return
+        if is_use_ip:
+            container_ip = con.ip()
+            logging.info('get container ip :%s' % container_ip)
+            if not (container_ip and cluster):
+                '''
+                @todo: throw exception replace the return
+                '''
+                logging.error('get container ip or cluster name failed, not write this info')
+                logging.info('inspect : %s' % str(inspect) )
+                return
+            container_node = container_ip
+        else:
+            container_node = container_name
         clusterUUID = self.getClusterUUID()
-        path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + cluster + "/" + container_ip
+        path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + cluster + "/" + container_node
         self.zk.ensure_path(path)
         self.zk.set(path, str(containerProps))
         stat = {}
         stat.setdefault('status', status)
         stat.setdefault('message', '')
-        self.__write_container_status(cluster, container_ip, stat)
+        self.__write_container_status(cluster, container_node, stat)
     
     def check_containerCluster_exists(self, containerClusterName):
         clusterUUID = self.getClusterUUID()
@@ -375,19 +385,29 @@ class ZkOpers(object):
         for port in rest_port_list:
             port_path = path + "/" + port
             self.zk.delete(port_path)
-            if not nc_ip_port_available(host_ip, port):
-                assign_port_list.append(port)
+            '''
+            @todo: why not check port available?
+            '''
+#             if not nc_ip_port_available(host_ip, port):
+#                 assign_port_list.append(port)
+            assign_port_list.append(port)
             if len(assign_port_list) == port_count:
                 break
         return assign_port_list
-    
+
     def write_port_into_portPool(self, host_ip, port):
         clusterUUID = self.getClusterUUID()
-        path = "%s/%s/portPool/%s/%s" % (self.rootPath, clusterUUID, host_ip, port)
+        '''
+        @todo: use %s%s way, don't use ++++
+        '''
+        path = self.rootPath + '/' + clusterUUID + "/portPool/" + host_ip + '/' + port
         self.zk.ensure_path(path)
-            
-            
-            
+
+    def get_ports_from_portPool(self, host_ip):
+        clusterUUID = self.getClusterUUID()
+        path = self.rootPath + '/' + clusterUUID + "/portPool/" + host_ip
+        return self._return_children_to_list(path)
+
     '''
     *********************************************Lock**********************************************
     '''

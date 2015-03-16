@@ -102,9 +102,7 @@ class Container_Opers(Abstract_Container_Opers):
         return_result = container_name in container_name_list
         return return_result
 
-'''
-@todo: need to check if the async? or sync? extend object?
-'''    
+
 class Container_create_action(Abstract_Async_Thread):
     
     docker_opers = Docker_Opers()
@@ -166,9 +164,10 @@ class Container_create_action(Abstract_Async_Thread):
 
     def __make_mount_dir(self):
         binds = self.docker_model.binds
-        for server_dir,con_dir in binds.items():
-            if not os.path.exists(server_dir):
-                os.makedirs(server_dir)
+        if binds:
+            for server_dir,con_dir in binds.items():
+                if not os.path.exists(server_dir):
+                    os.makedirs(server_dir)
             
             """other component_type have different logic, use elif and else to diff 
                
@@ -273,6 +272,7 @@ class Container_create_action(Abstract_Async_Thread):
         container_node_info.setdefault('inspect', con.inspect)
         container_node_info.setdefault('hostIp', self.docker_model.host_ip)
         container_node_info.setdefault('type', self.docker_model.component_type)
+        container_node_info.setdefault('isUseIp', self.docker_model.use_ip)
         return container_node_info
 
     def __get_route_dicts(self, route_list=None):

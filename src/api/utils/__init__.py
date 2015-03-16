@@ -120,6 +120,6 @@ def _get_property_dict(class_model_obj):
     """
     result = {}
     for _property, value in class_model_obj.__dict__.items():
-        property = _property[1:]
-        result.setdefault(property, value)
+        __property = _property[1:]
+        result.setdefault(__property, value)
     return result

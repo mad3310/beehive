@@ -134,4 +134,12 @@ class Docker_Model(object):
     @component_type.setter
     def component_type(self, component_type):
         self._component_type = component_type
+
+    @property
+    def port_bindings(self):
+        return self._port_bindings
+    
+    @port_bindings.setter
+    def port_bindings(self, port_bindings):
+        self._port_bindings = port_bindings
         

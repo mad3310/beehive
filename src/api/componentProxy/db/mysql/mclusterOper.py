@@ -1,7 +1,6 @@
 #-*- coding: utf-8 -*-
 
 import pexpect
-import commands
 import time
 
 
@@ -10,9 +9,8 @@ class MclusterManager(object):
     def __init__(self):
         self.timeout = 5
         
-    def __start(self, containerName = None):
-        containerID = commands.getoutput("docker ps |grep -w %s|awk '{print $1}'" % (containerName))
-        child = pexpect.spawn(r"docker attach %s" % (containerID))
+    def __start(self, container_name = None):
+        child = pexpect.spawn(r"docker attach %s" % container_name)
         
         try:
             child.expect(["bash", pexpect.EOF, pexpect.TIMEOUT], timeout=self.timeout)
@@ -25,10 +23,9 @@ class MclusterManager(object):
         finally:
             child.close()
         
-    def __get_stat(self, containerName = None):
+    def __get_stat(self, container_name = None):
         stat = True
-        containerID = commands.getoutput("docker ps|grep -w %s|awk '{print $1}'" % (containerName))
-        child = pexpect.spawn(r"docker attach %s" % (containerID))
+        child = pexpect.spawn(r"docker attach %s" % container_name)
         
         try:
             child.expect(["bash", pexpect.EOF, pexpect.TIMEOUT], timeout=self.timeout)
@@ -41,13 +38,9 @@ class MclusterManager(object):
         
         return stat
 
-    def mcluster_manager_status(self, containerName = None):
-        if containerName is None:
+    def mcluster_manager_status(self, container_name = None):
+        if container_name is None:
             return False
-        self.__start(containerName)
+        self.__start(container_name)
         time.sleep(1)
-        if self.__get_stat(containerName):
-            return True
-        return False
-
-
+        return self.__get_stat(container_name)

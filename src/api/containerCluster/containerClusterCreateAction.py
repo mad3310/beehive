@@ -21,7 +21,6 @@ from utils.autoutil import handleTimeout, http_get
 from utils.exceptions import CommonException
 from utils import _retrieve_userName_passwd
 from componentProxy.componentManagerValidator import ComponentManagerStatusValidator
-from container.container_model import Container_Model
 from componentProxy.componentContainerModelFactory import ComponentContainerModelFactory
 from componentProxy.componentContainerClusterConfigFactory import ComponentContainerClusterConfigFactory
 from status.status_enum import Status
@@ -64,15 +63,16 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
     def __issue_create_action(self, args={}):
         logging.info('args:%s' % str(args))
         _component_type = args.get('componentType')
+        _network_mode = args.get('network_mode')
         
         logging.info('containerClusterName : %s' % str(args.get('containerClusterName')))
         logging.info('_component_type : %s' % str(_component_type))
-        logging.info('_network_mode : %s' % str(args.get('network_mode')))
+        logging.info('_network_mode : %s' % str(_network_mode))
         
         _component_container_cluster_config = self.component_container_cluster_config_factory.retrieve_config(args)
         args.setdefault('component_config', _component_container_cluster_config)
         
-        self.__create_container_cluser_info(_component_container_cluster_config)
+        self.__create_container_cluser_info(_network_mode, _component_container_cluster_config)
         
         is_res_verify = _component_container_cluster_config.is_res_verify
         logging.info('is_res_verify : %s' % str(is_res_verify) )
@@ -89,7 +89,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         logging.info('host_ip_list:%s' % str(host_ip_list))
         args.setdefault('host_ip_list', host_ip_list)
         
-        ip_port_resource_list = self.__get_ip_port_resource(_component_container_cluster_config)
+        ip_port_resource_list = self.__get_ip_port_resource(host_ip_list, _component_container_cluster_config)
         args.setdefault('ip_port_resource_list', ip_port_resource_list)
         
         logging.info('show args to get create containers args list: %s' % str(args) )
@@ -128,14 +128,15 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         status = ret.get('response').get('status')
         return status == Status.started
 
-    def __get_ip_port_resource(self, component_container_cluster_config):
+    def __get_ip_port_resource(self, host_ip_list, component_container_cluster_config):
         containerCount = component_container_cluster_config.nodeCount
         _network_mode = component_container_cluster_config.network_mode 
         ip_port_resource_list = []
         if 'ip' == _network_mode:
             ip_port_resource_list = self.ip_opers.retrieve_ip_resource(containerCount)
-        elif 'port' == _network_mode:
-            ip_port_resource_list = self.port_opers.retrieve_port_resource(containerCount)
+        elif 'bridge' == _network_mode:
+            ports = component_container_cluster_config.ports
+            ip_port_resource_list = self.port_opers.retrieve_port_resource(host_ip_list, len(ports))
         return ip_port_resource_list
 
     def __update_zk_info_when_process_complete(self, _containerClusterName, create_result='failed', error_msg=''):
@@ -148,17 +149,21 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         _container_cluster_info.setdefault('containerClusterName', _containerClusterName)
         self.zkOper.write_container_cluster_info(_container_cluster_info)
 
-    def __create_container_cluser_info(self, component_container_cluster_config):
+    def __create_container_cluser_info(self, network_mode, component_container_cluster_config):
         _container_cluster_info = {}
         containerCount = component_container_cluster_config.nodeCount
         containerClusterName = component_container_cluster_config.container_cluster_name
         _container_cluster_info.setdefault('containerCount', containerCount)
         _container_cluster_info.setdefault('containerClusterName', containerClusterName)
+        use_ip = True
+        if 'bridge' == network_mode:
+            use_ip = False
+        _container_cluster_info.setdefault('use_ip', use_ip)
         self.zkOper.write_container_cluster_info(_container_cluster_info)
 
     @tornado.gen.engine
     def __dispatch_create_container_task(self, container_model_list):
-        http_client = tornado.httpclient.AsyncHTTPClient()
+        http_client = AsyncHTTPClient()
         _error_record_dict = {}
         adminUser, adminPasswd = _retrieve_userName_passwd()
         try:

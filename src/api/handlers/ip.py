@@ -2,6 +2,7 @@
 from handlers.base import APIHandler
 from utils.exceptions import HTTPAPIError
 from resource_letv.ipOpers import IpOpers
+from zk.zkOpers import ZkOpers
 from tornado_letv.tornado_basic_auth import require_basic_auth
 
 # ip management
@@ -13,6 +14,7 @@ from tornado_letv.tornado_basic_auth import require_basic_auth
 class IPHandler(APIHandler):
     
     ip_opers = IpOpers()
+    zkOper = ZkOpers()
     
     #curl --user root:root -d"ipSegment=10.200.85.xxx&&ipCount=50" http://localhost:8888/admin/ips
     def post(self):
@@ -28,14 +30,7 @@ class IPHandler(APIHandler):
         self.finish(return_message)
         
     def get(self):
-        return_message, ips = {}, []
-        try:
-            ips = self.ip_opers.get_ips_from_ipPool()
-        except:
-            raise HTTPAPIError(status_code=500, error_detail="code error!",\
-                            notification = "direct", \
-                            log_message= "code error!",\
-                            response =  "code error!")
-        
+        return_message = {}
+        ips = self.zkOper.get_ips_from_ipPool()
         return_message.setdefault('ips', ips)
         self.finish(return_message)

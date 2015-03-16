@@ -36,12 +36,6 @@ class IpOpers(object):
         constructor
         '''
     
-    '''
-    @todo: the method only invoke the zk.method, what means?
-    '''
-    def get_ips_from_ipPool(self):
-        return self.zkOper.get_ips_from_ipPool()
-    
     def write_into_ipPool(self, args_dict):
         ip_segment = args_dict.get('ipSegment')
         ip_count = int(args_dict.get('ipCount'))
@@ -143,7 +137,7 @@ class IpOpers(object):
             monitor item: get ip num from ip Pool
         """
 
-        ip_list = self.get_ips_from_ipPool()
+        ip_list = self.zkOper.get_ips_from_ipPool()
         return len(ip_list)
     
     def retrieve_ip_resource(self, ip_count):

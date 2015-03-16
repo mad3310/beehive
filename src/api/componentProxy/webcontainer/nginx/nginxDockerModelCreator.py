@@ -7,10 +7,11 @@ Created on 2015-2-1
 from componentProxy.abstractDockerModelCreator import AbstractContainerModelCreator
 
 
-class MysqlDockerModelCreator(AbstractContainerModelCreator):
+class NginxDockerModelCreator(AbstractContainerModelCreator):
     '''
     classdocs
     '''
+
 
     def __init__(self):
         '''

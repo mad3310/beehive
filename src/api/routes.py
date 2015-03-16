@@ -6,7 +6,8 @@ from handlers.server_handler import *
 from handlers.containerCluster_handler import *
 from handlers.container_handler import *
 from handlers.monitor_handler import *
-from handlers.ip import *
+from handlers.ip import IPHandler
+from handlers.port import PortHandler
 from handlers.admin import AdminConf, AdminUser, AdminReset
 
 handlers = [
@@ -14,6 +15,7 @@ handlers = [
     (r"/admin/user", AdminUser),
     (r"/admin/reset", AdminReset),
     (r"/admin/ips", IPHandler),
+    (r"/admin/ports", PortHandler),
     (r"/serverCluster", ServerClusterHandler),
     (r"/serverCluster/update", UpdateServerClusterHandler),
     (r"/serverCluster/containers/under_oom", SwitchServersUnderoomHandler),
@@ -46,7 +48,11 @@ handlers = [
     (r"/container/stat/(.*)/memory", GetherContainerMemeoyHandler),
     (r"/container/stat/(.*)/cpuacct", GetherContainerCpuacctHandler),
     (r"/container/stat/(.*)/networkio", GetherContainerNetworkioHandler),
+    '''
+    @todo: check if the mclustermanager and nginxmanager can be common manager class extended.
+    '''
     (r"/inner/MclusterManager/status/(.*)", MclusterManagerHandler),
+    (r"/inner/nginxManager/status/(.*)", NginxManagerHandler),
     (r"/monitor/status", ContainerStatus),
     (r"/monitor/serverCluster/containers/memory", CheckServersContainersMemLoad),
     (r"/monitor/serverCluster/containers/under_oom", CheckServersContainersUnderOom),

@@ -21,6 +21,7 @@ from utils import _retrieve_userName_passwd
 from utils.exceptions import HTTPAPIError
 from containerCluster.containerClusterOpers import ContainerCluster_Opers, GetClustersChanges
 from componentProxy.db.mysql.mclusterOper import MclusterManager
+from componentProxy.webcontainer.nginx.nginxOper import NginxManager
 from status.status_enum import Status
 
 
@@ -224,14 +225,17 @@ class CheckContainerClusterStatusHandler(APIHandler):
             self.finish(status)
             return
         
-        try:
-            check_result =  self.containerClusterOpers.check(containerClusterName)
-        except kazoo.exceptions.LockTimeout:
-            raise HTTPAPIError(status_code=578, error_detail="lock by other thread on assign ip processing",\
-                                notification = "direct", \
-                                log_message= "lock by other thread on assign ip processing",\
-                                response =  "current operation is using by other people, please wait a moment to try again!")
-        
+        check_result =  self.containerClusterOpers.check(containerClusterName)
+        '''
+        @todo: no need to check zk locktimeout?
+        '''
+#        try:
+#            check_result =  self.containerClusterOpers.check(containerClusterName)
+#        except kazoo.exceptions.LockTimeout:
+#            raise HTTPAPIError(status_code=578, error_detail="lock by other thread on assign ip processing",\
+#                                notification = "direct", \
+#                                log_message= "lock by other thread on assign ip processing",\
+#                                response =  "current operation is using by other people, please wait a moment to try again!")
         self.finish(check_result)
 
 
@@ -319,7 +323,7 @@ class ContainerClusterStopHandler(APIHandler):
         self.finish(massage)
 
 '''
-@todo: remove? mulit-component need to provide this manager?
+@todo: for every component provide the specify class?
 '''
 class MclusterManagerHandler(APIHandler):
 
@@ -329,6 +333,20 @@ class MclusterManagerHandler(APIHandler):
     def get(self, container_name):
         ret = ''
         ret = self.mcluster_manager.mcluster_manager_status(container_name)
+        return_message = {}
+        return_message.setdefault("message", ret)
+        self.finish(return_message)
+
+'''
+@todo: for every component provide the specify class?
+'''
+class NginxManagerHandler(APIHandler):
+
+    nginx_manager = NginxManager()
+    
+    def get(self, container_name):
+        ret = ''
+        ret = self.nginx_manager.nginx_manager_status(container_name)
         return_message = {}
         return_message.setdefault("message", ret)
         self.finish(return_message)

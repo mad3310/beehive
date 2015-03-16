@@ -27,7 +27,6 @@ class MysqlContainerClusterValidator():
     def __get_cluster_status(self, status_list):
         
         cluster_stat = ''
-        normal_nodes_stat, all_nodes_stat = [], []
         
         if len(set(status_list)) == 1:
             stat = status_list.pop()

@@ -5,6 +5,7 @@ Created on 2015-2-4
 '''
 from componentProxy.db.mysql.mysqlContainerClusterValidator import MysqlContainerClusterValidator
 from componentProxy.loadbalance.gbalancer.gbalancerContainerClusterValidator import GbalancerContainerClusterValidator
+from componentProxy.webcontainer.nginx.nginxContainerClusterValidator import NginxContainerClusterValidator
 
 
 class ComponentContainerClusterValidator(object):
@@ -17,13 +18,18 @@ class ComponentContainerClusterValidator(object):
         '''
         Constructor
         '''
-        
+    
+    '''
+    @todo: study the importlib way to replace if else, even if condition is limit, use dict way to replace it
+    '''   
     def container_cluster_status_validator(self, _component_type, container_cluster_name):
         _check_result = False
         if "mclusternode" == _component_type:
             container_cluster_validator = MysqlContainerClusterValidator()
         elif "mclustervip" == _component_type:
             container_cluster_validator = GbalancerContainerClusterValidator()
+        elif 'nginx' == _component_type:
+            container_cluster_validator = NginxContainerClusterValidator()
         else:
             container_cluster_validator = None
             

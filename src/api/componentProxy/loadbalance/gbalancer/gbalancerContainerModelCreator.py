@@ -14,14 +14,10 @@ class GbalancerContainerModelCreator(AbstractContainerModelCreator):
     '''
 
 
-    def __init__(self, container_model_list):
+    def __init__(self):
         '''
         Constructor
         '''
-        '''
-        @todo: what means?
-        '''
-        self.container_model_list = container_model_list
         
     def create(self, args):
     
@@ -53,4 +49,4 @@ class GbalancerContainerModelCreator(AbstractContainerModelCreator):
             container_model.env = env
             create_container_arg_list.append(container_model)
         
-        return create_container_arg_list  
+        return create_container_arg_list

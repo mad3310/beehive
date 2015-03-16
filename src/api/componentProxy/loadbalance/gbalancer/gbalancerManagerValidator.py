@@ -7,9 +7,9 @@ class GbalanceManagerValidator(object):
         self.timeout = 5
         
     
-    def validate_manager_status(self, host_ip_list, container_model_list, num):
+    def validate_manager_status(self, num):
         """webportal use gbalancer-manager to start gbalancer 
         
         """
         
-        pass
+        return True
