@@ -187,7 +187,7 @@ class ContainerClusterHandler(APIHandler):
         return_message.setdefault("message", "remove container has been done but need some time, please wait a moment and check the result!")
         self.finish(return_message)
 
-        
+
 @require_basic_auth
 class CheckCreateClusterStatusHandler(APIHandler):
     '''
