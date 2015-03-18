@@ -6,7 +6,7 @@ from tornado import escape
 from tornado.options import options
 
 from zk.zkOpers import ZkOpers
-from utils.exceptions import HTTPAPIError
+from utils.exceptions import HTTPAPIError, CommonException
 from utils.mail import send_email
 
 import logging
@@ -60,6 +60,13 @@ class APIHandler(BaseHandler):
 
             if isinstance(e, HTTPAPIError):
                 pass
+            '''
+            @todo: should be UserVisiableException, not CommonException
+            '''
+            elif isinstance(e, CommonException):
+                user_message = e.__str__()
+                e = HTTPAPIError(417, error_detail=user_message)
+                status_code = e.status_code
             elif isinstance(e, HTTPError):
                 e = HTTPAPIError(e.status_code)
             else:
@@ -68,7 +75,7 @@ class APIHandler(BaseHandler):
             exception = "".join([ln for ln in traceback.format_exception(*exc_info)])
 
             if status_code == 500 and not debug:
-                self.logger.error(e)
+                logging.error(e)
                 self._send_error_email(exception)
 
             if debug:
@@ -79,7 +86,7 @@ class APIHandler(BaseHandler):
             self.set_header("Content-Type", "application/json; charset=UTF-8")
             self.finish(str(e))
         except Exception:
-            self.logger.error(traceback.format_exc())
+            logging.error(traceback.format_exc())
             return super(APIHandler, self).write_error(status_code, **kwargs)
 
     def _send_error_email(self, exception):

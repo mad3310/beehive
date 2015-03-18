@@ -41,7 +41,7 @@ class NginxContainerClusterConfig(object):
         self.mem_limit = mem_limit if mem_limit else 512*1024*1024
         
         image = params.get('image')
-        self.image = image if image else 'nginx/mcluster:0.0.1'
+        self.image = image if image else 'letv/nginx:0.0.1'
         
         ports = params.get('ports')
         self.ports = eval(ports) if ports else [2181]
