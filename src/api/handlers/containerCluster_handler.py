@@ -175,7 +175,7 @@ class ContainerClusterHandler(APIHandler):
         return_message = {} 
         return_message.setdefault("message", "due to create container cluster need a little more times, please wait to finished and email to you, when cluster have started!")
         self.finish(return_message)
-    
+
     def delete(self):
         args = self.get_all_arguments()
         containerClusterName = args.get('containerClusterName')

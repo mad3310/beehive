@@ -71,15 +71,11 @@ def ping_ip_able(ip):
     return False
 
 
-"""
-@todo check port usable
-"""
 def nc_ip_port_available(host_ip, port):
-    cmd = 'nc -z -W1 %s %s' % (host_ip, port)
+    cmd = 'nc -z %s %s' % (host_ip, port)
     _nc_ret = os.system(cmd)
-    if _nc_ret is None or _nc_ret == '':
+    if not _nc_ret:
         return False
-    
     return True
 
 def http_post(url, body={}, _connect_timeout=40.0, _request_timeout=40.0, auth_username=None, auth_password=None):

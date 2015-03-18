@@ -65,6 +65,9 @@ class Container():
 
     def id(self):
         return self.inspect.get('Id')
+    
+    def port_bindings(self):
+        return self.inspect.get('HostConfig').get('PortBindings')
 
     def create_info(self, container_node_value):
         create_info = {}
@@ -80,4 +83,5 @@ class Container():
             create_info.setdefault('mountDir', str(self.volumes()) )
             create_info.setdefault('ipAddr', self.ip() )
             create_info.setdefault('containerName', self.name() )
+            create_info.setdefault('port_bindings', self.port_bindings())
         return create_info    
