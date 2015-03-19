@@ -7,3 +7,5 @@ class GbalanceManager(object):
         self.timeout = 5
         
     
+    def manager_status(self, container_name = None):
+        return True

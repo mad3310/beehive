@@ -116,14 +116,15 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
 
     def validate_manager_status(self, component_type, container_model_list, num):
         
-        post_arg_list, _body = [], {}
+        post_arg_list = []
         for container_model in container_model_list:
+            _body = {}
             host_ip = container_model.host_ip
             container_name = container_model.container_name
             _body.setdefault('containerName', container_name)
             _body.setdefault('componentType', component_type)
             logging.info('host_ip:%s, container_name:%s' % (host_ip, container_name) )
-            uri = "/container/manager/status/%s" % container_name
+            uri = "/container/manager/status"
             url = "http://%s:%s%s" % (host_ip, options.port, uri)
             post_arg_list.append((url, _body))
         
