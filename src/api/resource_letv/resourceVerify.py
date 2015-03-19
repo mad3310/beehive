@@ -28,6 +28,9 @@ class ResourceVerify(object):
         nodeCount = component_container_cluster_config.nodeCount
         ip_list = self.zkOper.get_ips_from_ipPool()
         
+        """
+            ip or port to diff
+        """
         if len(ip_list) < nodeCount:
             raise CommonException('ips are not enough!')
         
@@ -119,7 +122,7 @@ class ElectServer(object):
         return score and the num of avaliable hosts
         """
         '''
-        @todo: use component_container_cluster_config to replace to zkOpers operaion,
+        @todo: confirm that:use component_container_cluster_config to replace to zkOpers operaion,
         foucs on mem_limit
         what means mem_limit and mem_free_limit?
         '''

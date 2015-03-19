@@ -49,10 +49,9 @@ handlers = [
     (r"/container/stat/(.*)/cpuacct", GetherContainerCpuacctHandler),
     (r"/container/stat/(.*)/networkio", GetherContainerNetworkioHandler),
     '''
-    @todo: check if the mclustermanager and nginxmanager can be common manager class extended.
+    @todo: inner? componentManager?
     '''
-    (r"/inner/MclusterManager/status/(.*)", MclusterManagerHandler),
-    (r"/inner/nginxManager/status/(.*)", NginxManagerHandler),
+    (r"/container/manager/status", ManagerStatusHandler),
     (r"/monitor/status", ContainerStatus),
     (r"/monitor/serverCluster/containers/memory", CheckServersContainersMemLoad),
     (r"/monitor/serverCluster/containers/under_oom", CheckServersContainersUnderOom),

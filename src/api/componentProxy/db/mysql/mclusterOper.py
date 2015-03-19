@@ -38,7 +38,7 @@ class MclusterManager(object):
         
         return stat
 
-    def mcluster_manager_status(self, container_name = None):
+    def manager_status(self, container_name = None):
         if container_name is None:
             return False
         self.__start(container_name)

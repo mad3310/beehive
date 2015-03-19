@@ -28,11 +28,13 @@ from utils.invokeCommand import InvokeCommand
 from zk.zkOpers import ZkOpers
 from docker import Client
 from status.status_enum import Status
+from componentProxy.componentManagerValidator import ComponentManagerStatusValidator
 
 
 class Container_Opers(Abstract_Container_Opers):
     
     docker_opers = Docker_Opers()
+    component_manager_status_validator = ComponentManagerStatusValidator()
     
     def __init__(self):
         '''
@@ -101,6 +103,9 @@ class Container_Opers(Abstract_Container_Opers):
         container_name_list = self.get_all_containers()
         return_result = container_name in container_name_list
         return return_result
+
+    def manager_status_validate(self, component_type, container_name):
+        return self.component_manager_status_validator.start_status_validator(component_type, container_name) 
 
 
 class Container_create_action(Abstract_Async_Thread):

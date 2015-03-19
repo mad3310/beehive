@@ -67,6 +67,7 @@ class ContainerHandler(APIHandler):
 #         dict.setdefault("message", "remove container has been done but need some time, please wait a moment and check the result!")
 #         self.finish(dict)
 
+
 @require_basic_auth
 class StartContainerHandler(APIHandler):
      
@@ -287,4 +288,25 @@ class CheckContainerStatusHandler(APIHandler):
                                 response =  "check method failed!")
         
         self.finish(status)
-     
+
+
+
+class ManagerStatusHandler(APIHandler):
+
+    container_opers = Container_Opers()
+    
+    @asynchronous
+    def post(self):
+        args = self.get_all_arguments()
+        container_name = args.get('containerName')
+        component_type = args.get('componentType')
+        if not (container_name and component_type):
+            raise HTTPAPIError(status_code=400, error_detail="no containerName or componentType argument!",\
+                                notification = "direct", \
+                                log_message= "no containerName or componentType argument!",\
+                                response =  "please check params!") 
+        
+        ret = self.container_opers.manager_status_validate(component_type, container_name)
+        return_message = {}
+        return_message.setdefault("message", ret)
+        self.finish(return_message)

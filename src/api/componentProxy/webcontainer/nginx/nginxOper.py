@@ -32,7 +32,7 @@ class NginxManager(object):
             child.close()
         return stat
 
-    def nginx_manager_status(self, containerName = None):
+    def manager_status(self, containerName = None):
         if containerName is None:
             return False
         self.__start(containerName)

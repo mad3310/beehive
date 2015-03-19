@@ -322,36 +322,6 @@ class ContainerClusterStopHandler(APIHandler):
         massage.setdefault("message", "due to stop a container cluster need a lot time, please wait and check the result~")
         self.finish(massage)
 
-'''
-@todo: for every component provide the specify class?
-'''
-class MclusterManagerHandler(APIHandler):
-
-    mcluster_manager = MclusterManager()
-    
-    @asynchronous
-    def get(self, container_name):
-        ret = ''
-        ret = self.mcluster_manager.mcluster_manager_status(container_name)
-        return_message = {}
-        return_message.setdefault("message", ret)
-        self.finish(return_message)
-
-'''
-@todo: for every component provide the specify class?
-'''
-class NginxManagerHandler(APIHandler):
-
-    nginx_manager = NginxManager()
-    
-    def get(self, container_name):
-        ret = ''
-        ret = self.nginx_manager.nginx_manager_status(container_name)
-        return_message = {}
-        return_message.setdefault("message", ret)
-        self.finish(return_message)
-
-
 @require_basic_auth
 class ClusterConfigHandler(APIHandler):
     
