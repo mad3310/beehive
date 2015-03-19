@@ -382,8 +382,9 @@ class ZkOpers(object):
         for port in rest_port_list:
             port_path = path + "/" + port
             self.zk.delete(port_path)
-            if not nc_ip_port_available(host_ip, port):
-                assign_port_list.append(port)
+#             if nc_ip_port_available(host_ip, port):
+#                 assign_port_list.append(port)
+            assign_port_list.append(port)
             if len(assign_port_list) == port_count:
                 break
         return assign_port_list

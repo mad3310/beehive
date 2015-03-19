@@ -3,10 +3,10 @@ Created on 2015-2-4
 
 @author: asus
 '''
-from componentProxy.db.mysql.mysqlManagerValidator import MclusterManagerValidator
-from componentProxy.loadbalance.gbalancer.gbalancerManagerValidator import GbalanceManagerValidator
-from componentProxy.webcontainer.nginx.nginxManagerValidator import NginxManagerValidator
 
+from componentProxy.db.mysql.mclusterOper import MclusterManager
+from componentProxy.loadbalance.gbalancer.gbalancerOper import GbalanceManager
+from componentProxy.webcontainer.nginx.nginxOper import NginxManager
 
 class ComponentManagerStatusValidator(object):
     '''
@@ -18,16 +18,16 @@ class ComponentManagerStatusValidator(object):
         Constructor
         '''
         
-    def start_Status_Validator(self, _component_type, container_model_list, num):
+    def start_status_validator(self, component_type, container_name):
         _check_result = False
-        if "mclusternode" == _component_type:
-            manager_validator = MclusterManagerValidator(container_model_list)
-        elif "mclustervip" == _component_type:
-            manager_validator = GbalanceManagerValidator(container_model_list)
-        elif "nginx" == _component_type:
-            manager_validator = NginxManagerValidator(container_model_list)
+        if "mclusternode" == component_type:
+            manager_validator = MclusterManager()
+        elif "mclustervip" == component_type:
+            manager_validator = GbalanceManager()
+        elif "nginx" == component_type:
+            manager_validator = NginxManager()
         else:
             manager_validator = None
-            
-        _check_result = manager_validator.validate_manager_status(num)
+        
+        _check_result = manager_validator.manager_status(container_name)
         return _check_result

@@ -21,7 +21,10 @@ class NginxContainerClusterConfig(object):
     def __init_params(self, params={}):
             
         self.is_res_verify = True
-        self.nodeCount = 1
+
+        nodeCount = params.get('nodeCount')                          
+        self.nodeCount = int(nodeCount) if nodeCount else 1
+        
         self.need_validate_manager_status = False
         
         """

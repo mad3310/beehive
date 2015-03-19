@@ -39,23 +39,23 @@ class Res_Opers():
         mem_res_info = self.memory_stat()
         resource.setdefault("mem_res", mem_res_info) 
         
-        srv_cap_info = self.disk_stat()
-        resource.setdefault("srv_capacity", srv_cap_info)
+        server_disk = self.disk_stat()
+        resource.setdefault("server_disk", server_disk)
 
         # disk_over_load = self.disk_loadavg()
         # resource.setdefault("disk_over_load", disk_over_load)
         
-        disk_instant_spd = self.disk_instant_load()
-        resource.setdefault("disk_instant_spd", disk_instant_spd)
+#         disk_instant_spd = self.disk_instant_load()
+#         resource.setdefault("disk_instant_spd", disk_instant_spd)
         
         # _cpu_info = self.cpu_info()
         # resource.setdefault("cpu_info" , _cpu_info)
        
-        cur_cpu_usage = self.get_cur_cpu_usage()
-        resource.setdefault("cur_cpu_idle", cur_cpu_usage)
+#         cur_cpu_usage = self.get_cur_cpu_usage()
+#         resource.setdefault("cur_cpu_idle", cur_cpu_usage)
 
-        cur_net_load = self.get_cur_net_load()
-        resource.setdefault("cur_net_load", cur_net_load)
+#         cur_net_load = self.get_cur_net_load()
+#         resource.setdefault("cur_net_load", cur_net_load)
         return resource
     
     def retrieve_container_stat(self):
@@ -543,8 +543,8 @@ class Res_Opers():
         """
         hd={}
         disk = os.statvfs("/srv")
-        hd['free'] = disk.f_bsize * disk.f_bavail / (1024*1024*1024)
-        hd['total'] = disk.f_bsize * disk.f_blocks / (1024*1024*1024)
+        hd['free'] = disk.f_bsize * disk.f_bavail / (1024*1024)
+        hd['total'] = disk.f_bsize * disk.f_blocks / (1024*1024)
         hd['used'] = hd['total'] - hd['free']
         self._logger.info("hard disk stat :" + str(hd))
         return hd

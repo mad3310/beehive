@@ -24,6 +24,8 @@ from componentProxy.componentManagerValidator import ComponentManagerStatusValid
 from componentProxy.componentContainerModelFactory import ComponentContainerModelFactory
 from componentProxy.componentContainerClusterConfigFactory import ComponentContainerClusterConfigFactory
 from status.status_enum import Status
+from concurrent import futures
+from concurrent.futures import ThreadPoolExecutor
 
 
 class ContainerCluster_create_Action(Abstract_Async_Thread): 
@@ -103,7 +105,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         
         _action_flag = False
         if _component_container_cluster_config.need_validate_manager_status:
-            _action_flag = self.component_manager_status_validator.start_Status_Validator(_component_type, container_model_list, 6)
+            _action_flag = self.validate_manager_status(_component_type, container_model_list, 6)
         else:
             _action_flag = True
         
@@ -111,6 +113,45 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         _action_result = Status.failed if not _action_flag else Status.succeed
         
         return (_action_result, '')
+
+    def validate_manager_status(self, component_type, container_model_list, num):
+        
+        url_list = []
+        for container_model in container_model_list:
+            host_ip = container_model.host_ip
+            container_name = container_model.container_name
+            logging.info('host_ip:%s, container_name:%s' % (host_ip, container_name) )
+            uri = "/container/manager/status/%s" % container_name
+            url = "http://%s:%s%s" % (host_ip, options.port, uri)
+            url_list.append(url)
+        
+        while num:
+            self.__executor(url_list)
+            if not url_list:
+                logging.info('successful')
+                return True
+            num -= 1
+
+    def __executor(self, url_list):
+        succ_list = []
+        with ThreadPoolExecutor(max_workers=len(url_list)) as executor:
+            fs = dict( (executor.submit(http_get, _url),  _url) for _url in url_list )
+            logging.info('future dict :%s' % str(fs) )
+            
+            for future in futures.as_completed(fs):
+                if future.exception() is not None:
+                    logging.info('expection:%s' % future.exception() )
+                else:
+                    fetch_ret = future.result()
+                    logging.info('fetch_ret:%s' % str(fetch_ret))
+                    ret = fetch_ret.get('response').get('message')
+                    logging.debug('fetch_ret.get response :%s' % type(fetch_ret.get('response')))
+                    logging.debug('get reslut: %s, type: %s' % ( str(ret), type(ret) ))
+                    if ret:
+                        url = fs[future]
+                        succ_list.append(url)
+        for succ in succ_list:
+            url_list.remove(succ)
 
     def __check_cluster_started(self, component_container_cluster_config):
         logging.info('time sleep 8 seconds')
