@@ -48,7 +48,7 @@ handlers = [
     (r"/container/stat/(.*)/memory", GetherContainerMemeoyHandler),
     (r"/container/stat/(.*)/cpuacct", GetherContainerCpuacctHandler),
     (r"/container/stat/(.*)/networkio", GetherContainerNetworkioHandler),
-    (r"/container/manager/status/(.*)", ManagerStatusHandler),
+    (r"/container/manager/status", ManagerStatusHandler),
     (r"/monitor/status", ContainerStatus),
     (r"/monitor/serverCluster/containers/memory", CheckServersContainersMemLoad),
     (r"/monitor/serverCluster/containers/under_oom", CheckServersContainersUnderOom),

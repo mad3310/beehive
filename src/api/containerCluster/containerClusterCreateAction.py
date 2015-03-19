@@ -17,7 +17,7 @@ from resource_letv.ipOpers import IpOpers
 from resource_letv.portOpers import PortOpers
 from resource_letv.resourceVerify import ResourceVerify
 from utils import _get_property_dict
-from utils.autoutil import handleTimeout, http_get
+from utils.autoutil import handleTimeout, http_get, http_post
 from utils.exceptions import CommonException
 from utils import _retrieve_userName_passwd
 from componentProxy.componentManagerValidator import ComponentManagerStatusValidator
@@ -116,26 +116,28 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
 
     def validate_manager_status(self, component_type, container_model_list, num):
         
-        url_list = []
+        post_arg_list, _body = [], {}
         for container_model in container_model_list:
             host_ip = container_model.host_ip
             container_name = container_model.container_name
+            _body.setdefault('containerName', container_name)
+            _body.setdefault('componentType', component_type)
             logging.info('host_ip:%s, container_name:%s' % (host_ip, container_name) )
             uri = "/container/manager/status/%s" % container_name
             url = "http://%s:%s%s" % (host_ip, options.port, uri)
-            url_list.append(url)
+            post_arg_list.append((url, _body))
         
         while num:
-            self.__executor(url_list)
-            if not url_list:
+            self.__executor(post_arg_list)
+            if not post_arg_list:
                 logging.info('successful')
                 return True
             num -= 1
 
-    def __executor(self, url_list):
+    def __executor(self, post_arg_list):
         succ_list = []
-        with ThreadPoolExecutor(max_workers=len(url_list)) as executor:
-            fs = dict( (executor.submit(http_get, _url),  _url) for _url in url_list )
+        with ThreadPoolExecutor(max_workers=len(post_arg_list)) as executor:
+            fs = dict( (executor.submit(http_post, _url, _body),  (_url,_body)) for (_url,_body) in post_arg_list )
             logging.info('future dict :%s' % str(fs) )
             
             for future in futures.as_completed(fs):
@@ -148,10 +150,10 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
                     logging.debug('fetch_ret.get response :%s' % type(fetch_ret.get('response')))
                     logging.debug('get reslut: %s, type: %s' % ( str(ret), type(ret) ))
                     if ret:
-                        url = fs[future]
-                        succ_list.append(url)
+                        (_url,_body) = fs[future]
+                        succ_list.append((_url,_body))
         for succ in succ_list:
-            url_list.remove(succ)
+            post_arg_list.remove(succ)
 
     def __check_cluster_started(self, component_container_cluster_config):
         logging.info('time sleep 8 seconds')
