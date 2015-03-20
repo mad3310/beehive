@@ -35,6 +35,9 @@ class NginxContainerClusterConfig(object):
         mem_free_limit = params.get('memFree')                          
         self.mem_free_limit = mem_free_limit if mem_free_limit else 10*1024*1024*1024
         
+        disk_usage = params.get('diskUsage')
+        self.disk_usage = float(disk_usage) if disk_usage else 0.7
+        
         """
             default value stand for 512M
             container rest minimum memory

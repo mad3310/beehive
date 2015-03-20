@@ -24,7 +24,10 @@ class GbalancerContainerClusterConfig(object):
         self.mem_free_limit = 10*1024*1024*1024                      #default value stand for 10G                  
         mem_limit = params.get('mem_limit')                          #default value stand for 512M
         self.mem_limit = mem_limit if mem_limit else 512*1024*1024
-        
+
+        disk_usage = params.get('diskUsage')
+        self.disk_usage = float(disk_usage) if disk_usage else 0.7
+
         image = params.get('image')
         self.image = image if image else 'letv/mcluster_vip_gbalancer:0.0.3'
         

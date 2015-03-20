@@ -23,10 +23,10 @@ class MysqlContainerClusterConfig(object):
         self.need_validate_manager_status = True
         
         self.mem_free_limit = 1*1024*1024*1024                      #default value stand for 10G                  
-        mem_limit = params.get('mem_limit')                          #default value stand for 512M
+        mem_limit = params.get('memLimit')                          #default value stand for 512M
         self.mem_limit = mem_limit if mem_limit else 512*1024*1024
 
-        disk_usage = params.get('disk_usage')
+        disk_usage = params.get('diskUsage')
         self.disk_usage = float(disk_usage) if disk_usage else 0.7
 
         image = params.get('image')
@@ -36,7 +36,7 @@ class MysqlContainerClusterConfig(object):
         self.container_cluster_name = container_cluster_name
         component_type = params.get('componentType')
         self.component_type = component_type
-        network_mode = params.get('network_mode')
+        network_mode = params.get('networkMode')
         self.network_mode = network_mode
         
         data_bind = '/data/mcluster_data/d-mcl-%s' % self.container_cluster_name
