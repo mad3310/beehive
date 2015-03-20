@@ -128,6 +128,8 @@ class ElectServer(object):
         _mem_limit = component_container_cluster_config.mem_limit
         mem_limit = _mem_limit/(1024*1024)
         
+        disk_usage = component_container_cluster_config.disk_usage
+        
         server_url = 'http://%s:%s/server/resource' % (host_ip, options.port)
         _server_res = http_get(server_url)
         server_res = _server_res["response"]
@@ -140,7 +142,7 @@ class ElectServer(object):
         rest_server_disk = server_res['server_disk']['free']
         total_server_disk = server_res['server_disk']['total']
         logging.info('rest disk :%s, total disk:%s' % (rest_server_disk, total_server_disk) )
-        disk_condition = float(rest_server_disk)/total_server_disk < 0.7
+        disk_condition = float(rest_server_disk)/total_server_disk < disk_usage
         mem_condition = mem_usable > mem_limit
         
         if mem_condition and disk_condition:
