@@ -25,7 +25,7 @@ class MysqlContainerClusterConfig(object):
         self.mem_free_limit = 1*1024*1024*1024                      #default value stand for 10G                  
         mem_limit = params.get('memLimit')                          #default value stand for 512M
         self.mem_limit = mem_limit if mem_limit else 512*1024*1024
-
+        
         disk_usage = params.get('diskUsage')
         self.disk_usage = float(disk_usage) if disk_usage else 0.7
 
