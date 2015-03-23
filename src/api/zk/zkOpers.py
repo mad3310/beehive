@@ -14,8 +14,7 @@ from docker_letv.dockerOpers import Docker_Opers
 from kazoo.client import KazooClient
 from container.container_module import Container
 from utils.autoutil import get_containerClusterName_from_containerName
-from utils.autoutil import ping_ip_able
-from utils.autoutil import nc_ip_port_available
+from utils.autoutil import ping_ip_available, nc_ip_port_available
 from utils.decorators import singleton
 
 '''
@@ -263,25 +262,25 @@ class ZkOpers(object):
     '''
     def retrieve_monitor_status_list(self, monitor_type):
         clusterUUID = self.getClusterUUID()
-        path = self.rootPath + "/" + clusterUUID + "/monitor_status/" + monitor_type
+        path = self.rootPath + "/" + clusterUUID + "/monitor/" + monitor_type
         monitor_status_type_list = self._return_children_to_list(path)
         return monitor_status_type_list
     
     def retrieve_monitor_status_value(self, monitor_type, monitor_key):
         clusterUUID = self.getClusterUUID()
-        path = self.rootPath + "/" + clusterUUID + "/monitor_status/" + monitor_type + "/" + monitor_key
+        path = self.rootPath + "/" + clusterUUID + "/monitor/" + monitor_type + "/" + monitor_key
         resultValue = self._retrieveSpecialPathProp(path)
         return resultValue
     
     def retrieve_monitor_type(self):
         clusterUUID = self.getClusterUUID()
-        path = self.rootPath + "/" + clusterUUID + "/monitor_status"
+        path = self.rootPath + "/" + clusterUUID + "/monitor"
         monitor_type_list = self._return_children_to_list(path)
         return monitor_type_list
            
     def write_monitor_status(self, monitor_type, monitor_key, monitor_value):
         clusterUUID = self.getClusterUUID()
-        path = self.rootPath + "/" + clusterUUID + "/monitor_status/" + monitor_type +"/"+ monitor_key
+        path = self.rootPath + "/" + clusterUUID + "/monitor/" + monitor_type +"/"+ monitor_key
         logging.debug("monitor status:" + path)
         self.zk.ensure_path(path)
         self.zk.set(path, str(monitor_value))#version need to write
@@ -334,7 +333,7 @@ class ZkOpers(object):
         for ip in rest_ip_list:
             ippath = path + "/" + ip
             self.zk.delete(ippath)
-            if not ping_ip_able(ip):
+            if not ping_ip_available(ip):
                 assign_ip_list.append(ip)
             if len(assign_ip_list) == ipCount:
                 break
@@ -349,23 +348,6 @@ class ZkOpers(object):
         clusterUUID = self.getClusterUUID()
         path = self.rootPath + '/' +clusterUUID + '/ipPool'
         return self._return_children_to_list(path)
-    
-    
-    def remove_useless_ips(self):
-        clusterUUID = self.getClusterUUID()
-        path = self.rootPath + "/" + clusterUUID + "/ipPool"
-        ipPool_ip_list = self._return_children_to_list(path)
-        
-        '''
-        @todo: should not put more logic into zkOpers
-        '''
-        host_con_ip_list = self.docker_opers.retrieve_containers_ips()
-        
-        ip_list = list( set(ipPool_ip_list) & set(host_con_ip_list) )
-        for ip in ip_list:
-            logging.info('delete ips from ipPools: %s for ip used' % str(ip) )
-            _path = path + "/" + ip
-            self.zk.delete(_path)
 
 
 
@@ -385,12 +367,11 @@ class ZkOpers(object):
         for port in rest_port_list:
             port_path = path + "/" + port
             self.zk.delete(port_path)
-            '''
-            @todo: why comment below code?
-            '''
-#             if nc_ip_port_available(host_ip, port):
-#                 assign_port_list.append(port)
+            
+            if not nc_ip_port_available(host_ip, port):
+                assign_port_list.append(port)
             assign_port_list.append(port)
+
             if len(assign_port_list) == port_count:
                 break
         return assign_port_list

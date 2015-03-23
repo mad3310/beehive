@@ -62,7 +62,7 @@ def getHostIp():
     logging.info("host ip: %s" % (ip))
     return ip
 
-def ping_ip_able(ip):
+def ping_ip_available(ip):
     cmd = 'ping -w 1 %s' % str(ip)
     ping_ret = os.system(cmd)
     if ping_ret == 0:
@@ -76,7 +76,7 @@ def ping_ip_able(ip):
 def nc_ip_port_available(host_ip, port):
     cmd = 'nc -z %s %s' % (host_ip, port)
     _nc_ret = os.system(cmd)
-    if not _nc_ret:
+    if _nc_ret:
         return False
     return True
 

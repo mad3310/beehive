@@ -13,7 +13,7 @@ import Queue
 import logging
 
 from zk.zkOpers import ZkOpers
-from utils.autoutil import doInThread
+from utils.autoutil import doInThread, ping_ip_available
 from utils.exceptions import CommonException
 from docker_letv.dockerOpers import Docker_Opers
 
@@ -72,9 +72,8 @@ class IpOpers(object):
         '''
         @todo: same as utils.autoutil.ping_ip_able?
         '''
-        cmd = 'ping -w 2 %s' % str(ip)
-        ret = os.system(cmd)
-        if not ret:
+        ret = ping_ip_available(ip)
+        if ret:
             logging.info('ping ip: %s result :%s' % (ip, str(ret)) )
             return False
         

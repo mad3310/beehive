@@ -27,9 +27,7 @@ class UpdateServerHandler(APIHandler):
         return_message.setdefault("message", "update server successful")
         self.finish(return_message)
 
-'''
-@todo: ignore?
-'''
+
 class CollectServerResHandler(APIHandler):
     """
     update server container 
@@ -37,6 +35,8 @@ class CollectServerResHandler(APIHandler):
     _logger = logging.getLogger("process_info")
     res_opers = Res_Opers()
     
+    
+    # eg. curl http://localhost:8888/server/resource
     @asynchronous
     def get(self):
         
@@ -49,6 +49,7 @@ class SwitchServerUnderoomHandler(APIHandler):
 
     server_opers = Server_Opers()
 
+    # eg. curl --user root:root -d "switch=on&containerNameList=d-mcl-dh-n-1" "http://10.154.156.150:8888/server/containers/under_oom"
     def post(self):
         args = self.get_all_arguments()
         switch = args.get('switch')
@@ -96,6 +97,7 @@ class GetherServerContainersDiskLoadHandler(APIHandler):
     
     server_opers = Server_Opers()
     
+    # eg. curl --user root:root -d "containerNameList=d-mcl-4_zabbix2-n-2" http://localhost:8888/server/containers/disk
     @asynchronous
     def post(self):
         args = self.get_all_arguments()
