@@ -25,11 +25,13 @@ class BaseDockerModelCreator(object):
         _binds = arg_dict.get('binds')
         _ports = arg_dict.get('ports')
         _port_bindings = arg_dict.get('port_bindings')
+        _lxc_conf = arg_dict.get('lxc_conf')
 
         _docker_model = Docker_Model()
         _docker_model.image = _image
         _docker_model.mem_limit = _mem_limit
         _docker_model.host_ip = _host_ip
+        _docker_model.lxc_conf = _lxc_conf
         _docker_model.component_type = _component_type
         _docker_model.privileged = True
         _docker_model.network_mode = 'bridge'
