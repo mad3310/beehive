@@ -44,6 +44,8 @@ class BaseContainerClusterConfig(object):
         network_mode = params.get('networkMode')
         self.network_mode = network_mode
 
+#         nodeCount = params.get('nodeCount')                          
+#         self.nodeCount = int(nodeCount) if nodeCount else 1
 #         image = params.get('image')
 #         self.image = image if image else 'letv/mcluster:0.0.2'
 #         data_bind = '/data/mcluster_data/d-mcl-%s' % self.container_cluster_name

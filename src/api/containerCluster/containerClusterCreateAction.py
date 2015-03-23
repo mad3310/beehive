@@ -65,11 +65,11 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
     def __issue_create_action(self, args={}):
         logging.info('args:%s' % str(args))
         _component_type = args.get('componentType')
-        _network_mode = args.get('network_mode')
+        _network_mode = args.get('networkMode')
         
         logging.info('containerClusterName : %s' % str(args.get('containerClusterName')))
-        logging.info('_component_type : %s' % str(_component_type))
-        logging.info('_network_mode : %s' % str(_network_mode))
+        logging.info('component_type : %s' % str(_component_type))
+        logging.info('network_mode : %s' % str(_network_mode))
         
         _component_container_cluster_config = self.component_container_cluster_config_factory.retrieve_config(args)
         args.setdefault('component_config', _component_container_cluster_config)
