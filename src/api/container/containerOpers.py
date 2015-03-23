@@ -405,12 +405,15 @@ class Container_destroy_action(Abstract_Async_Thread):
         logging.info('write destroy flag')
         destroy_flag = {'status':Status.destroying, 'message':''}
         self.zkOper.write_container_status_by_containerName(self.container_name, destroy_flag)
-        mount_dir = self.__get_normal_node_mount_dir()
+        
+        '''
+           get mount dir first, otherwise get nothing where container removed~
+        '''
+        
+        mount_dir_list = self.__get_mount_dir()
         self.docker_opers.destroy(self.container_name)
         logging.info('container_name :%s' % str(self.container_name) )
-        logging.info('mount_dir :%s' % str(mount_dir) )
-        if os.path.exists(mount_dir):
-            os.system('rm -rf %s' % mount_dir)
+        self.__remove_mount_dir(mount_dir_list)
             
         exists = self.container_opers.check_container_exists(self.container_name)
         
@@ -429,26 +432,18 @@ class Container_destroy_action(Abstract_Async_Thread):
         '''
         self.zkOper.write_container_status_by_containerName(self.container_name, destroy_rst)
 
-    def __get_normal_node_mount_dir(self):
-        mount_dir = ''
+    def __remove_mount_dir(self, mount_dir_list):
+        for mount_dir in mount_dir_list:
+            os.system('rm -rf %s' % mount_dir)
+
+    def __get_mount_dir(self):
+        mount_dir_list  = []
         _inspect = self.docker_opers.inspect_container(self.container_name)
         con = Container(_inspect)
-        type = con.type()
-        '''
-        @todo: if other component need to delete these volumn?
-        '''
-
-        if 'mclusternode' == type:
-            '''
-            @todo: 
-            1. remove the directory is right? is this directory when create container?
-            '''
-            volumes = con.volumes()
-            mount_dir = volumes.get('/srv/mcluster')
-            if not mount_dir:
-                mount_dir = ''
-         
-        return mount_dir
+        volumes = con.volumes()
+        for _, mount_dir in volumes.items():
+            mount_dir_list.append(mount_dir)
+        return mount_dir_list
 
 
 class ContainerLoad(object):

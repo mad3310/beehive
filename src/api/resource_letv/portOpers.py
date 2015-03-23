@@ -7,6 +7,7 @@ import logging
 
 from zk.zkOpers import ZkOpers
 from utils.exceptions import CommonException
+from utils.autoutil import nc_ip_port_available
 
 class PortOpers(object):
     '''
@@ -44,20 +45,9 @@ class PortOpers(object):
             start_port += 1
             if start_port > 65535:
                 raise CommonException('port are not enough, maybe start port are too small')
-            if self.__is_port_usable(start_port):
+            if not self.nc_ip_port_available(start_port):
                 port_list.append(start_port)
             if len(port_list) >= port_count:
                 break
-        return port_list
-
-    def __is_port_usable(self, port):
-        """
-            @todo
-            check port usable
-        """
-
-        return True
-        
-        
-        
+        return port_list     
         

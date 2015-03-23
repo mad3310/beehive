@@ -101,15 +101,9 @@ class CheckServerContainersUnderOom(APIHandler):
     def get(self):
         server_ip = self.request.remote_ip
         cons_under_oom = {}
-        try:
-            illegal_containers = self.server_opers.get_all_containers_under_oom()
-            cons_under_oom.setdefault('illegal_containers', illegal_containers)
-        except:
-            logging.error( str( traceback.format_exc() ) )
-            raise HTTPAPIError(status_code=500, error_detail="code error!",\
-                               notification = "direct", \
-                               log_message= "code error!",\
-                               response =  "code error!")
+        
+        illegal_containers = self.server_opers.get_all_containers_under_oom()
+        cons_under_oom.setdefault('illegal_containers', illegal_containers)
         
         logging.debug('get server %s containers memory load :%s' % (server_ip, str(cons_under_oom) ) )
         self.finish( cons_under_oom )

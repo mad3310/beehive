@@ -6,8 +6,6 @@ Created on 2013-7-21
 @author: asus
 '''
 
-import logging
-
 from statusOpers import CheckContainersUnderOom, CheckResIpUsable, CheckResIpNum 
 
 
@@ -27,7 +25,7 @@ class ContainerInfoAsyncHandler:
     
     def retrieve_info(self):
         self.check_cons_under_oom.check()
-
+        self.check_cons_mem_load.check()
 
 class ResInfoAsyncHandler:
     """monitor resource item

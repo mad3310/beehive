@@ -27,9 +27,7 @@ class UpdateServerHandler(APIHandler):
         return_message.setdefault("message", "update server successful")
         self.finish(return_message)
 
-'''
-@todo: ignore?
-'''
+
 class CollectServerResHandler(APIHandler):
     """
     update server container 

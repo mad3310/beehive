@@ -40,6 +40,8 @@ class Sceduler_Opers(object):
     
     '''
     @todo: the different of action_timeout and monitor_timeout
+    reason: the callback of the class PeriodicCallback have no params 
+    
     '''
     def __create_worker_check_monitor(self):
         monitor_backend_worker = Monitor_Backend_Handle_Worker(self.monitor_timeout)

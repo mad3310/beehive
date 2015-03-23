@@ -48,6 +48,15 @@ class CheckStatusBase(object):
                      monitor_key + " monitor_value:" + str(result_dict))
         self.zkOper.write_monitor_status(monitor_type, monitor_key, result_dict)
 
+    def _get(self, uri):
+        rst = {}
+        host_ip = getHostIp()
+        logging.info('host ip :%s' % host_ip)
+        adminUser, adminPasswd = _retrieve_userName_passwd()
+        url = 'http://%s:%s%s' % (host_ip, options.port, uri)
+        logging.info('get url :%s' % url)
+        ret = http_get(url, _connect_timeout=40.0, _request_timeout=40.0, auth_username = adminUser, auth_password = adminPasswd)
+        return ret.get('response')
 
 class CheckResIpNum(CheckStatusBase):
     ip_opers = IpOpers()
@@ -124,7 +133,7 @@ class CheckContainersUnderOom(CheckStatusBase):
         try:
             containers_under_oom = {}
             logging.info('do check under_oom')
-            containers_under_oom = self._get()
+            containers_under_oom = self._get('/monitor/serverCluster/containers/under_oom')
             logging.info('containers_under_oom:%s' % str(containers_under_oom) )
             
             for host_ip, host_cons_under_oom in containers_under_oom.items():
@@ -154,19 +163,6 @@ class CheckContainersUnderOom(CheckStatusBase):
             return options.alarm_nothing
         else:
             return options.alarm_serious
-    
-    '''
-    @todo: sync invoke these interface, will be block other server process?
-    '''
-    def _get(self):
-        rst = {}
-        host_ip = getHostIp()
-        logging.info('host ip :%s' % host_ip)
-        adminUser, adminPasswd = _retrieve_userName_passwd()
-        uri = 'http://%s:%s/monitor/serverCluster/containers/under_oom' % (host_ip, options.port)
-        logging.info('get uri :%s' % uri)
-        ret = http_get(uri, _connect_timeout=40.0, _request_timeout=40.0, auth_username = adminUser, auth_password = adminPasswd)
-        return ret.get('response')
 
 
 class CheckContainersMemLoad(CheckStatusBase):
@@ -178,7 +174,7 @@ class CheckContainersMemLoad(CheckStatusBase):
         failed_count, containers_mem_load = 0, {}
         try:
             logging.info('do monitor memory load')
-            containers_mem_load = self._get()
+            containers_mem_load = self._get('/monitor/serverCluster/containers/memory')
             logging.info('containers_mem_load result:%s' % str(containers_mem_load) )
             overload_containers = self.__get_host_overload_containers(containers_mem_load)
             
@@ -192,34 +188,14 @@ class CheckContainersMemLoad(CheckStatusBase):
                     failed_count += 1
         
         except:
-            logging.error( str(traceback.format_exc()) )
+            error_msg = str(traceback.format_exc())
+            logging.error(error_msg)
+            error_record.append(error_msg)
             
         alarm_level = self.retrieve_alarm_level(0, 0, failed_count)
         super(CheckContainersMemLoad, self).write_status(0, 0, failed_count, 
                                                          alarm_level, error_record,
                                                          monitor_type, monitor_key) 
-    '''
-    @todo: need abstract _get method to base class?
-    '''
-    def _get(self):
-        '''
-        @todo: error usage put return rst to finally
-        '''
-        try:
-            rst = {}
-            host_ip = getHostIp()
-            logging.info('host ip :%s' % host_ip)
-            adminUser, adminPasswd = _retrieve_userName_passwd()
-            uri = 'http://%s:%s/monitor/serverCluster/containers/memory' % (host_ip, options.port)
-            logging.info('get uri :%s' % uri)
-            ret = http_get(uri, _connect_timeout=40.0, _request_timeout=40.0, auth_username = adminUser, auth_password = adminPasswd)
-            rst = ret.get('response')
-        except:
-            error_msg = str(traceback.format_exc())
-            logging.error(error_msg)
-            rst.setdefault('code error', error_msg)
-        finally:
-            return rst
 
     def __get_host_overload_containers(self, containers_mem_load):
         ret = {}

@@ -19,6 +19,7 @@ from zk.zkOpers import ZkOpers
 from containerCluster.baseContainerAction import ContainerCluster_Action_Base
 from containerCluster.containerClusterCreateAction import ContainerCluster_create_Action
 from componentProxy.componentContainerClusterValidator import ComponentContainerClusterValidator
+from utils.autoutil import get_containerClusterName_from_containerName
 from status.status_enum import Status
 
 
@@ -38,10 +39,16 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         containerCluster_create_action.start()
     
     def start(self, containerClusterName):
+        exists = self.zkOper.check_containerCluster_exists(containerClusterName)
+        if not exists:
+            raise CommonException('containerCluster %s not exist, choose another containerCluster name' % containerClusterName)
         containerCluster_start_action = ContainerCluster_start_Action(containerClusterName)
         containerCluster_start_action.start()
         
     def stop(self, containerClusterName):
+        exists = self.zkOper.check_containerCluster_exists(containerClusterName)
+        if exists:
+            raise CommonException('containerCluster %s has existed, choose another containerCluster name' % containerClusterName)
         containerCluster_stop_action = ContainerCluster_stop_Action(containerClusterName)
         containerCluster_stop_action.start()
 
@@ -201,7 +208,7 @@ class ContainerCluster_destroy_Action(ContainerCluster_Action_Base):
 '''
 @todo: what means? same as check() method?
 '''
-class GetClustersChanges(object):
+class GetLastestClustersInfo(object):
     
     zkOper = ZkOpers()
     

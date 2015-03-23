@@ -19,7 +19,7 @@ from tornado_letv.tornado_basic_auth import require_basic_auth
 from base import APIHandler
 from utils import _retrieve_userName_passwd
 from utils.exceptions import HTTPAPIError
-from containerCluster.containerClusterOpers import ContainerCluster_Opers, GetClustersChanges
+from containerCluster.containerClusterOpers import ContainerCluster_Opers, GetLastestClustersInfo
 from componentProxy.db.mysql.mclusterOper import MclusterManager
 from componentProxy.webcontainer.nginx.nginxOper import NginxManager
 from status.status_enum import Status
@@ -180,7 +180,12 @@ class ContainerClusterHandler(APIHandler):
         args = self.get_all_arguments()
         containerClusterName = args.get('containerClusterName')
         logging.info(' containerClusterName:%s' % containerClusterName)
-        
+        if not containerClusterName:
+            raise HTTPAPIError(status_code=400, error_detail="no containerClusterName argument!",\
+                                notification = "direct", \
+                                log_message= "no containerClusterName argument!",\
+                                response =  "please check params!")
+
         self.containerClusterOpers.destory(containerClusterName)
         
         return_message = {}
@@ -248,16 +253,6 @@ class ContainerClusterStartHandler(APIHandler):
                                 log_message= "no containerClusterName argument!",\
                                 response =  "please check params!")
         
-        '''
-        @todo: put below code into self.containerClusterOpers.start
-        '''
-        exists = self.zkOper.check_containerCluster_exists(containerClusterName)
-        if not exists:
-            raise HTTPAPIError(status_code=400, error_detail="containerCluster %s not exist!" % containerClusterName,\
-                                notification = "direct", \
-                                log_message= "containerCluster %s not exist!" % containerClusterName,\
-                                response =  "please check!")
-        
         try:
             self.containerClusterOpers.start(containerClusterName)
         except:
@@ -288,16 +283,6 @@ class ContainerClusterStopHandler(APIHandler):
                                 notification = "direct", \
                                 log_message= "no containerClusterName argument!",\
                                 response =  "please check params!")
-        
-        '''
-        @todo: put below code into self.containerClusterOpers.stop
-        '''
-        exists = self.zkOper.check_containerCluster_exists(containerClusterName)
-        if not exists:
-            raise HTTPAPIError(status_code=400, error_detail="containerCluster %s not exist!" % containerClusterName,\
-                                notification = "direct", \
-                                log_message= "containerCluster %s not exist!" % containerClusterName,\
-                                response =  "please check!")
         
         try:
             self.containerClusterOpers.stop(containerClusterName)
@@ -382,7 +367,7 @@ class ContainerClusterInfoHandler(APIHandler):
 @require_basic_auth
 class CheckClusterSyncHandler(APIHandler):
 
-    get_cluster_changes = GetClustersChanges()
+    get_cluster_changes = GetLastestClustersInfo()
     
     def get(self):
         res_info =  self.get_cluster_changes.get_res()
