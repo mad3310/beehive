@@ -94,7 +94,11 @@ class CheckServersContainersMemLoad(APIHandler):
         self.finish( server_cons_mem_load )
 
 
+
 class CheckServerContainersUnderOom(APIHandler):
+    """
+        is invoked by CheckServersContainersUnderOom below
+    """
     
     server_opers = Server_Opers()
     
@@ -108,12 +112,13 @@ class CheckServerContainersUnderOom(APIHandler):
         logging.debug('get server %s containers memory load :%s' % (server_ip, str(cons_under_oom) ) )
         self.finish( cons_under_oom )
 
-'''
-@todo: 
-1. the different with above logic?
-'''
+
 @require_basic_auth
 class CheckServersContainersUnderOom(APIHandler):
+    """
+        dispatch request to run on server, 
+        then invoke the class CheckServerContainersUnderOom
+    """
     
     @asynchronous
     @engine

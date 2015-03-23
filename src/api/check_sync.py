@@ -15,14 +15,17 @@ class CheckSync():
     config_file_obj = ConfigFileOpers()
 
     '''
-    @todo: if failed, only to logging? the program will be continue to run?
+        cluster will not  be existed,
+        when the first to start container-manager in a new server cluster
+         
     '''
+    
     def sync(self):
         if self.zkOpers.existCluster():
             self.sync_server_cluster()
             self.sync_data_node()
         else:
-            logging.info("cluster does not exist")
+            logging.info("cluster does not exist, may be the first time to sync in a new server cluster")
 
     def sync_server_cluster(self):
         cluster_uuid = self.zkOpers.getClusterUUID() 

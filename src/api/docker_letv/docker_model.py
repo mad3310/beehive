@@ -142,4 +142,12 @@ class Docker_Model(object):
     @port_bindings.setter
     def port_bindings(self, port_bindings):
         self._port_bindings = port_bindings
+
+    @property
+    def lxc_conf(self):
+        return self._lxc_conf
+    
+    @lxc_conf.setter
+    def lxc_conf(self, lxc_conf):
+        self._lxc_conf = lxc_conf
         

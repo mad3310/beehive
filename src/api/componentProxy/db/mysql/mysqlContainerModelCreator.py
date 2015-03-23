@@ -43,6 +43,7 @@ class MySQLContainerModelCreator(AbstractContainerModelCreator):
             container_model.volumes = volumes
             container_model.binds = binds
             container_model.image = _component_container_cluster_config.image
+            container_model.lxc_conf = _component_container_cluster_config.lxc_conf
             container_model.ports = _component_container_cluster_config.ports
             container_model.mem_limit = _component_container_cluster_config.mem_limit
             

@@ -19,7 +19,6 @@ from zk.zkOpers import ZkOpers
 from containerCluster.baseContainerAction import ContainerCluster_Action_Base
 from containerCluster.containerClusterCreateAction import ContainerCluster_create_Action
 from componentProxy.componentContainerClusterValidator import ComponentContainerClusterValidator
-from utils.autoutil import get_containerClusterName_from_containerName
 from status.status_enum import Status
 
 
@@ -203,12 +202,11 @@ class ContainerCluster_destroy_Action(ContainerCluster_Action_Base):
         super(ContainerCluster_destroy_Action, self).__init__(containerClusterName, 'remove')
 
 
-
-
-'''
-@todo: what means? same as check() method?
-'''
 class GetLastestClustersInfo(object):
+    """
+        webportal do info sync every 10 minutes,
+        then interface will invoke this class
+    """
     
     zkOper = ZkOpers()
     
@@ -219,12 +217,6 @@ class GetLastestClustersInfo(object):
         
     def get_res(self):
         host_ip = self.__random_host_ip()
-        '''
-        @todo: 
-        why:
-        1. /serverCluster/update
-        2. /containerCluster/info
-        '''
         self._get(host_ip, '/serverCluster/update')
         res = self._get(host_ip, '/containerCluster/info')
         logging.info('res : %s' % str(res) )
