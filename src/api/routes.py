@@ -16,17 +16,25 @@ handlers = [
     (r"/admin/reset", AdminReset),
     (r"/admin/ips", IPHandler),
     (r"/admin/ports", PortHandler),
+    
+    ##'''  --------------------serverCluster-------------------------------
+    
     (r"/serverCluster", ServerClusterHandler),
     (r"/serverCluster/update", UpdateServerClusterHandler),
     (r"/serverCluster/containers/under_oom", SwitchServersUnderoomHandler),
     (r"/serverCluster/containers/disk", GetherServersContainersDiskLoadHandler),
     (r"/serverCluster/containers/memory/add", AddServersMemoryHandler),
+    
+    ##'''  --------------------server---------------------------------------'''
+    
     (r"/server/resource", CollectServerResHandler),
-    (r"inner/server/containers/resource", CollectContainerResHandler),
     (r"/server/containers/memory/add", AddServerMemoryHandler),
     (r"/server/containers/under_oom", SwitchServerUnderoomHandler),
     (r"/server/containers/disk", GetherServerContainersDiskLoadHandler),
     (r"/inner/server/update", UpdateServerHandler),
+    
+    ##'''  --------------------containerCluster------------------------------'''
+    
     (r"/containerCluster", ContainerClusterHandler),
     #(r"/containerCluster/(.*)", ContainerClusterHandler),
     (r"/containerCluster/start", ContainerClusterStartHandler),
@@ -40,6 +48,9 @@ handlers = [
     (r"/containerCluster/stat/(.*)/memory", GetherClusterMemeoyHandler),
     (r"/containerCluster/stat/(.*)/cpuacct", GetherClusterCpuacctHandler),
     (r"/containerCluster/stat/(.*)/networkio", GetherClusterNetworkioHandler),
+    
+    ##'''  --------------------container---------------------------------------'''
+    
     (r"/inner/container", ContainerHandler),
     (r"/container/start", StartContainerHandler),
     (r"/container/stop", StopContainerHandler),
@@ -52,6 +63,9 @@ handlers = [
     @todo: inner? componentManager?
     '''
     (r"/container/manager/status", ManagerStatusHandler),
+    
+    ##'''  --------------------monitor--------------------------------------- '''
+    
     (r"/monitor/status", ContainerStatus),
     (r"/monitor/serverCluster/containers/memory", CheckServersContainersMemLoad),
     (r"/monitor/serverCluster/containers/under_oom", CheckServersContainersUnderOom),

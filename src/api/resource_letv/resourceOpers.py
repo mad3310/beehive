@@ -50,12 +50,11 @@ class Res_Opers():
 #         disk_instant_spd = self.disk_instant_load()
 #         resource.setdefault("disk_instant_spd", disk_instant_spd)
         
-        # _cpu_info = self.cpu_info()
-        # resource.setdefault("cpu_info" , _cpu_info)
-        
         '''
         @todo: why comment?
         '''
+#         _cpu_info = self.cpu_info()
+#         resource.setdefault("cpu_info" , _cpu_info)
 #         cur_cpu_usage = self.get_cur_cpu_usage()
 #         resource.setdefault("cur_cpu_idle", cur_cpu_usage)
 

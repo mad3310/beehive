@@ -33,7 +33,10 @@ class NginxContainerClusterConfig(object):
         """
         
         mem_free_limit = params.get('memFree')                          
-        self.mem_free_limit = mem_free_limit if mem_free_limit else 10*1024*1024*1024
+        self.mem_free_limit = mem_free_limit if mem_free_limit else 1*1024*1024*1024
+        
+        disk_usage = params.get('diskUsage')
+        self.disk_usage = float(disk_usage) if disk_usage else 0.7
         
         """
             default value stand for 512M
@@ -53,5 +56,5 @@ class NginxContainerClusterConfig(object):
         self.container_cluster_name = container_cluster_name
         component_type = params.get('componentType')
         self.component_type = component_type
-        network_mode = params.get('network_mode')
+        network_mode = params.get('networkMode')
         self.network_mode = network_mode

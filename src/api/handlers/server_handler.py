@@ -44,30 +44,6 @@ class CollectServerResHandler(APIHandler):
         self.finish(server_res)
 
 
-'''
-@todo: ignore?
-'''
-class CollectContainerResHandler(APIHandler):
-    """
-    update server container 
-    """
-    res_opers = Res_Opers()
-    
-    @asynchronous
-    def get(self):
-        
-        try:
-            container_res = self.res_opers.retrieve_container_stat()
-        except:
-            error_message = str(traceback.format_exc())
-            raise HTTPAPIError(status_code=500, error_detail="get container resource failed!",\
-                                notification = "direct", \
-                                log_message= "get container resource failed!",\
-                                response =  "please check! %s" % (error_message))
-        
-        self.finish(container_res)
-
-
 @require_basic_auth
 class SwitchServerUnderoomHandler(APIHandler):
 

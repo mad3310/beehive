@@ -437,9 +437,8 @@ class Container_destroy_action(Abstract_Async_Thread):
         '''
         @todo: if other component need to delete these volumn?
         '''
-        if 'vip' in type:
-            logging.info('vip node, no need to remove mount dir!')
-        else:
+
+        if 'mclusternode' == type:
             '''
             @todo: 
             1. remove the directory is right? is this directory when create container?
@@ -448,6 +447,7 @@ class Container_destroy_action(Abstract_Async_Thread):
             mount_dir = volumes.get('/srv/mcluster')
             if not mount_dir:
                 mount_dir = ''
+         
         return mount_dir
 
 

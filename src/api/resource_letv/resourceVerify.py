@@ -78,7 +78,6 @@ class ResourceVerify(object):
             pass
         return is_illegal
 
-
     def __get_host_ip_list(self, host_ip_list, container_num):
 
         ip_list = []
@@ -117,37 +116,45 @@ class ElectServer(object):
                     break
         return ips_result
     
-    def __get_score(self, host_ip, component_container_cluster_config={}):
+    def __get_score(self, host_ip, component_container_cluster_config):
         """
-        return score and the num of avaliable hosts
+            return score and the num of avaliable hosts
+            mem_free_limit: memory can be used on a server
+            mem_limit: memory limit on container config
         """
+        
         '''
         @todo: confirm that:use component_container_cluster_config to replace to zkOpers operaion,
         foucs on mem_limit
         what means mem_limit and mem_free_limit?
         '''
         
+        weighted_value, num = 0, 0 
         _mem_limit = component_container_cluster_config.mem_limit
         mem_limit = _mem_limit/(1024*1024)
         
+        disk_usage = component_container_cluster_config.disk_usage
+        
         server_url = 'http://%s:%s/server/resource' % (host_ip, options.port)
-        server_res = http_get(server_url)
+        _server_res = http_get(server_url)
+        server_res = _server_res["response"]
         logging.info('server_res: %s' % str(server_res) )
         mem_free_limit = component_container_cluster_config.mem_free_limit
         
-        mem_usable = float(server_res["response"]["mem_res"]["free"]) - mem_free_limit/(1024*1024)
+        mem_usable = float(server_res["mem_res"]["free"]) - mem_free_limit/(1024*1024)
         logging.info('mem_usable:%s' %  mem_usable)
         
+        rest_server_disk = server_res['server_disk']['free']
+        total_server_disk = server_res['server_disk']['total']
+        logging.info('rest disk :%s, total disk:%s' % (rest_server_disk, total_server_disk) )
+        disk_condition = float(rest_server_disk)/total_server_disk < disk_usage
+        mem_condition = mem_usable > mem_limit
+        
         '''
-        @todo: no need to if esle, only change to if
-        '''
-        if mem_usable and mem_usable < mem_limit:
-            weighted_value = 0
-            num = 0
-        else:
-            '''
             @todo: why is mem_usable/mem_limit? Do you means that mem_usable/(mem_usable+mem_limit)?
-            '''
+        '''
+        if mem_condition and disk_condition:
             weighted_value = mem_usable
             num = int(mem_usable/mem_limit)
+        
         return weighted_value, num

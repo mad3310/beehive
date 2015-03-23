@@ -6,25 +6,21 @@ Created on 2013-7-21
 @author: asus
 '''
 
-from statusOpers import CheckContainersUnderOom, CheckResIpUsable, CheckResIpNum 
-
 import logging
 
-'''
-@todo: need to remove? no reference.
-'''
-class ResInfoSyncHandler:    
-    
-    def retrieve_info(self, data_node_info_list):
-        return self._action(data_node_info_list)
-        
-    def _action(self, data_node_info_list):
-        logging.info("_retrieve_db_info_sync:do nothing!")
+from statusOpers import CheckContainersUnderOom, CheckResIpUsable, CheckResIpNum 
+
 
 class ContainerInfoAsyncHandler:
     """monitor container item
     
     """
+    '''
+    @todo
+        container memory
+        container cpuacct
+        container networkio
+    '''
     
     #check_cons_mem_load = CheckContainersMemLoad()
     check_cons_under_oom = CheckContainersUnderOom()
