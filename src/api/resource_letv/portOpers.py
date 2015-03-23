@@ -35,19 +35,19 @@ class PortOpers(object):
         port_count = int(args.get('portCount'))
         start_port = int(args.get('startPort'))
 
-        choosed_ports = self.__get_needed_ports(start_port, port_count)
+        choosed_ports = self.__get_needed_ports(host_ip, start_port, port_count)
         for port in choosed_ports:
             self.zkOper.write_port_into_portPool(host_ip, str(port) )
 
-    def __get_needed_ports(self, start_port, port_count):
+    def __get_needed_ports(self, host_ip, start_port, port_count):
         port_list = []
         while True:
             start_port += 1
             if start_port > 65535:
                 raise CommonException('port are not enough, maybe start port are too small')
-            if not self.nc_ip_port_available(start_port):
+            if not nc_ip_port_available(host_ip, start_port):
                 port_list.append(start_port)
             if len(port_list) >= port_count:
                 break
-        return port_list     
+        return port_list
         

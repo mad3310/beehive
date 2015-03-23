@@ -4,18 +4,13 @@ Created on 2015-2-1
 @author: asus
 '''
 #-*- coding: utf-8 -*-
-#from abc import abstractmethod
+
 from docker_letv.docker_model import Docker_Model
 
-class AbstractContainerModelCreator(object):
+class BaseDockerModelCreator(object):
     '''
     classdocs
     '''
-
-
-#     @abstractmethod
-#     def create(self, arg_dict):
-#         raise NotImplementedError, "Cannot call abstract method"
 
     def create(self, arg_dict):
         _container_name = arg_dict.get('container_name')
