@@ -6,7 +6,9 @@ Created on 2015-3-9
 @author: asus
 '''
 
-class NginxContainerClusterConfig(object):
+from componentProxy.baseClusterConfig import BaseContainerClusterConfig
+
+class NginxContainerClusterConfig(BaseContainerClusterConfig):
     '''
     classdocs
     '''
@@ -36,7 +38,7 @@ class NginxContainerClusterConfig(object):
         self.mem_free_limit = mem_free_limit if mem_free_limit else 1*1024*1024*1024
         
         disk_usage = params.get('diskUsage')
-        self.disk_usage = float(disk_usage) if disk_usage else 0.7
+        self.disk_usage = float(disk_usage) if disk_usage else 0.8
         
         """
             default value stand for 512M

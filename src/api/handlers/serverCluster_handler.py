@@ -75,6 +75,7 @@ class UpdateServerClusterHandler(APIHandler):
     
     serverCluster_opers = ServerCluster_Opers()
     
+    # eg. curl --user root:root -X GET http://localhost:8888/serverCluster/update
     def get(self):
         
         self.serverCluster_opers.update()
@@ -89,6 +90,8 @@ class SwitchServersUnderoomHandler(APIHandler):
     
     @asynchronous
     @engine
+    
+    # eg. curl --user root:root -d "switch=on&containerNameList=d-mcl-xiangge-n-2,d-mcl-xiangge-n-1" "http://localhost:8888/serverCluster/containers/under_oom"
     def post(self):
         
         args = self.get_all_arguments()

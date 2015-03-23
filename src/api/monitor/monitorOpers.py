@@ -13,19 +13,12 @@ class ContainerInfoAsyncHandler:
     """monitor container item
     
     """
-    '''
-    @todo
-        container memory
-        container cpuacct
-        container networkio
-    '''
     
     #check_cons_mem_load = CheckContainersMemLoad()
     check_cons_under_oom = CheckContainersUnderOom()
     
     def retrieve_info(self):
         self.check_cons_under_oom.check()
-        self.check_cons_mem_load.check()
 
 class ResInfoAsyncHandler:
     """monitor resource item

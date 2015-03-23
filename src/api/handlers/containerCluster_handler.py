@@ -20,9 +20,6 @@ from base import APIHandler
 from utils import _retrieve_userName_passwd
 from utils.exceptions import HTTPAPIError
 from containerCluster.containerClusterOpers import ContainerCluster_Opers, GetLastestClustersInfo
-from componentProxy.db.mysql.mclusterOper import MclusterManager
-from componentProxy.webcontainer.nginx.nginxOper import NginxManager
-from status.status_enum import Status
 
 
 @require_basic_auth
@@ -30,7 +27,8 @@ class GetherClusterNetworkioHandler(APIHandler):
     '''
     classdocs
     '''
-     
+    
+    # eg . curl --user root:root -X GET http://10.154.156.150:8888/container/stat/d-mcl-test_jll-n-1/networkio
     @asynchronous
     @engine
     def get(self, cluster):
@@ -73,6 +71,7 @@ class GetherClusterMemeoyHandler(APIHandler):
     classdocs
     '''
     
+    # eg. curl --user root:root -X GET http://10.154.156.150:8888/container/stat/d-mcl-test_jll-n-1/memory
     @asynchronous
     @engine
     def get(self, cluster):
@@ -115,6 +114,7 @@ class GetherClusterCpuacctHandler(APIHandler):
     classdocs
     '''
     
+    # eg. curl --user root:root -X GET http://10.154.156.150:8888/container/stat/d-mcl-test_jll-n-1/cpuacct
     @asynchronous
     @engine
     def get(self, cluster):
@@ -176,6 +176,7 @@ class ContainerClusterHandler(APIHandler):
         return_message.setdefault("message", "due to create container cluster need a little more times, please wait to finished and email to you, when cluster have started!")
         self.finish(return_message)
 
+    # eg. curl --user root:root -X DELETE http://10.154.156.150:8888/containerCluster?containerClusterName=dh
     def delete(self):
         args = self.get_all_arguments()
         containerClusterName = args.get('containerClusterName')
@@ -200,6 +201,7 @@ class CheckCreateClusterStatusHandler(APIHandler):
     '''
     containerClusterOpers = ContainerCluster_Opers()
 
+    # eg. curl --user root:root -X GET http://localhost:8888/containerCluster/createStatus/dh
     def get(self, containerClusterName):        
         check_result = ''
         check_result =  self.containerClusterOpers.create_status(containerClusterName)
@@ -220,15 +222,9 @@ class CheckContainerClusterStatusHandler(APIHandler):
     classdocs
     '''
     containerClusterOpers = ContainerCluster_Opers()
-
+    
+    # eg. curl --user root:root -X GET http://10.154.156.150:8888/containerCluster/status/dh
     def get(self, containerClusterName):
-        logging.info('containerClusterName:%s' % containerClusterName)
-        
-        exists = self.zkOper.check_containerCluster_exists(containerClusterName)
-        if not exists:
-            status = {'status' : Status.not_exist}
-            self.finish(status)
-            return
         
         check_result =  self.containerClusterOpers.check(containerClusterName)
         self.finish(check_result)
@@ -241,6 +237,7 @@ class ContainerClusterStartHandler(APIHandler):
     '''
     containerClusterOpers = ContainerCluster_Opers()
 
+    # eg. curl --user root:root -d "containerClusterName=dj" http://10.154.156.150:8888/containerCluster/start
     @asynchronous
     def post(self):
         logging.info('containerClusterName')
@@ -273,6 +270,7 @@ class ContainerClusterStopHandler(APIHandler):
     '''
     containerClusterOpers = ContainerCluster_Opers()
 
+    # eg. curl --user root:root -d "containerClusterName=dj" http://10.154.156.150:8888/containerCluster/stop
     @asynchronous
     def post(self):
         args = self.get_all_arguments()
@@ -369,6 +367,7 @@ class CheckClusterSyncHandler(APIHandler):
 
     get_cluster_changes = GetLastestClustersInfo()
     
+    # eg. curl --user root:root -X GET http://10.154.156.150:8888/containerCluster/sync
     def get(self):
         res_info =  self.get_cluster_changes.get_res()
         return_message = {}

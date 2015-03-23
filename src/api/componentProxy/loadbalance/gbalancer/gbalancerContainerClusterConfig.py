@@ -4,7 +4,9 @@ Created on 2015-2-5
 @author: asus
 '''
 
-class GbalancerContainerClusterConfig(object):
+from componentProxy.baseClusterConfig import BaseContainerClusterConfig
+
+class GbalancerContainerClusterConfig(BaseContainerClusterConfig):
     '''
     classdocs
     '''
@@ -29,7 +31,7 @@ class GbalancerContainerClusterConfig(object):
         self.mem_limit = mem_limit if mem_limit else 512*1024*1024
 
         disk_usage = params.get('diskUsage')
-        self.disk_usage = float(disk_usage) if disk_usage else 0.7
+        self.disk_usage = float(disk_usage) if disk_usage else 0.8
 
         image = params.get('image')
         self.image = image if image else 'letv/mcluster_vip_gbalancer:0.0.3'

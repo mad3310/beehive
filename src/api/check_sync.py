@@ -29,10 +29,8 @@ class CheckSync():
         uuid_value, stat = self.zkOpers.retrieveClusterProp(cluster_uuid) 
         uuid_value = uuid_value.replace("'", "\"")
         uuid_value = json.loads(uuid_value)
-        if isinstance(uuid_value, dict):
-            self.config_file_obj.setValue(options.server_cluster_property, uuid_value) 
-        else:
-            logging.error("sync server cluster property info failed!")
+        self.config_file_obj.setValue(options.server_cluster_property, uuid_value) 
+
 
     def sync_data_node(self):
         server_ip = getHostIp()
@@ -43,4 +41,4 @@ class CheckSync():
             if isinstance(data_node_value, dict):
                 self.config_file_obj.setValue(options.data_node_property, data_node_value)
         else:
-            logging.error('sync data node failed')
+            logging.error('server %s should be registered first' % str(server_ip) )
