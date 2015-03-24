@@ -39,6 +39,7 @@ class NginxContainerModelCreator(AbstractContainerModelCreator):
             container_model.host_ip = host_ip
             container_model.component_type = 'nginx'
             container_model.image = component_container_cluster_config.image
+            container_model.lxc_conf = component_container_cluster_config.lxc_conf
             ports = component_container_cluster_config.ports
             container_model.ports = ports
             container_model.mem_limit = component_container_cluster_config.mem_limit

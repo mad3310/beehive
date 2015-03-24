@@ -22,7 +22,7 @@ class MySQLContainerModelCreator(AbstractContainerModelCreator):
     def create(self, args):
         
         component_type = args.get('componentType')
-        network_mode = args.get('network_mode')
+        network_mode = args.get('networkMode')
         _component_container_cluster_config = args.get('component_config')
         containerClusterName = args.get('containerClusterName')
         container_ip_list = args.get('ip_port_resource_list')

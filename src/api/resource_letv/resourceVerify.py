@@ -66,7 +66,7 @@ class ResourceVerify(object):
         component_type = component_container_cluster_config.component_type
         if component_type =='mclusternode':
             nodeCount = component_container_cluster_config.nodeCount
-            if len(select_ip_list) != nodeCount:
+            if len(set(select_ip_list)) != nodeCount:
                 is_illegal = False
         elif component_type =='mclustervip':
             pass
@@ -98,6 +98,7 @@ class ElectServer(object):
         available_dict = {}
         for host_ip in host_ip_list:
             host_score, available_host_num = self.__get_score(host_ip, component_container_cluster_config)
+            logging.info('server %s get score:%s, num:%s' %(host_ip, host_score, available_host_num))
             if host_score != 0 :
                 score_dict.setdefault(host_ip, host_score)
                 available_dict.setdefault(host_ip, available_host_num)
@@ -139,10 +140,10 @@ class ElectServer(object):
         mem_usable = float(server_res["mem_res"]["free"]) - mem_free_limit/(1024*1024)
         logging.info('mem_usable:%s' %  mem_usable)
         
-        rest_server_disk = server_res['server_disk']['free']
+        used_server_disk = server_res['server_disk']['used']
         total_server_disk = server_res['server_disk']['total']
-        logging.info('rest disk :%s, total disk:%s' % (rest_server_disk, total_server_disk) )
-        disk_condition = float(rest_server_disk)/total_server_disk < disk_usage
+        logging.info('used disk :%s, total disk:%s' % (used_server_disk, total_server_disk) )
+        disk_condition = float(used_server_disk)/total_server_disk < disk_usage
         mem_condition = mem_usable > mem_limit
         
         if mem_condition and disk_condition:
