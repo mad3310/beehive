@@ -35,6 +35,7 @@ class GbalancerContainerModelCreator(AbstractContainerModelCreator):
             container_model.host_ip = host_ip_list[i]
             container_name = 'd-mcl-%s-n-%s' % (containerClusterName, str(i+1))
             container_model.container_name = container_name
+            container_model.lxc_conf = component_container_cluster_config.lxc_conf
             container_model.component_type = 'mclustervip'
             container_model.image = component_container_cluster_config.image
             container_model.mem_limit = component_container_cluster_config.mem_limit

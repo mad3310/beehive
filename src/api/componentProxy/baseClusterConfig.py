@@ -45,7 +45,7 @@ class BaseContainerClusterConfig(object):
         lxc_conf = params.get('LxcConf')
         self.lxc_conf = dict(lxc_conf) if lxc_conf else {'lxc.cgroup.memory.oom_control':1}       
         
-
+        
         '''
             ---------------------params  must be supplied------------------------------
         '''
