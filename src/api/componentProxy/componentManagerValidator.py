@@ -7,6 +7,7 @@ Created on 2015-2-4
 from componentProxy.db.mysql.mclusterOper import MclusterManager
 from componentProxy.loadbalance.gbalancer.gbalancerOper import GbalanceManager
 from componentProxy.webcontainer.nginx.nginxOper import NginxManager
+from componentProxy.webcontainer.jetty.jettyOper import JettyManager
 
 class ComponentManagerStatusValidator(object):
     '''
@@ -26,6 +27,8 @@ class ComponentManagerStatusValidator(object):
             manager_validator = GbalanceManager()
         elif "nginx" == component_type:
             manager_validator = NginxManager()
+        elif "jetty" == component_type:
+            manager_validator = JettyManager()
         else:
             manager_validator = None
         
