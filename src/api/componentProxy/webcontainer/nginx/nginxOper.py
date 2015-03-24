@@ -5,10 +5,10 @@ import time
 
 
 class NginxManager(object):
-    
+
     def __init__(self):
         self.timeout = 5
-        
+
     def __start(self, containerName = None):
         child = pexpect.spawn(r"docker attach %s" % containerName)
         
@@ -18,7 +18,7 @@ class NginxManager(object):
             child.expect(["OK", pexpect.EOF, pexpect.TIMEOUT], timeout=self.timeout)
         finally:
             child.close()
-        
+
     def __get_stat(self, containerName = None):
         stat = True
         child = pexpect.spawn(r"docker attach %s" % containerName)
