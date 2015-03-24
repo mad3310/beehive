@@ -61,6 +61,9 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         containerCluster_destroy_action.start()
 
     def check(self, containerClusterName):
+        exists = self.zkOper.check_containerCluster_exists(containerClusterName)
+        if not exists:
+            raise CommonException('containerCluster %s not existed' % containerClusterName)
         if not self.check_cluster_in_zk(containerClusterName):
             return {'status': Status.not_exist}
         component_type = self.__get_component_type(containerClusterName)

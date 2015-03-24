@@ -6,6 +6,7 @@ Created on 2015-2-4
 from componentProxy.db.mysql.mysqlContainerClusterValidator import MysqlContainerClusterValidator
 from componentProxy.loadbalance.gbalancer.gbalancerContainerClusterValidator import GbalancerContainerClusterValidator
 from componentProxy.webcontainer.nginx.nginxContainerClusterValidator import NginxContainerClusterValidator
+from componentProxy.webcontainer.jetty.jettyContainerClusterValidator import JettyContainerClusterValidator
 
 
 class ComponentContainerClusterValidator(object):
@@ -27,6 +28,8 @@ class ComponentContainerClusterValidator(object):
             container_cluster_validator = GbalancerContainerClusterValidator()
         elif 'nginx' == _component_type:
             container_cluster_validator = NginxContainerClusterValidator()
+        elif 'jetty' == _component_type:
+            container_cluster_validator = JettyContainerClusterValidator()
         else:
             container_cluster_validator = None
             

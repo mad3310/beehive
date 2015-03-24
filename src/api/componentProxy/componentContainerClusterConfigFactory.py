@@ -6,6 +6,8 @@ Created on 2015-2-5
 from componentProxy.db.mysql.mysqlContainerClusterConfig import MysqlContainerClusterConfig
 from componentProxy.loadbalance.gbalancer.gbalancerContainerClusterConfig import GbalancerContainerClusterConfig
 from componentProxy.webcontainer.nginx.nginxContainerClusterConfig import NginxContainerClusterConfig
+from componentProxy.webcontainer.jetty.jettyContainerClusterConfig import JettyContainerClusterConfig
+
 
 class ComponentContainerClusterConfigFactory(object):
     '''
@@ -27,6 +29,8 @@ class ComponentContainerClusterConfigFactory(object):
             config = MysqlContainerClusterConfig(args)
         elif "nginx" == _component_type:
             config = NginxContainerClusterConfig(args)
+        elif "jetty" == _component_type:
+            config = JettyContainerClusterConfig(args)
         else:
             pass
             

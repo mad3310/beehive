@@ -46,7 +46,7 @@ class NginxContainerModelCreator(AbstractContainerModelCreator):
             
             if 'bridge' == network_mode:
                 port_list = ip_port_resource.get(host_ip)
-                port_list = [('0.0.0.0', item) for item in port_list]    
+                port_list = [('0.0.0.0', item) for item in port_list]
                 port_bindings = dict(zip(ports, port_list))
                 container_model.port_bindings = port_bindings
             else:
