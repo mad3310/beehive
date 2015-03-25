@@ -2,13 +2,14 @@
 
 import pexpect
 import time
+from componentProxy.baseComponentOpers import BaseComponentManager
 
 
-class MclusterManager(object):
-    
+class MclusterManager(BaseComponentManager):
+
     def __init__(self):
         self.timeout = 5
-        
+
     def __start(self, container_name = None):
         child = pexpect.spawn(r"docker attach %s" % container_name)
         
@@ -22,7 +23,7 @@ class MclusterManager(object):
             child.expect(["OK", pexpect.EOF, pexpect.TIMEOUT], timeout=self.timeout)
         finally:
             child.close()
-        
+
     def __get_stat(self, container_name = None):
         stat = True
         child = pexpect.spawn(r"docker attach %s" % container_name)
