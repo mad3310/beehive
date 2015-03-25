@@ -88,10 +88,9 @@ class UpdateServerClusterHandler(APIHandler):
 @require_basic_auth
 class SwitchServersUnderoomHandler(APIHandler):
     
+    # eg. curl --user root:root -d "switch=on&containerNameList=d-mcl-xiangge-n-2,d-mcl-xiangge-n-1" "http://localhost:8888/serverCluster/containers/under_oom"
     @asynchronous
     @engine
-    
-    # eg. curl --user root:root -d "switch=on&containerNameList=d-mcl-xiangge-n-2,d-mcl-xiangge-n-1" "http://localhost:8888/serverCluster/containers/under_oom"
     def post(self):
         
         args = self.get_all_arguments()
@@ -143,7 +142,7 @@ class SwitchServersUnderoomHandler(APIHandler):
     
 
 @require_basic_auth
-class GetherServersContainersDiskLoadHandler(APIHandler):
+class GatherServersContainersDiskLoadHandler(APIHandler):
     
     @asynchronous
     @engine

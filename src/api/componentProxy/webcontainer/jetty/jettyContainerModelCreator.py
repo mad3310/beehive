@@ -10,7 +10,7 @@ from componentProxy.abstractContainerModelCreator import AbstractContainerModelC
 from container.container_model import Container_Model
 from utils import _get_gateway_from_ip
 
-class NginxContainerModelCreator(AbstractContainerModelCreator):
+class JettyContainerModelCreator(AbstractContainerModelCreator):
     '''
     classdocs
     '''
@@ -33,11 +33,11 @@ class NginxContainerModelCreator(AbstractContainerModelCreator):
         for i in range(int(containerCount)):
             container_model = Container_Model()
             container_model.container_cluster_name = containerClusterName
-            container_name = 'd-ngx-%s-n-%s' % (containerClusterName, str(i+1))
+            container_name = 'd-jty-%s-n-%s' % (containerClusterName, str(i+1))
             container_model.container_name = container_name
             host_ip = host_ip_list[i]
             container_model.host_ip = host_ip
-            container_model.component_type = 'nginx'
+            container_model.component_type = 'jetty'
             container_model.image = component_container_cluster_config.image
             container_model.lxc_conf = component_container_cluster_config.lxc_conf
             ports = component_container_cluster_config.ports
@@ -46,7 +46,7 @@ class NginxContainerModelCreator(AbstractContainerModelCreator):
             
             if 'bridge' == network_mode:
                 port_list = ip_port_resource.get(host_ip)
-                port_list = [('0.0.0.0', item) for item in port_list]
+                port_list = [('0.0.0.0', item) for item in port_list]    
                 port_bindings = dict(zip(ports, port_list))
                 container_model.port_bindings = port_bindings
             else:

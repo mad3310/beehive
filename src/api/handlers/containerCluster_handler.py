@@ -23,7 +23,7 @@ from containerCluster.containerClusterOpers import ContainerCluster_Opers, GetLa
 
 
 @require_basic_auth
-class GetherClusterNetworkioHandler(APIHandler):
+class GatherClusterNetworkioHandler(APIHandler):
     '''
     classdocs
     '''
@@ -66,7 +66,7 @@ class GetherClusterNetworkioHandler(APIHandler):
 
 
 @require_basic_auth
-class GetherClusterMemeoyHandler(APIHandler):
+class GatherClusterMemeoyHandler(APIHandler):
     '''
     classdocs
     '''
@@ -109,7 +109,7 @@ class GetherClusterMemeoyHandler(APIHandler):
 
 
 @require_basic_auth
-class GetherClusterCpuacctHandler(APIHandler):
+class GatherClusterCpuacctHandler(APIHandler):
     '''
     classdocs
     '''
@@ -181,12 +181,6 @@ class ContainerClusterHandler(APIHandler):
         args = self.get_all_arguments()
         containerClusterName = args.get('containerClusterName')
         logging.info(' containerClusterName:%s' % containerClusterName)
-        if not containerClusterName:
-            raise HTTPAPIError(status_code=400, error_detail="no containerClusterName argument!",\
-                                notification = "direct", \
-                                log_message= "no containerClusterName argument!",\
-                                response =  "please check params!")
-
         self.containerClusterOpers.destory(containerClusterName)
         
         return_message = {}

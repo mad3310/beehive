@@ -74,9 +74,9 @@ def ping_ip_available(ip):
 @todo: need to check this right. why delete the -W1?
 '''
 def nc_ip_port_available(host_ip, port):
-    cmd = 'nc -z %s %s' % (host_ip, port)
+    cmd = 'nc -z -w1 %s %s' % (host_ip, port)
     _nc_ret = os.system(cmd)
-    if _nc_ret:
+    if _nc_ret != 0:
         return False
     return True
 

@@ -22,7 +22,7 @@ handlers = [
     (r"/serverCluster", ServerClusterHandler),
     (r"/serverCluster/update", UpdateServerClusterHandler),
     (r"/serverCluster/containers/under_oom", SwitchServersUnderoomHandler),
-    (r"/serverCluster/containers/disk", GetherServersContainersDiskLoadHandler),
+    (r"/serverCluster/containers/disk", GatherServersContainersDiskLoadHandler),
     (r"/serverCluster/containers/memory/add", AddServersMemoryHandler),
     
     ##'''  --------------------server---------------------------------------'''
@@ -30,7 +30,7 @@ handlers = [
     (r"/server/resource", CollectServerResHandler),
     (r"/server/containers/memory/add", AddServerMemoryHandler),
     (r"/server/containers/under_oom", SwitchServerUnderoomHandler),
-    (r"/server/containers/disk", GetherServerContainersDiskLoadHandler),
+    (r"/server/containers/disk", GatherServerContainersDiskLoadHandler),
     (r"/inner/server/update", UpdateServerHandler),
     
     ##'''  --------------------containerCluster------------------------------'''
@@ -45,9 +45,9 @@ handlers = [
     (r"/containerCluster/createStatus/(.*)", CheckCreateClusterStatusHandler),
     (r"/containerCluster/status/(.*)", CheckContainerClusterStatusHandler),
     (r"/containerCluster/conf", ClusterConfigHandler),
-    (r"/containerCluster/stat/(.*)/memory", GetherClusterMemeoyHandler),
-    (r"/containerCluster/stat/(.*)/cpuacct", GetherClusterCpuacctHandler),
-    (r"/containerCluster/stat/(.*)/networkio", GetherClusterNetworkioHandler),
+    (r"/containerCluster/stat/(.*)/memory", GatherClusterMemeoyHandler),
+    (r"/containerCluster/stat/(.*)/cpuacct", GatherClusterCpuacctHandler),
+    (r"/containerCluster/stat/(.*)/networkio", GatherClusterNetworkioHandler),
     
     ##'''  --------------------container---------------------------------------'''
     
@@ -56,11 +56,12 @@ handlers = [
     (r"/container/stop", StopContainerHandler),
     (r"/container/remove", RemoveContainerHandler),
     (r"/container/status/(.*)", CheckContainerStatusHandler),
-    (r"/container/stat/(.*)/memory", GetherContainerMemeoyHandler),
-    (r"/container/stat/(.*)/cpuacct", GetherContainerCpuacctHandler),
-    (r"/container/stat/(.*)/networkio", GetherContainerNetworkioHandler),
+    (r"/container/stat/(.*)/memory", GatherContainerMemeoyHandler),
+    (r"/container/stat/(.*)/cpuacct", GatherContainerCpuacctHandler),
+    (r"/container/stat/(.*)/networkio", GatherContainerNetworkioHandler),
+    
     '''
-    @todo: inner? componentManager?
+    @todo: need to add /inner for this uri
     '''
     (r"/container/manager/status", ManagerStatusHandler),
     

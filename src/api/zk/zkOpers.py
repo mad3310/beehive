@@ -183,9 +183,9 @@ class ZkOpers(object):
     
     def write_container_node_info(self, status, containerProps):
         """write container value and status value
-        
+         
         """
-        
+         
         '''
         @todo: put other issues to containerOpers or containerClusterOpers?
         '''
@@ -215,8 +215,14 @@ class ZkOpers(object):
         stat = {}
         stat.setdefault('status', status)
         stat.setdefault('message', '')
-        self.__write_container_status(cluster, container_node, stat)
+        self.write_container_status(cluster, container_node, stat)
     
+#     def write_container_node_info(self, cluster, container_node, containerProps):
+#         clusterUUID = self.getClusterUUID()
+#         path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + cluster + "/" + container_node
+#         self.zk.ensure_path(path)
+#         self.zk.set(path, str(containerProps))
+
     def check_containerCluster_exists(self, containerClusterName):
         clusterUUID = self.getClusterUUID()
         path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + containerClusterName
@@ -224,7 +230,7 @@ class ZkOpers(object):
             return True
         return False
     
-    def __write_container_status(self, cluster, container_ip, record):
+    def write_container_status(self, cluster, container_ip, record):
         clusterUUID = self.getClusterUUID()
         path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + cluster + "/" + container_ip +"/status"
         self.zk.ensure_path(path)
@@ -370,7 +376,6 @@ class ZkOpers(object):
             
             if not nc_ip_port_available(host_ip, port):
                 assign_port_list.append(port)
-            assign_port_list.append(port)
 
             if len(assign_port_list) == port_count:
                 break
@@ -482,7 +487,7 @@ class ZkOpers(object):
     def write_container_status_by_containerName(self, container_name, record):
         containerClusterName = get_containerClusterName_from_containerName(container_name)
         container_ip = self.get_containerIp(containerClusterName, container_name)
-        self.__write_container_status(containerClusterName, container_ip, record)
+        self.write_container_status(containerClusterName, container_ip, record)
     
     
     

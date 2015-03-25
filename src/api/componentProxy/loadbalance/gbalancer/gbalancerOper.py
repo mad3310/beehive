@@ -1,13 +1,9 @@
 #-*- coding: utf-8 -*-
 
+from componentProxy.baseComponentOpers import BaseComponentManager
 
-class GbalanceManager(object):
-    
+
+class GbalancerManager(BaseComponentManager):
+
     def __init__(self):
-        self.timeout = 5
-        
-    '''
-    @todo: no need to check, only return True?
-    '''
-    def manager_status(self, container_name = None):
-        return True
+        super(GbalancerManager, self).__init__('gbalancer-manager')

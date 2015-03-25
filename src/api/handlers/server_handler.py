@@ -90,7 +90,7 @@ class SwitchServerUnderoomHandler(APIHandler):
 
 
 @require_basic_auth
-class GetherServerContainersDiskLoadHandler(APIHandler):
+class GatherServerContainersDiskLoadHandler(APIHandler):
     """get the disk container use server 
     
     """
