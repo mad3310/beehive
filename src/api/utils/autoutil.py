@@ -73,7 +73,7 @@ def ping_ip_available(ip):
 def nc_ip_port_available(host_ip, port):
     cmd = 'nc -z -w1 %s %s' % (host_ip, port)
     _nc_ret = os.system(cmd)
-    if _nc_ret == 0:
+    if _nc_ret != 0:
         return False
     return True
 

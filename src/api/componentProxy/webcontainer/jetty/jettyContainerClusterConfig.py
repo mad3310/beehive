@@ -21,4 +21,4 @@ class JettyContainerClusterConfig(BaseContainerClusterConfig):
         image = params.get('image')
         self.image = image if image else 'letv/jetty:0.0.1'
         ports = params.get('ports')
-        self.ports = eval(ports) if ports else [8080]
+        self.ports = eval(ports) if ports else [8080, 8888, 9888]
