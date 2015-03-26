@@ -16,6 +16,7 @@ class GbalancerContainerClusterConfig(BaseContainerClusterConfig):
 
         super(GbalancerContainerClusterConfig, self).__init__(params)
         
-        self.nodeCount = 1
+        nodeCount = params.get('nodeCount')                          
+        self.nodeCount = int(nodeCount) if nodeCount else 2
         image = params.get('image')
         self.image = image if image else 'letv/mcluster_vip_gbalancer:0.0.3'
