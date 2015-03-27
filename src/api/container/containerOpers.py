@@ -143,7 +143,7 @@ class Container_Opers(Abstract_Container_Opers):
     def write_container_status_by_containerName(self, container_name, record):
         containerClusterName = get_containerClusterName_from_containerName(container_name)
         container_ip = self.get_container_ip_from_container_name(containerClusterName, container_name)
-        self.write_container_status(containerClusterName, container_ip, record)
+        self.zkOper.write_container_status(containerClusterName, container_ip, record)
 
     def get_container_name_from_zk(self, cluster, container_ip):
         container_info = self.zkOper.retrieve_container_node_value(cluster, container_ip)

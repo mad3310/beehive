@@ -44,10 +44,7 @@ class ResourceVerify(object):
         
         if num < nodeCount:
             raise CommonException('usable servers are not enough!')
-            
-        '''
-        @todo: add the ckeck logic for the rest value of disk,if the disk usage > 70%, then throw exception
-        '''
+        
         return usable_hostip_num_list
 
     def get_create_containers_hostip_list(self, usable_hostip_num_list, component_container_cluster_config):

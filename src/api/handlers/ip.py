@@ -5,10 +5,6 @@ from resource_letv.ipOpers import IpOpers
 from zk.zkOpers import ZkOpers
 from tornado_letv.tornado_basic_auth import require_basic_auth
 
-# ip management
-'''
-@todo: every interface need to add comment for the curl usage
-'''
 
 @require_basic_auth
 class IPHandler(APIHandler):

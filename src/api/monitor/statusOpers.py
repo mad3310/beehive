@@ -101,9 +101,7 @@ class CheckResIpUsable(CheckStatusBase):
 #                     error_record += 'ip: %s,' % str(ip)
             logging.info('check ip res resutl failed_count : %s' % failed_count)
         except:
-            '''
-            @todo: if occurs exception, the code will be continue run?
-            '''
+            
             error_msg = str(traceback.format_exc())
             logging.error(error_msg)
             failed_count = 1
@@ -145,9 +143,7 @@ class CheckContainersUnderOom(CheckStatusBase):
                         error_record.append(each)
         
         except:
-            '''
-            @todo: exception will continue run? the zk will record error message or right message?
-            '''
+            
             error_msg = str(traceback.format_exc())
             logging.error(error_msg)
             failed_count = 1

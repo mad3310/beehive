@@ -32,14 +32,8 @@ class Monitor_Backend_Handle_Worker(Abstract_Async_Thread):
         try:
             begin_time = time.time()
             self.__action_monitor_async()
-            '''
-            @todo: please zz share the idea for below code
-            '''
             while True:
                 end_time = time.time()
-                '''
-                @todo: -2 what means?
-                '''
                 if int(end_time - begin_time) > (self.timeout - 2):
                     logging.info('release the log, get lock time: %s, release time: %s,\n total time : %s' % (str(begin_time), str(end_time), int(end_time-begin_time) ) )
                     break

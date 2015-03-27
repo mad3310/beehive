@@ -39,7 +39,7 @@ class Sceduler_Opers(object):
             _monitor_async_t.start()
     
     '''
-    @todo: the different of action_timeout and monitor_timeout
+    the different of action_timeout and monitor_timeout
     reason: the callback of the class PeriodicCallback have no params 
     
     '''

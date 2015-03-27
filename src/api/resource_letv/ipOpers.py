@@ -21,9 +21,7 @@ class IpOpers(object):
     '''
     classdocs
     '''
-    '''
-    @todo: why use Queue? List?
-    '''
+    
     store_illegal_ips_queue = Queue.Queue()
     store_all_ips_queue = Queue.Queue()
 
@@ -69,9 +67,7 @@ class IpOpers(object):
         return all_ips       
 
     def __ip_legal(self, ip):
-        '''
-        @todo: same as utils.autoutil.ping_ip_able?
-        '''
+        
         ret = ping_ip_available(ip)
         if ret:
             logging.info('ping ip: %s result :%s' % (ip, str(ret)) )
