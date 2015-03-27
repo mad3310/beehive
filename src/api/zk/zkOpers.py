@@ -125,10 +125,10 @@ class ZkOpers(object):
     '''
     @todo: move to containerOpers or containerClusterOpers?
     '''
-    def retrieve_container_node_value_from_containerName(self, container_name):
-        cluster = get_containerClusterName_from_containerName(container_name)
-        container_ip = self.get_containerIp(cluster, container_name)
-        return self.retrieve_container_node_value(cluster, container_ip)
+#     def retrieve_container_node_value_from_containerName(self, container_name):
+#         cluster = get_containerClusterName_from_containerName(container_name)
+#         container_ip = self.get_container_ip_from_container_name(cluster, container_name)
+#         return self.retrieve_container_node_value(cluster, container_ip)
 
     def retrieve_container_status_value(self, containerClusterName, container_node):
         clusterUUID = self.getClusterUUID()
@@ -163,24 +163,24 @@ class ZkOpers(object):
     '''
     @todo: move to containerOpers or containerClusterOpers?
     '''
-    def retrieve_container_status_from_containerName(self, container_name):
-        containerClusterName = get_containerClusterName_from_containerName(container_name)
-        container_ip = self.get_containerIp(containerClusterName, container_name)
-        return self.retrieve_container_status_value(containerClusterName, container_ip)
+#     def retrieve_container_status_from_containerName(self, container_name):
+#         containerClusterName = get_containerClusterName_from_containerName(container_name)
+#         container_ip = self.get_container_ip_from_container_name(containerClusterName, container_name)
+#         return self.retrieve_container_status_value(containerClusterName, container_ip)
     
     '''
     @todo: move this method to containerOpers or containerClusterOpers?
     '''
-    def write_container_node_value_by_containerName(self, container_name, containerProps):
-        """only write container value and not write status value
-        
-        """
-        
-        cluster = get_containerClusterName_from_containerName(container_name)
-        container_ip = self.get_containerIp(cluster, container_name)
-        self.write_container_node_value(cluster, container_ip, containerProps)
+#     def write_container_node_value_by_containerName(self, container_name, containerProps):
+#         """only write container value and not write status value
+#         
+#         """
+#         
+#         cluster = get_containerClusterName_from_containerName(container_name)
+#         container_ip = self.get_container_ip_from_container_name(cluster, container_name)
+#         self.write_container_node_value(cluster, container_ip, containerProps)
 
-    
+
     def write_container_node_info(self, status, containerProps):
         """write container value and status value
          
@@ -236,21 +236,18 @@ class ZkOpers(object):
     '''
     @todo: put this method into containerOpers or containerClusterOpers?
     '''
-    def get_containerIp(self, containerClusterName, container_name):
-        con_ip = ''
-        clusterUUID = self.getClusterUUID()
-        path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + containerClusterName
-        self.zk.ensure_path(path)
-        container_ip_list = self.retrieve_container_list(containerClusterName)
-        for container_ip in container_ip_list:
-            container_info = self.retrieve_container_node_value(containerClusterName, container_ip)
-            inspect = container_info.get('inspect')
-            con = Container(inspect=inspect)
-            con_name = con.name()
-            if container_name == con_name:
-                con_ip = container_ip
-                break
-        return con_ip
+#     def get_container_ip_from_container_name(self, containerClusterName, container_name):
+#         con_ip = ''
+#         container_ip_list = self.retrieve_container_list(containerClusterName)
+#         for container_ip in container_ip_list:
+#             container_info = self.retrieve_container_node_value(containerClusterName, container_ip)
+#             inspect = container_info.get('inspect')
+#             con = Container(inspect=inspect)
+#             con_name = con.name()
+#             if container_name == con_name:
+#                 con_ip = container_ip
+#                 break
+#         return con_ip
 
 
 
@@ -260,9 +257,7 @@ class ZkOpers(object):
     '''
     **************************************monitor status**************************************************
     '''    
-    '''
-    @todo: every container_node has status item, what is the monitor_status?
-    '''
+
     def retrieve_monitor_status_list(self, monitor_type):
         clusterUUID = self.getClusterUUID()
         path = self.rootPath + "/" + clusterUUID + "/monitor/" + monitor_type
@@ -476,26 +471,26 @@ class ZkOpers(object):
     '''
     @todo: move this method to containerOpers or containerClusterOpers?
     '''
-    def write_container_status_by_containerName(self, container_name, record):
-        containerClusterName = get_containerClusterName_from_containerName(container_name)
-        container_ip = self.get_containerIp(containerClusterName, container_name)
-        self.write_container_status(containerClusterName, container_ip, record)
+#     def write_container_status_by_containerName(self, container_name, record):
+#         containerClusterName = get_containerClusterName_from_containerName(container_name)
+#         container_ip = self.get_container_ip_from_container_name(containerClusterName, container_name)
+#         self.write_container_status(containerClusterName, container_ip, record)
     
     
     
     '''
     @todo: why put this logic to zkOpers?
     '''
-    def get_containerName(self, cluster, container_ip):
-        container_info = self.retrieve_container_node_value(cluster, container_ip)
-        inspect = container_info.get('inspect')
-        con = Container(inspect=inspect)
-        return con.name()
+#     def get_container_name_from_zk(self, cluster, container_ip):
+#         container_info = self.retrieve_container_node_value(cluster, container_ip)
+#         inspect = container_info.get('inspect')
+#         con = Container(inspect=inspect)
+#         return con.name()
 
     '''
     @todo: why put this logic to zkOpers?
     '''
-    def get_hostIp(self, cluster, container_ip):
-        container_info = self.retrieve_container_node_value(cluster, container_ip)
-        return container_info.get('hostIp')
+#     def get_host_ip_from_zk(self, cluster, container_ip):
+#         container_info = self.retrieve_container_node_value(cluster, container_ip)
+#         return container_info.get('hostIp')
   

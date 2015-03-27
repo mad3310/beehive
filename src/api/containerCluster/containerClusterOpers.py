@@ -90,6 +90,9 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         return create_info
 
     def create_status(self, containerClusterName):
+        exists = self.zkOper.check_containerCluster_exists(containerClusterName)
+        if not exists:
+            raise CommonException('containerCluster %s not existed' % containerClusterName)
         failed_rst = {'code':"000001"}
         succ_rst = {'code':"000000"}
         lack_rst = {'code':"000002"}

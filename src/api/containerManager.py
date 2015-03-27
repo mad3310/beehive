@@ -11,11 +11,11 @@ import traceback
 import logging
 import logging.config
 
-
 from tornado.options import options
 from appdefine import appDefine
 from sceduler.scedulerOpers import Sceduler_Opers
 from check_sync import CheckSync
+
 
 class Application(tornado.web.Application):
     def __init__(self):
@@ -25,7 +25,6 @@ class Application(tornado.web.Application):
                         debug=options.debug
                         )
         tornado.web.Application.__init__(self, routes.handlers, **settings)
-        
 
 def main():
     config_path = os.path.join(options.base_dir, "config")
