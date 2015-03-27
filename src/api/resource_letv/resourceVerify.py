@@ -18,7 +18,6 @@ class ResourceVerify(object):
     
     zkOper = ZkOpers()
     
-    
     def __init__(self):
         '''
         constructor
@@ -55,6 +54,9 @@ class ElectServer(object):
             if host_resource != {}:
                 host_resource_dict.setdefault(host_ip, host_resource)
         
+        '''
+           var "weight_item_score" will be passed to elect_servers later
+        '''
         weight_item_score = {'memory': 50, 'disk': 50}
         host_score_dict = self.__count_score(host_resource_dict, weight_item_score)
         logging.info('host and score:%s' % str(host_score_dict) )

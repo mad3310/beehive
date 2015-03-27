@@ -30,3 +30,18 @@ class IPHandler(APIHandler):
         ips = self.zkOper.get_ips_from_ipPool()
         return_message.setdefault('ips', ips)
         self.finish(return_message)
+
+
+@require_basic_auth
+class FetchIpHandler(APIHandler):
+    
+    ip_opers = IpOpers()
+    
+    #curl --user root:root -d"num=1" http://localhost:8888/resource/ip/(\d+)
+    def post(self):
+        num = self.get_argument('num', 1)
+        ip_list = self.ip_opers.retrieve_ip_resource(num)
+        
+        return_message = {}
+        return_message.setdefault("ip", ip_list)
+        self.finish(return_message)
