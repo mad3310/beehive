@@ -82,9 +82,8 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         host_ip_list = []
         if is_res_verify:
             try:
-                usable_hostip_num_list = self.res_verify.check_resource(_component_container_cluster_config)
-                host_ip_list = self.res_verify.get_create_containers_hostip_list(usable_hostip_num_list,
-                                                                                 _component_container_cluster_config)
+                host_ip_list = self.res_verify.check_resource(_component_container_cluster_config)
+                
             except CommonException as e:
                 return ('lack_resource', str(e))
         
