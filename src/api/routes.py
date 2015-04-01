@@ -70,5 +70,5 @@ handlers = [
     (r"/inner/monitor/server/containers/under_oom", CheckServerContainersUnderOom),
     
     ##'''  --------------------resource--------------------------------------- '''
-    (r"/resource/ip/(\d+)", FetchIpHandler),
+    (r"/resource/ip", FetchIpHandler),
 ]

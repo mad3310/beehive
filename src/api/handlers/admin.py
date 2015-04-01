@@ -57,10 +57,8 @@ class AdminReset(APIHandler):
         return_message = {}
         return_message.setdefault("message", "admin reset successful!")
         self.finish(return_message)
-        
-        
-        
-        
+
+
 # create admin user
 # eg. curl -d "adminUser=root&adminPassword=root" "http://localhost:8888/admin/user"
 class AdminUser(APIHandler):

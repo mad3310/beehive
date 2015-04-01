@@ -37,10 +37,10 @@ class FetchIpHandler(APIHandler):
     
     ip_opers = IpOpers()
     
-    #curl --user root:root -d"num=1" http://localhost:8888/resource/ip/(\d+)
+    #curl --user root:root -d"num=1" http://localhost:8888/resource/ip
     def post(self):
         num = self.get_argument('num', 1)
-        ip_list = self.ip_opers.retrieve_ip_resource(num)
+        ip_list = self.ip_opers.retrieve_ip_resource(int(num))
         
         return_message = {}
         return_message.setdefault("ip", ip_list)
