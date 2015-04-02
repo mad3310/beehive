@@ -5,10 +5,6 @@ from resource_letv.ipOpers import IpOpers
 from zk.zkOpers import ZkOpers
 from tornado_letv.tornado_basic_auth import require_basic_auth
 
-# ip management
-'''
-@todo: every interface need to add comment for the curl usage
-'''
 
 @require_basic_auth
 class IPHandler(APIHandler):
@@ -33,4 +29,19 @@ class IPHandler(APIHandler):
         return_message = {}
         ips = self.zkOper.get_ips_from_ipPool()
         return_message.setdefault('ips', ips)
+        self.finish(return_message)
+
+
+@require_basic_auth
+class FetchIpHandler(APIHandler):
+    
+    ip_opers = IpOpers()
+    
+    #curl --user root:root -d"num=1" http://localhost:8888/resource/ip
+    def post(self):
+        num = self.get_argument('num', 1)
+        ip_list = self.ip_opers.retrieve_ip_resource(int(num))
+        
+        return_message = {}
+        return_message.setdefault("ip", ip_list)
         self.finish(return_message)

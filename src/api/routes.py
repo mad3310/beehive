@@ -6,7 +6,7 @@ from handlers.server_handler import *
 from handlers.containerCluster_handler import *
 from handlers.container_handler import *
 from handlers.monitor_handler import *
-from handlers.ip import IPHandler
+from handlers.ip import IPHandler, FetchIpHandler
 from handlers.port import PortHandler
 from handlers.admin import AdminConf, AdminUser, AdminReset
 
@@ -72,4 +72,7 @@ handlers = [
     (r"/monitor/serverCluster/containers/under_oom", CheckServersContainersUnderOom),
     (r"/inner/monitor/server/containers/memory", CheckServerContainersMemLoad),
     (r"/inner/monitor/server/containers/under_oom", CheckServerContainersUnderOom),
+    
+    ##'''  --------------------resource--------------------------------------- '''
+    (r"/resource/ip", FetchIpHandler),
 ]

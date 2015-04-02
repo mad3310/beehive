@@ -17,9 +17,6 @@ from utils.autoutil import get_containerClusterName_from_containerName
 from utils.autoutil import ping_ip_available, nc_ip_port_available
 from utils.decorators import singleton
 
-'''
-@todo: need to check every method is should be now.
-'''
 
 @singleton
 class ZkOpers(object):
@@ -122,14 +119,6 @@ class ZkOpers(object):
         path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + containerClusterName + '/' + container_node
         return self._retrieveSpecialPathProp(path)
 
-    '''
-    @todo: move to containerOpers or containerClusterOpers?
-    '''
-    def retrieve_container_node_value_from_containerName(self, container_name):
-        cluster = get_containerClusterName_from_containerName(container_name)
-        container_ip = self.get_containerIp(cluster, container_name)
-        return self.retrieve_container_node_value(cluster, container_ip)
-
     def retrieve_container_status_value(self, containerClusterName, container_node):
         clusterUUID = self.getClusterUUID()
         path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + containerClusterName + '/' + container_node + '/status'
@@ -159,28 +148,7 @@ class ZkOpers(object):
         path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + cluster + "/" + container_ip
         self.zk.ensure_path(path)
         self.zk.set(path, str(containerProps))
-    
-    '''
-    @todo: move to containerOpers or containerClusterOpers?
-    '''
-    def retrieve_container_status_from_containerName(self, container_name):
-        containerClusterName = get_containerClusterName_from_containerName(container_name)
-        container_ip = self.get_containerIp(containerClusterName, container_name)
-        return self.retrieve_container_status_value(containerClusterName, container_ip)
-    
-    '''
-    @todo: move this method to containerOpers or containerClusterOpers?
-    '''
-    def write_container_node_value_by_containerName(self, container_name, containerProps):
-        """only write container value and not write status value
-        
-        """
-        
-        cluster = get_containerClusterName_from_containerName(container_name)
-        container_ip = self.get_containerIp(cluster, container_name)
-        self.write_container_node_value(cluster, container_ip, containerProps)
 
-    
     def write_container_node_info(self, status, containerProps):
         """write container value and status value
          
@@ -216,12 +184,6 @@ class ZkOpers(object):
         stat.setdefault('status', status)
         stat.setdefault('message', '')
         self.write_container_status(cluster, container_node, stat)
-    
-#     def write_container_node_info(self, cluster, container_node, containerProps):
-#         clusterUUID = self.getClusterUUID()
-#         path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + cluster + "/" + container_node
-#         self.zk.ensure_path(path)
-#         self.zk.set(path, str(containerProps))
 
     def check_containerCluster_exists(self, containerClusterName):
         clusterUUID = self.getClusterUUID()
@@ -235,29 +197,6 @@ class ZkOpers(object):
         path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + cluster + "/" + container_ip +"/status"
         self.zk.ensure_path(path)
         self.zk.set(path, str(record))
-        
-    '''
-    @todo: put this method into containerOpers or containerClusterOpers?
-    '''
-    def get_containerIp(self, containerClusterName, container_name):
-        con_ip = ''
-        clusterUUID = self.getClusterUUID()
-        path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + containerClusterName
-        self.zk.ensure_path(path)
-        container_ip_list = self.retrieve_container_list(containerClusterName)
-        for container_ip in container_ip_list:
-            container_info = self.retrieve_container_node_value(containerClusterName, container_ip)
-            inspect = container_info.get('inspect')
-            con = Container(inspect=inspect)
-            con_name = con.name()
-            if container_name == con_name:
-                con_ip = container_ip
-                break
-        return con_ip
-
-
-
-
 
     
     '''
@@ -477,33 +416,3 @@ class ZkOpers(object):
         if len(clusters) != 0:
             return True
         return False
-    
-
-    
-    
-    '''
-    @todo: move this method to containerOpers or containerClusterOpers?
-    '''
-    def write_container_status_by_containerName(self, container_name, record):
-        containerClusterName = get_containerClusterName_from_containerName(container_name)
-        container_ip = self.get_containerIp(containerClusterName, container_name)
-        self.write_container_status(containerClusterName, container_ip, record)
-    
-    
-    
-    '''
-    @todo: why put this logic to zkOpers?
-    '''
-    def get_containerName(self, cluster, container_ip):
-        container_info = self.retrieve_container_node_value(cluster, container_ip)
-        inspect = container_info.get('inspect')
-        con = Container(inspect=inspect)
-        return con.name()
-
-    '''
-    @todo: why put this logic to zkOpers?
-    '''
-    def get_hostIp(self, cluster, container_ip):
-        container_info = self.retrieve_container_node_value(cluster, container_ip)
-        return container_info.get('hostIp')
-  

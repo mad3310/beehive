@@ -22,8 +22,6 @@ class BaseContainerClusterConfig(object):
             ---------------------if not supplied, use default value------------------
         '''
         
-        nodeCount = params.get('nodeCount')                          
-        self.nodeCount = int(nodeCount) if nodeCount else 1
         
         """
             default value stand for 10G

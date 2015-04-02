@@ -19,6 +19,7 @@ from tornado_letv.tornado_basic_auth import require_basic_auth
 from base import APIHandler
 from utils import _retrieve_userName_passwd
 from utils.exceptions import HTTPAPIError
+from container.containerOpers import Container_Opers
 from containerCluster.containerClusterOpers import ContainerCluster_Opers, GetLastestClustersInfo
 
 
@@ -27,6 +28,8 @@ class GatherClusterNetworkioHandler(APIHandler):
     '''
     classdocs
     '''
+    
+    container_opers = Container_Opers()
     
     # eg . curl --user root:root -X GET http://10.154.156.150:8888/container/stat/d-mcl-test_jll-n-1/networkio
     @asynchronous
@@ -43,8 +46,8 @@ class GatherClusterNetworkioHandler(APIHandler):
         container_dict, result = {}, {}
         container_ip_list = self.zkOper.retrieve_container_list(cluster)
         for container_ip in container_ip_list:
-            container_name = self.zkOper.get_containerName(cluster, container_ip)
-            host_ip = self.zkOper.get_hostIp(cluster, container_ip)
+            container_name = self.container_opers.get_container_name_from_zk(cluster, container_ip)
+            host_ip = self.container_opers.get_host_ip_from_zk(cluster, container_ip)
             container_dict.setdefault(host_ip, container_name)
          
         auth_username, auth_password = _retrieve_userName_passwd()
@@ -71,6 +74,8 @@ class GatherClusterMemeoyHandler(APIHandler):
     classdocs
     '''
     
+    container_opers = Container_Opers()
+    
     # eg. curl --user root:root -X GET http://10.154.156.150:8888/container/stat/d-mcl-test_jll-n-1/memory
     @asynchronous
     @engine
@@ -86,8 +91,8 @@ class GatherClusterMemeoyHandler(APIHandler):
         container_dict, result = {}, {}
         container_ip_list = self.zkOper.retrieve_container_list(cluster)
         for container_ip in container_ip_list:
-            container_name = self.zkOper.get_containerName(cluster, container_ip)
-            host_ip = self.zkOper.get_hostIp(cluster, container_ip)
+            container_name = self.container_opers.get_container_name_from_zk(cluster, container_ip)
+            host_ip = self.container_opers.get_host_ip_from_zk(cluster, container_ip)
             container_dict.setdefault(host_ip, container_name)
         
         auth_username, auth_password = _retrieve_userName_passwd()
@@ -114,6 +119,8 @@ class GatherClusterCpuacctHandler(APIHandler):
     classdocs
     '''
     
+    container_opers = Container_Opers()
+    
     # eg. curl --user root:root -X GET http://10.154.156.150:8888/container/stat/d-mcl-test_jll-n-1/cpuacct
     @asynchronous
     @engine
@@ -130,8 +137,8 @@ class GatherClusterCpuacctHandler(APIHandler):
         container_dict, result = {}, {}
         container_ip_list = self.zkOper.retrieve_container_list(cluster)
         for container_ip in container_ip_list:
-            container_name = self.zkOper.get_containerName(cluster, container_ip)
-            host_ip = self.zkOper.get_hostIp(cluster, container_ip)
+            container_name = self.container_opers.get_container_name_from_zk(cluster, container_ip)
+            host_ip = self.container_opers.get_host_ip_from_zk(cluster, container_ip)
             container_dict.setdefault(host_ip, container_name)
         
         auth_username, auth_password = _retrieve_userName_passwd()

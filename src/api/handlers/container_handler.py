@@ -19,12 +19,7 @@ class ContainerHandler(APIHandler):
     
     container_opers = Container_Opers()
     component_docker_model_factory = ComponentDockerModelFactory()
-    
-    '''
-    @todo: 
-    1. should be modify to async way to issue this process and 
-    2. check the create's process exception rethrow problem
-    '''
+
     #@asynchronous
     def post(self):
         args = self.get_all_arguments()

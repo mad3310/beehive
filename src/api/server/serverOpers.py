@@ -146,17 +146,17 @@ class ServerUpdateAction(Abstract_Async_Thread):
     def update_both_node(self, container_name):
         status = {}
         server_info = self._get_container_info_as_zk(container_name)
-        zk_con_info = self.zkOper.retrieve_container_node_value_from_containerName(container_name)
+        zk_con_info = self.container_opers.retrieve_container_node_value_from_containerName(container_name)
         if server_info != zk_con_info:
             logging.info('update both node zookeeper info, container name :%s' % container_name)
-            self.zkOper.write_container_node_value_by_containerName(container_name, server_info)
+            self.container_opers.write_container_node_value_by_containerName(container_name, server_info)
         
         server_con_stat = self.container_opers.get_container_stat(container_name)
-        zk_con_stat = self.zkOper.retrieve_container_status_from_containerName(container_name)
+        zk_con_stat = self.container_opers.retrieve_container_status_from_containerName(container_name)
         if server_con_stat != zk_con_stat:
             status.setdefault('status',  server_con_stat)
             status.setdefault('message',  '')
-            self.zkOper.write_container_status_by_containerName(container_name, status)
+            self.container_opers.write_container_status_by_containerName(container_name, status)
 
     def update_add_node(self, container_name):
         create_info = self._get_container_info_as_zk(container_name)
@@ -165,7 +165,7 @@ class ServerUpdateAction(Abstract_Async_Thread):
 
     def update_del_node(self, container_name):
         status = {'status': Status.destroyed, 'message': ''}
-        self.zkOper.write_container_status_by_containerName(container_name, status)
+        self.container_opers.write_container_status_by_containerName(container_name, status)
 
     def _get_containers_from_host(self):
         container_name_list = []

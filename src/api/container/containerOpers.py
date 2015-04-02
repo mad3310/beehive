@@ -29,6 +29,7 @@ from zk.zkOpers import ZkOpers
 from docker import Client
 from status.status_enum import Status
 from componentProxy.componentManagerValidator import ComponentManagerStatusValidator
+from utils.autoutil import get_containerClusterName_from_containerName
 
 
 class Container_Opers(Abstract_Container_Opers):
@@ -59,7 +60,7 @@ class Container_Opers(Abstract_Container_Opers):
 
     def check(self, container_name):
         result = {}
-        container_operation_record = self.zkOper.retrieve_container_status_from_containerName(container_name)
+        container_operation_record = self.retrieve_container_status_from_containerName(container_name)
         status = container_operation_record.get('status')
         message = container_operation_record.get('message')
         result.setdefault('status', status)
@@ -106,6 +107,53 @@ class Container_Opers(Abstract_Container_Opers):
 
     def manager_status_validate(self, component_type, container_name):
         return self.component_manager_status_validator.start_status_validator(component_type, container_name) 
+
+    def get_container_ip_from_container_name(self, cluster, container_name):
+        con_ip = ''
+        container_ip_list = self.zkOper.retrieve_container_list(cluster)
+        for container_ip in container_ip_list:
+            container_info = self.zkOper.retrieve_container_node_value(cluster, container_ip)
+            inspect = container_info.get('inspect')
+            con = Container(inspect=inspect)
+            con_name = con.name()
+            if container_name == con_name:
+                con_ip = container_ip
+                break
+        return con_ip
+
+    def retrieve_container_node_value_from_containerName(self, container_name):
+        cluster = get_containerClusterName_from_containerName(container_name)
+        container_ip = self.get_container_ip_from_container_name(cluster, container_name)
+        return self.zkOper.retrieve_container_node_value(cluster, container_ip)
+
+    def retrieve_container_status_from_containerName(self, container_name):
+        cluster = get_containerClusterName_from_containerName(container_name)
+        container_ip = self.get_container_ip_from_container_name(cluster, container_name)
+        return self.zkOper.retrieve_container_status_value(cluster, container_ip)
+
+    def write_container_node_value_by_containerName(self, container_name, container_props):
+        """only write container value and not write status value
+        
+        """
+        
+        cluster = get_containerClusterName_from_containerName(container_name)
+        container_ip = self.get_container_ip_from_container_name(cluster, container_name)
+        self.zkOper.write_container_node_value(cluster, container_ip, container_props)
+
+    def write_container_status_by_containerName(self, container_name, record):
+        containerClusterName = get_containerClusterName_from_containerName(container_name)
+        container_ip = self.get_container_ip_from_container_name(containerClusterName, container_name)
+        self.zkOper.write_container_status(containerClusterName, container_ip, record)
+
+    def get_container_name_from_zk(self, cluster, container_ip):
+        container_info = self.zkOper.retrieve_container_node_value(cluster, container_ip)
+        inspect = container_info.get('inspect')
+        con = Container(inspect=inspect)
+        return con.name()
+
+    def get_host_ip_from_zk(self, cluster, container_ip):
+        container_info = self.zkOper.retrieve_container_node_value(cluster, container_ip)
+        return container_info.get('hostIp')
 
 
 class Container_create_action(Abstract_Async_Thread):
@@ -322,7 +370,7 @@ class Container_start_action(Abstract_Async_Thread):
         start_rst, start_flag = {}, {}
         logging.info('write start flag')
         start_flag = {'status': Status.starting, 'message':''}
-        self.zkOper.write_container_status_by_containerName(self.container_name, start_flag)
+        self.container_opers.write_container_status_by_containerName(self.container_name, start_flag)
         client = Client()
         client.start(self.container_name)
         stat = self.container_opers.get_container_stat(self.container_name)
@@ -333,11 +381,8 @@ class Container_start_action(Abstract_Async_Thread):
         start_rst.setdefault('status', stat)
         start_rst.setdefault('message', message)
         logging.info('write start result')
-        '''
-        @todo:
-        1. check the duplicate with above code? same as write_container_status_by_containerName
-        '''
-        self.zkOper.write_container_status_by_containerName(self.container_name, start_rst)
+        
+        self.container_opers.write_container_status_by_containerName(self.container_name, start_rst)
 
         
 class Container_stop_action(Abstract_Async_Thread):
@@ -360,7 +405,7 @@ class Container_stop_action(Abstract_Async_Thread):
         stop_rst, stop_flag = {}, {}
         logging.info('write stop flag')
         stop_flag = {'status':Status.stopping, 'message':''}
-        self.zkOper.write_container_status_by_containerName(self.container_name, stop_flag)
+        self.container_opers.write_container_status_by_containerName(self.container_name, stop_flag)
         
         self.docker_opers.stop(self.container_name, 30)
         stat = self.container_opers.get_container_stat(self.container_name)
@@ -373,11 +418,7 @@ class Container_stop_action(Abstract_Async_Thread):
         stop_rst.setdefault('status', status)
         stop_rst.setdefault('message', message)
         logging.info('write stop result')
-        '''
-        @todo:
-        1. check the duplicate with above code? same as write_container_status_by_containerName
-        '''
-        self.zkOper.write_container_status_by_containerName(self.container_name, stop_rst)
+        self.container_opers.write_container_status_by_containerName(self.container_name, stop_rst)
 
 
 class Container_destroy_action(Abstract_Async_Thread):
@@ -404,7 +445,7 @@ class Container_destroy_action(Abstract_Async_Thread):
         destroy_rst, destroy_flag = {}, {}
         logging.info('write destroy flag')
         destroy_flag = {'status':Status.destroying, 'message':''}
-        self.zkOper.write_container_status_by_containerName(self.container_name, destroy_flag)
+        self.container_opers.write_container_status_by_containerName(self.container_name, destroy_flag)
         
         '''
            get mount dir first, otherwise get nothing where container removed~
@@ -426,11 +467,7 @@ class Container_destroy_action(Abstract_Async_Thread):
             destroy_rst.setdefault('status', Status.destroyed)
             destroy_rst.setdefault('message', '')
             
-        '''
-        @todo:
-        1. check the duplicate with above code? same as write_container_status_by_containerName
-        '''
-        self.zkOper.write_container_status_by_containerName(self.container_name, destroy_rst)
+        self.container_opers.write_container_status_by_containerName(self.container_name, destroy_rst)
 
     def __remove_mount_dir(self, mount_dir_list):
         for mount_dir in mount_dir_list:

@@ -67,7 +67,26 @@ class Container():
         return self.inspect.get('Id')
     
     def port_bindings(self):
-        return self.inspect.get('HostConfig').get('PortBindings')
+        '''
+            get the format webportal need
+        '''
+
+        # "port_bindings": {"8080/tcp": null, "8888/tcp": [{"HostPort": "28944", "HostIp": "0.0.0.0"}], 
+        #                                     "80/tcp": [{"HostPort": "28943", "HostIp": "0.0.0.0"}],
+        #                   }
+        
+        result = []
+        _port_bindings = self.inspect.get('HostConfig').get('PortBindings')
+        for con_port_protocol, host_port_ip in _port_bindings.items():
+            if host_port_ip:
+                _info = {}
+                port, protocol = con_port_protocol.split('/')
+                host_port = host_port_ip[0].get('HostPort')
+                _info.setdefault('containerPort', port)
+                _info.setdefault('protocol', protocol)
+                _info.setdefault('hostPort', host_port)
+                result.append(_info)
+        return result
 
     def create_info(self, container_node_value):
         create_info = {}
@@ -84,4 +103,4 @@ class Container():
             create_info.setdefault('ipAddr', self.ip() )
             create_info.setdefault('containerName', self.name() )
             create_info.setdefault('port_bindings', self.port_bindings())
-        return create_info    
+        return create_info

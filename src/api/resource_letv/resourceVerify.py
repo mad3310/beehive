@@ -13,18 +13,16 @@ from tornado.options import options
 from utils.autoutil import http_get
 from utils.exceptions import CommonException
 
+
 class ResourceVerify(object):
     
     zkOper = ZkOpers()
-    
     
     def __init__(self):
         '''
         constructor
         '''
-    
     def check_resource(self, component_container_cluster_config):
-        usable_hostip_num_list = []
         nodeCount = component_container_cluster_config.nodeCount
         ip_list = self.zkOper.get_ips_from_ipPool()
         
@@ -35,127 +33,102 @@ class ResourceVerify(object):
             raise CommonException('ips are not enough!')
         
         elect_server = ElectServer()
-        usable_hostip_num_list = elect_server.elect_server_list(component_container_cluster_config)
-        logging.info('usable_hostip_num_list:%s' % str(usable_hostip_num_list))
+        server_list = elect_server.elect_servers(component_container_cluster_config)
         
-        num = 0
-        for weighted_value, available_host_num in usable_hostip_num_list:
-            num += available_host_num
-        
-        if num < nodeCount:
+        if server_list < nodeCount:
             raise CommonException('usable servers are not enough!')
-            
-        '''
-        @todo: add the ckeck logic for the rest value of disk,if the disk usage > 70%, then throw exception
-        '''
-        return usable_hostip_num_list
 
-    def get_create_containers_hostip_list(self, usable_hostip_num_list, component_container_cluster_config):
-        nodeCount = component_container_cluster_config.nodeCount
-        select_ip_list = self.__get_host_ip_list(usable_hostip_num_list, nodeCount)
-        
-        if not self.check_hosts_illegal(select_ip_list, component_container_cluster_config):
-            raise CommonException('two mcluster data nodes are on a server, illegal!')
-        return select_ip_list
+        return server_list
 
-    def check_hosts_illegal(self, select_ip_list, component_container_cluster_config):
-        """mcluster data nodes can't be on a server 
-        
-        """
-        is_illegal = True
-        
-        '''
-        @todo: this is common logic,please move the if else to associated component proxy class
-        '''
-        component_type = component_container_cluster_config.component_type
-        if component_type =='mclusternode':
-            nodeCount = component_container_cluster_config.nodeCount
-            if len(set(select_ip_list)) != nodeCount:
-                is_illegal = False
-        elif component_type =='mclustervip':
-            pass
-        else:
-            pass
-        return is_illegal
-
-    def __get_host_ip_list(self, host_ip_list, container_num):
-
-        ip_list = []
-        
-        for i in range(container_num):
-            for index,(host_ip, available_host_num) in enumerate(host_ip_list):
-                if available_host_num > 0:
-                    ip_list.append(host_ip)
-                    host_ip_list[index] = (host_ip, available_host_num - 1)
-                if len(ip_list) == container_num:
-                    return ip_list
-        return ip_list
-
-    
 class ElectServer(object):
     
     zkOper = ZkOpers()
-    
-    def elect_server_list(self, component_container_cluster_config):
-        score_dict, score_list, ips_result  = {}, [], []
+
+    def elect_servers(self, component_container_cluster_config):
+        host_resource_dict, elect_server_list  = {}, []
         host_ip_list = self.zkOper.retrieve_servers_white_list()
-        available_dict = {}
+        
         for host_ip in host_ip_list:
-            host_score, available_host_num = self.__get_score(host_ip, component_container_cluster_config)
-            logging.info('server %s get score:%s, num:%s' %(host_ip, host_score, available_host_num))
-            if host_score != 0 :
-                score_dict.setdefault(host_ip, host_score)
-                available_dict.setdefault(host_ip, available_host_num)
-                score_list.append(host_score)
+            host_resource = self.__get_usable_resource(host_ip, component_container_cluster_config)
+            if host_resource != {}:
+                host_resource_dict.setdefault(host_ip, host_resource)
         
-        score_list.sort(reverse=True)
+        '''
+           var "weight_item_score" will be passed to elect_servers later
+        '''
+        weight_item_score = {'memory': 50, 'disk': 50}
+        host_score_dict = self.__count_score(host_resource_dict, weight_item_score)
+        logging.info('host and score:%s' % str(host_score_dict) )
+        score_list = sorted(host_score_dict)
         for score in score_list:
-            for _host_ip,_host_score in score_dict.items():
-                host_array = (_host_ip, available_dict.get(_host_ip))
-                if _host_score == score and host_array not in ips_result:
-                    ips_result.append((_host_ip, available_dict.get(_host_ip)))
-                    break
-        return ips_result
+            _host_ip = host_score_dict.get(score)
+            elect_server_list.append(_host_ip)
+        return elect_server_list
+
+    def __count_score(self, host_resource_dict, weight_item_score):
+        mem_list, disk_list = [], []
+        score_host_dict = {}
+        host_list = sorted(host_resource_dict)
+        for host in host_list:
+            resource = host_resource_dict.get(host)
+            mem_list.append(resource.get('memory'))
+            disk_list.append(resource.get('disk'))
+        
+        weight_memory_score = weight_item_score.get('memory')
+        disk_memory_score = weight_item_score.get('disk')
+        mem_score_dict = self.__get_item_score(mem_list, weight_memory_score)
+        disk_score_dict = self.__get_item_score(disk_list, disk_memory_score)
+        for index, host in enumerate(host_list):
+            mem_score = mem_score_dict.get(mem_list[index])
+            disk_score = disk_score_dict.get(disk_list[index])
+            sum_score = mem_score + disk_score
+            score_host_dict.setdefault(sum_score, host)
+        return score_host_dict
     
-    def __get_score(self, host_ip, component_container_cluster_config):
-        """
-            return score and the num of avaliable hosts
-            mem_free_limit: memory can be used on a server
-            mem_limit: memory limit on container config
-        """
+    def __get_item_score(self, item_list, total_score):
+        result = {}
+        max_value = max(item_list)
+        for item in item_list:
+            item_score = total_score * item / max_value
+            result.setdefault(item, int(item_score))
+        return result
+
+    def __get_usable_resource(self, host_ip, component_container_cluster_config):
         
-        '''
-        @todo: confirm that:use component_container_cluster_config to replace to zkOpers operaion,
-        foucs on mem_limit
-        what means mem_limit and mem_free_limit?
-        '''
-        
-        weighted_value, num = 0, 0 
-        _mem_limit = component_container_cluster_config.mem_limit
-        mem_limit = _mem_limit/(1024*1024)
-        
-        disk_usage = component_container_cluster_config.disk_usage
-        
+        resource_result = {}
+
         server_url = 'http://%s:%s/server/resource' % (host_ip, options.port)
-        _server_res = http_get(server_url)
-        server_res = _server_res["response"]
-        logging.info('server_res: %s' % str(server_res) )
-        mem_free_limit = component_container_cluster_config.mem_free_limit
+        server_res = http_get(server_url)["response"]
         
-        mem_usable = float(server_res["mem_res"]["free"]) - mem_free_limit/(1024*1024)
-        logging.info('mem_usable:%s' %  mem_usable)
         
+        '''
+            get host usable memory and the condition to create containers
+        '''
+        host_mem_limit = component_container_cluster_config.mem_free_limit
+        host_mem_can_be_used = float(server_res["mem_res"]["free"]) - host_mem_limit/(1024*1024)
+        logging.info('memory: %s, host :%s' % (host_mem_can_be_used, host_ip) )
+
+        _mem_limit = component_container_cluster_config.mem_limit
+        container_mem_limit = _mem_limit/(1024*1024)
+        mem_condition = host_mem_can_be_used > container_mem_limit
+        
+        
+        '''
+            get host usable disk and the condition to create containers
+        '''
         used_server_disk = server_res['server_disk']['used']
         total_server_disk = server_res['server_disk']['total']
-        logging.info('used disk :%s, total disk:%s' % (used_server_disk, total_server_disk) )
-        disk_condition = float(used_server_disk)/total_server_disk < disk_usage
-        mem_condition = mem_usable > mem_limit
+        
+        host_disk_usage_limit = component_container_cluster_config.disk_usage
+        host_disk_can_be_used_limit = host_disk_usage_limit * total_server_disk
+        host_disk_can_be_used = host_disk_can_be_used_limit - used_server_disk
+        logging.info('disk: %s, host :%s' % (host_disk_can_be_used, host_ip) )
+        disk_condition = host_disk_can_be_used > 0
         
         '''
             @todo: why is mem_usable/mem_limit? Do you means that mem_usable/(mem_usable+mem_limit)?
         '''
         if mem_condition and disk_condition:
-            weighted_value = mem_usable
-            num = int(mem_usable/mem_limit)
-        
-        return weighted_value, num
+            resource_result.setdefault('memory', host_mem_can_be_used)
+            resource_result.setdefault('disk', host_disk_can_be_used)
+        return resource_result
