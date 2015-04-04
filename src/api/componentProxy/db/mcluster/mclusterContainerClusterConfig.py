@@ -5,7 +5,7 @@ Created on 2015-2-5
 '''
 from componentProxy.baseClusterConfig import BaseContainerClusterConfig
 
-class MysqlContainerClusterConfig(BaseContainerClusterConfig):
+class MclusterContainerClusterConfig(BaseContainerClusterConfig):
     '''
     classdocs
     '''
@@ -15,9 +15,9 @@ class MysqlContainerClusterConfig(BaseContainerClusterConfig):
         '''
         Constructor
         '''
-        super(MysqlContainerClusterConfig, self).__init__(params)
+        super(MclusterContainerClusterConfig, self).__init__(params)
         
-        nodeCount = params.get('nodeCount')                          
+        nodeCount = params.get('nodeCount')
         self.nodeCount = int(nodeCount) if nodeCount else 3
         image = params.get('image')
         self.image = image if image else 'letv/mcluster:0.0.2'
