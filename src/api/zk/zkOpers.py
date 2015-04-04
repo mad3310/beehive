@@ -13,7 +13,6 @@ import threading
 from docker_letv.dockerOpers import Docker_Opers
 from kazoo.client import KazooClient
 from container.container_module import Container
-from utils.autoutil import get_containerClusterName_from_containerName
 from utils.autoutil import ping_ip_available, nc_ip_port_available
 from utils.decorators import singleton
 

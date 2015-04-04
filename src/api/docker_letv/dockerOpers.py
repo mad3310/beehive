@@ -3,9 +3,12 @@ Created on Sep 8, 2014
 
 @author: root
 '''
+import json
+import logging
 
 from utils import _get_property_dict
 from docker import Client as client
+from utils.exceptions import CommonException
 
 
 class Docker_Opers(client):
@@ -16,7 +19,8 @@ class Docker_Opers(client):
     
     def __init__(self):
         super(Docker_Opers, self).__init__(base_url='unix://var/run/docker.sock')
-        
+        self.image_cache = []
+        self.log = logging.getLogger(__name__)
 
     def create(self, docker_model):
         
@@ -115,7 +119,7 @@ class Docker_Opers(client):
     def stop(self, container, timeout=20):
         self.client.stop(container, timeout)
     
-    def kill(self, container, signal=None):
+    def kill(self, container, signal='HUP'):
         self.client.kill(container, signal)
     
     def remove_container(self, container, v=False, link=False, force=False):
@@ -124,6 +128,9 @@ class Docker_Opers(client):
     def destroy(self, container):
         self.kill(container)
         self.remove_container(container, force=True)
+        
+    def restart(self, container):
+        self.client.restart(container)
     
     def containers(self, quiet=False, all=False, trunc=True, latest=False,
                    since=None, before=None, limit=-1, size=False):
@@ -171,8 +178,62 @@ class Docker_Opers(client):
                     image_list.append(v)
         return image_list
 
-    def image_id_list(self):
-        self.client.images(quiet=True)
+    def image_id_list(self, filters=None):
+        self.client.images(filters=filters, quiet=True)
+        
+    def tag(self, image):
+        parts = image.split(':')
+        repo = parts[0]
+        if len(parts) > 1:
+            tag = parts[1]
+        else:
+            tag = 'latest'
+        return (repo, tag)
+    
+    def image(self, tag=None, id=None):
+
+        for image in self.images():
+
+            if tag and not tag in image['RepoTags']:
+                continue
+
+            if id and id != image['Id']:
+                continue
+
+            return image
+
+        return None
+
+    def images(self):
+
+        if not len(self.image_cache):
+            self.image_cache = self.image_id_list()
+
+        return self.image_cache
+    
+    def flush_images(self):
+        self.image_cache = []
+        
+    def pull(self, image):
+        (repository, tag) = self.tag(image)
+        existing = self.image(image)
+
+        for line in self.client.pull(repository=repository, tag=tag, stream=True, insecure_registry=True):
+            parsed = json.loads(line)
+            if 'error' in parsed:
+                raise CommonException(parsed['error'])
+
+        # Check if image updated
+        self.flush_images()
+        newer = self.image(image)
+        if not existing or (newer['Id'] != existing['Id']):
+            return True
+
+        return False
+    
+    def rmi(self, image):
+        # Force removal, sometimes conflicts result from truncated pulls
+        self.client.remove_image(image, force=True)
 
 if __name__ == '__main__':
     d = Docker_Opers()
