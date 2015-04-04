@@ -27,8 +27,6 @@ class IpOpers(object):
     store_illegal_ips_queue = Queue.Queue()
     store_all_ips_queue = Queue.Queue()
 
-    zkOper = ZkOpers()
-    
     docker_opers = Docker_Opers()
     
     def __init__(self):
@@ -40,12 +38,24 @@ class IpOpers(object):
         ip_segment = args_dict.get('ipSegment')
         ip_count = int(args_dict.get('ipCount'))
         choosed_ip = self._get_needed_ips(ip_segment, ip_count)
-        for ip in choosed_ip:
-            self.zkOper.write_ip_into_ipPool(ip)
+        
+        zkOper = ZkOpers()
+        try:
+            for ip in choosed_ip:
+                zkOper.write_ip_into_ipPool(ip)
+        finally:
+            zkOper.close()
+        
     
     def _get_needed_ips(self, ip_segment, ip_count):
         choosed_ip = []
-        ip_list = self.zkOper.get_ips_from_ipPool()
+        
+        zkOper = ZkOpers()
+        try:
+            ip_list = zkOper.get_ips_from_ipPool()
+        finally:
+            zkOper.close()
+        
         all_ips = self._get_all_ips(ip_segment)
         ips = list( set(all_ips) - set(ip_list) )
         num = 0
@@ -133,18 +143,27 @@ class IpOpers(object):
         """
             monitor item: get ip num from ip Pool
         """
-
-        ip_list = self.zkOper.get_ips_from_ipPool()
+        zkOper = ZkOpers()
+        try:
+            ip_list = zkOper.get_ips_from_ipPool()
+        finally:
+            zkOper.close()
+        
         return len(ip_list)
     
     def retrieve_ip_resource(self, ip_count):
         ip_list = None
-        isLock,lock = self.zkOper.lock_assign_ip()
+        
+        zkOper = ZkOpers()
+        
         try:
+            isLock,lock = zkOper.lock_assign_ip()
             if isLock:
-                ip_list = self.zkOper.retrieve_ip(ip_count)
+                ip_list = zkOper.retrieve_ip(ip_count)
         finally:
             if isLock:
-                self.zkOper.unLock_assign_ip(lock)
+                zkOper.unLock_assign_ip(lock)
+                
+            zkOper.close()
         return ip_list
 

@@ -17,8 +17,6 @@ TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 
 class CheckStatusBase(object):
     
-    zkOper = ZkOpers()
-    
     def __init__(self):
         if self.__class__ == CheckStatusBase:
             raise NotImplementedError, \
@@ -46,7 +44,13 @@ class CheckStatusBase(object):
         
         logging.info("monitor_type:" + monitor_type + " monitor_key:" + \
                      monitor_key + " monitor_value:" + str(result_dict))
-        self.zkOper.write_monitor_status(monitor_type, monitor_key, result_dict)
+        
+        zkOper = ZkOpers()
+        try:
+            zkOper.write_monitor_status(monitor_type, monitor_key, result_dict)
+        finally:
+            zkOper.close()
+        
 
     def _get(self, uri):
         rst = {}

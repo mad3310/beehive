@@ -11,7 +11,6 @@ from tornado.options import options
 
 class CheckSync():
     
-    zkOpers = ZkOpers()
     config_file_obj = ConfigFileOpers()
 
     '''
@@ -21,15 +20,26 @@ class CheckSync():
     '''
     
     def sync(self):
-        if self.zkOpers.existCluster():
+        zkOper = ZkOpers()
+        try:
+            existed = zkOper.existCluster()
+        finally:
+            zkOper.close()
+            
+        if existed:
             self.sync_server_cluster()
             self.sync_data_node()
         else:
             logging.info("cluster does not exist, may be the first time to sync in a new server cluster")
 
     def sync_server_cluster(self):
-        cluster_uuid = self.zkOpers.getClusterUUID() 
-        uuid_value, stat = self.zkOpers.retrieveClusterProp(cluster_uuid) 
+        zkOper = ZkOpers()
+        try:
+            cluster_uuid = zkOper.getClusterUUID() 
+            uuid_value, stat = zkOper.retrieveClusterProp(cluster_uuid) 
+        finally:
+            zkOper.close()
+        
         uuid_value = uuid_value.replace("'", "\"")
         uuid_value = json.loads(uuid_value)
         self.config_file_obj.setValue(options.server_cluster_property, uuid_value) 
@@ -37,11 +47,17 @@ class CheckSync():
 
     def sync_data_node(self):
         server_ip = getHostIp()
-        server_ip_list = self.zkOpers.retrieve_data_node_list()
-        if server_ip in server_ip_list:
-            logging.info('')
-            data_node_value = self.zkOpers.retrieve_data_node_info(server_ip)
-            if isinstance(data_node_value, dict):
-                self.config_file_obj.setValue(options.data_node_property, data_node_value)
-        else:
-            logging.error('server %s should be registered first' % str(server_ip) )
+        
+        zkOper = ZkOpers()
+        try:
+            server_ip_list = zkOper.retrieve_data_node_list()
+            if server_ip in server_ip_list:
+                data_node_value = zkOper.retrieve_data_node_info(server_ip)
+                if isinstance(data_node_value, dict):
+                    self.config_file_obj.setValue(options.data_node_property, data_node_value)
+            else:
+                logging.error('server %s should be registered first' % str(server_ip) )
+        finally:
+            zkOper.close()
+        
+        

@@ -192,11 +192,11 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         if _containerClusterName is None or '' == _containerClusterName:
             raise CommonException('_containerClusterName should be not null,in __updatez_zk_info_when_process_complete')
         
-        _container_cluster_info = self.zkOper.retrieve_container_cluster_info(_containerClusterName)
+        _container_cluster_info = zkOper.retrieve_container_cluster_info(_containerClusterName)
         _container_cluster_info.setdefault('start_flag', create_result)
         _container_cluster_info.setdefault('error_msg', error_msg)
         _container_cluster_info.setdefault('containerClusterName', _containerClusterName)
-        self.zkOper.write_container_cluster_info(_container_cluster_info)
+        zkOper.write_container_cluster_info(_container_cluster_info)
 
     def __create_container_cluser_info(self, network_mode, component_container_cluster_config):
         _container_cluster_info = {}
@@ -208,7 +208,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         if 'bridge' == network_mode:
             use_ip = False
         _container_cluster_info.setdefault('use_ip', use_ip)
-        self.zkOper.write_container_cluster_info(_container_cluster_info)
+        zkOper.write_container_cluster_info(_container_cluster_info)
 
     @tornado.gen.engine
     def __dispatch_create_container_task(self, container_model_list):

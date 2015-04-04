@@ -35,9 +35,9 @@ class ServerClusterHandler(APIHandler):
     def post(self):
         
         requestParam = self.get_all_arguments()
-        existCluster = self.zkOper.existCluster()
+        existCluster = zkOper.existCluster()
         if existCluster:
-            clusterUUID = self.zkOper.getClusterUUID()
+            clusterUUID = zkOper.getClusterUUID()
         else:
             clusterUUID = str(uuid.uuid1())
             requestParam.setdefault("clusterUUID", clusterUUID)
@@ -47,19 +47,19 @@ class ServerClusterHandler(APIHandler):
           
         clusterProps = self.confOpers.getValue(options.server_cluster_property)
         dataNodeProprs = self.confOpers.getValue(options.data_node_property)
-        self.zkOper.writeClusterInfo(clusterUUID, clusterProps)
-        self.zkOper.writeDataNodeInfo(clusterUUID, dataNodeProprs)
+        zkOper.writeClusterInfo(clusterUUID, clusterProps)
+        zkOper.writeDataNodeInfo(clusterUUID, dataNodeProprs)
 
         dataNodeIp = requestParam.get('dataNodeIp')
-        existDataNode = self.zkOper.existDataNode(clusterUUID, dataNodeIp)
+        existDataNode = zkOper.existDataNode(clusterUUID, dataNodeIp)
         
         return_message = {}
         return_message.setdefault("message", "creating server cluster successful!")
         self.finish(return_message)
         
     def get(self):
-        clusterUUID = self.zkOper.getClusterUUID()
-        data, stat = self.zkOper.retrieveClusterProp(clusterUUID)
+        clusterUUID = zkOper.getClusterUUID()
+        data, stat = zkOper.retrieveClusterProp(clusterUUID)
         self.confOpers.setValue(options.server_cluster_property, eval(data))
         
         return_message = {}
@@ -110,7 +110,7 @@ class SwitchServersUnderoomHandler(APIHandler):
                                 log_message= "containerNameList params not given correct!",\
                                 response =  "please check params!")
         
-        server_list = self.zkOper.retrieve_servers_white_list()
+        server_list = zkOper.retrieve_servers_white_list()
         auth_username, auth_password = _retrieve_userName_passwd()
         async_client = AsyncHTTPClient()
         
@@ -159,7 +159,7 @@ class GatherServersContainersDiskLoadHandler(APIHandler):
         
         auth_username, auth_password = _retrieve_userName_passwd()
         async_client = AsyncHTTPClient()
-        server_list = self.zkOper.retrieve_servers_white_list()
+        server_list = zkOper.retrieve_servers_white_list()
 
         servers_cons_disk_load, cons_disk_load = {}, {}
         try:
@@ -207,7 +207,7 @@ class AddServersMemoryHandler(APIHandler):
         
         auth_username, auth_password = _retrieve_userName_passwd()
         async_client = AsyncHTTPClient()
-        server_list = self.zkOper.retrieve_servers_white_list()
+        server_list = zkOper.retrieve_servers_white_list()
         
         add_mem_result, ret = {}, {}
         try:

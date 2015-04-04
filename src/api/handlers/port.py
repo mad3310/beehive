@@ -11,7 +11,6 @@ from tornado_letv.tornado_basic_auth import require_basic_auth
 class PortHandler(APIHandler):
     
     port_opers = PortOpers()
-    zkOper = ZkOpers()
     
     #curl --user root:root -d"startPort=38888&portCount=100&hostIp=10.154.156.150" http://localhost:8888/admin/ports
     def post(self):
@@ -27,6 +26,12 @@ class PortHandler(APIHandler):
         host_ip = args.get('hostIp')
         logging.info('get server %s ports' % host_ip)
         return_message = {}
-        ports = self.zkOper.get_ports_from_portPool(host_ip)
+        
+        zkOper = ZkOpers()
+        try:
+            ports = zkOper.get_ports_from_portPool(host_ip)
+        finally:
+            zkOper.close()
+        
         return_message.setdefault('ports', ports)
         self.finish(return_message)

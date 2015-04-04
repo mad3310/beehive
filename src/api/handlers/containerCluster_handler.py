@@ -36,7 +36,7 @@ class GatherClusterNetworkioHandler(APIHandler):
     @engine
     def get(self, cluster):
         logging.info(cluster)
-        exists = self.zkOper.check_containerCluster_exists(cluster)
+        exists = zkOper.check_containerCluster_exists(cluster)
         if not exists:
             content = 'container cluster %s not exist, please check your cluster name' % cluster
             message = {'message' : content}
@@ -44,7 +44,7 @@ class GatherClusterNetworkioHandler(APIHandler):
             return
          
         container_dict, result = {}, {}
-        container_ip_list = self.zkOper.retrieve_container_list(cluster)
+        container_ip_list = zkOper.retrieve_container_list(cluster)
         for container_ip in container_ip_list:
             container_name = self.container_opers.get_container_name_from_zk(cluster, container_ip)
             host_ip = self.container_opers.get_host_ip_from_zk(cluster, container_ip)
@@ -81,7 +81,7 @@ class GatherClusterMemeoyHandler(APIHandler):
     @engine
     def get(self, cluster):
         logging.info(cluster)
-        exists = self.zkOper.check_containerCluster_exists(cluster)
+        exists = zkOper.check_containerCluster_exists(cluster)
         if not exists:
             content = 'container cluster %s not exist, please check your cluster name' % cluster
             message = {'message' : content}
@@ -89,7 +89,7 @@ class GatherClusterMemeoyHandler(APIHandler):
             return
         
         container_dict, result = {}, {}
-        container_ip_list = self.zkOper.retrieve_container_list(cluster)
+        container_ip_list = zkOper.retrieve_container_list(cluster)
         for container_ip in container_ip_list:
             container_name = self.container_opers.get_container_name_from_zk(cluster, container_ip)
             host_ip = self.container_opers.get_host_ip_from_zk(cluster, container_ip)
@@ -127,7 +127,7 @@ class GatherClusterCpuacctHandler(APIHandler):
     def get(self, cluster):
         logging.info(cluster)
 
-        exists = self.zkOper.check_containerCluster_exists(cluster)
+        exists = zkOper.check_containerCluster_exists(cluster)
         if not exists:
             content = 'container cluster %s not exist, please check your cluster name' % cluster
             message = {'message' : content}
@@ -135,7 +135,7 @@ class GatherClusterCpuacctHandler(APIHandler):
             return
 
         container_dict, result = {}, {}
-        container_ip_list = self.zkOper.retrieve_container_list(cluster)
+        container_ip_list = zkOper.retrieve_container_list(cluster)
         for container_ip in container_ip_list:
             container_name = self.container_opers.get_container_name_from_zk(cluster, container_ip)
             host_ip = self.container_opers.get_host_ip_from_zk(cluster, container_ip)

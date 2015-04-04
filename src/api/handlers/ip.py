@@ -10,7 +10,6 @@ from tornado_letv.tornado_basic_auth import require_basic_auth
 class IPHandler(APIHandler):
     
     ip_opers = IpOpers()
-    zkOper = ZkOpers()
     
     #curl --user root:root -d"ipSegment=10.200.85.xxx&&ipCount=50" http://localhost:8888/admin/ips
     def post(self):
@@ -27,7 +26,13 @@ class IPHandler(APIHandler):
         
     def get(self):
         return_message = {}
-        ips = self.zkOper.get_ips_from_ipPool()
+        
+        zkOper = ZkOpers()
+        try:
+            ips = zkOper.get_ips_from_ipPool()
+        finally:
+            zkOper.close()
+        
         return_message.setdefault('ips', ips)
         self.finish(return_message)
 

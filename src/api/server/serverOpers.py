@@ -116,7 +116,6 @@ class Server_Opers(object):
 
 class ServerUpdateAction(Abstract_Async_Thread):
 
-    zkOper = ZkOpers()
     docker_opers = Docker_Opers()
     container_opers = Container_Opers()
 
@@ -182,20 +181,26 @@ class ServerUpdateAction(Abstract_Async_Thread):
         """
         
         container_name_list, container_info= [], {}
-        clusters = self.zkOper.retrieve_cluster_list()
-        for cluster in clusters:
-            container_ip_list = self.zkOper.retrieve_container_list(cluster)
-            for container_ip in container_ip_list:
-                container_info = self.zkOper.retrieve_container_node_value(cluster, container_ip)
-                host_ip = container_info.get('hostIp')
-                if self.host_ip == host_ip:
-                    if container_info.has_key('containerName'):
-                        container_name = container_info.get('containerName')
-                    else:
-                        inspect = container_info.get('inspect')
-                        con = Container(inspect=inspect)
-                        container_name = con.name()
-                    container_name_list.append(container_name)
+        
+        zkOper = ZkOpers()
+        try:
+            clusters = zkOper.retrieve_cluster_list()
+            for cluster in clusters:
+                container_ip_list = zkOper.retrieve_container_list(cluster)
+                for container_ip in container_ip_list:
+                    container_info = zkOper.retrieve_container_node_value(cluster, container_ip)
+                    host_ip = container_info.get('hostIp')
+                    if self.host_ip == host_ip:
+                        if container_info.has_key('containerName'):
+                            container_name = container_info.get('containerName')
+                        else:
+                            inspect = container_info.get('inspect')
+                            con = Container(inspect=inspect)
+                            container_name = con.name()
+                        container_name_list.append(container_name)
+        finally:
+            zkOper.close()
+        
         return container_name_list
 
     def _compare(self, host_container_list, zk_container_list):
@@ -206,7 +211,13 @@ class ServerUpdateAction(Abstract_Async_Thread):
 
     def _write_container_into_zk(self, container_name, create_info):
         container_stat = self.container_opers.get_container_stat(container_name)
-        self.zkOper.write_container_node_info(container_stat, create_info)
+        
+        zkOper = ZkOpers()
+        try:
+            zkOper.write_container_node_info(container_stat, create_info)
+        finally:
+            zkOper.close()
+        
 
     def _get_container_info_as_zk(self, container_name):
         create_info = {}

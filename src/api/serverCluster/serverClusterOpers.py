@@ -13,7 +13,6 @@ class ServerCluster_Opers(object):
     classdocs
     '''
     
-    zkOper = ZkOpers()
     def __init__(self):
         '''
             constructor
@@ -26,7 +25,13 @@ class ServerCluster_Opers(object):
           
         succ, fail, return_result  = [], [], ''
         key_sets = set()
-        server_list = self.zkOper.retrieve_data_node_list()
+        
+        zkOper = ZkOpers()
+        try:
+            server_list = zkOper.retrieve_data_node_list()
+        finally:
+            zkOper.close()
+        
         try: 
             for server in server_list:
                 requesturi = 'http://%s:%s/inner/server/update' % (server, options.port)

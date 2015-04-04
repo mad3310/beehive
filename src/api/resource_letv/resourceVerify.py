@@ -16,15 +16,18 @@ from utils.exceptions import CommonException
 
 class ResourceVerify(object):
     
-    zkOper = ZkOpers()
-    
     def __init__(self):
         '''
         constructor
         '''
     def check_resource(self, component_container_cluster_config):
         nodeCount = component_container_cluster_config.nodeCount
-        ip_list = self.zkOper.get_ips_from_ipPool()
+        
+        zkOper = ZkOpers()
+        try:
+            ip_list = zkOper.get_ips_from_ipPool()
+        finally:
+            zkOper.close()
         
         """
             ip or port to diff
@@ -42,11 +45,14 @@ class ResourceVerify(object):
 
 class ElectServer(object):
     
-    zkOper = ZkOpers()
-
     def elect_servers(self, component_container_cluster_config):
         host_resource_dict, elect_server_list  = {}, []
-        host_ip_list = self.zkOper.retrieve_servers_white_list()
+        
+        zkOper = ZkOpers()
+        try:
+            host_ip_list = zkOper.retrieve_servers_white_list()
+        finally:
+            zkOper.close()
         
         for host_ip in host_ip_list:
             host_resource = self.__get_usable_resource(host_ip, component_container_cluster_config)

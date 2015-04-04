@@ -5,16 +5,13 @@ from tornado.web import RequestHandler,HTTPError
 from tornado import escape
 from tornado.options import options
 
-from zk.zkOpers import ZkOpers
-from utils.exceptions import HTTPAPIError, CommonException
+from utils.exceptions import HTTPAPIError, UserVisiableException
 from utils.mail import send_email
 
 import logging
 import traceback
 
 class BaseHandler(RequestHandler):
-    
-    zkOper = ZkOpers()
     
     logger = logging.getLogger('root')
 
@@ -60,10 +57,7 @@ class APIHandler(BaseHandler):
 
             if isinstance(e, HTTPAPIError):
                 pass
-            '''
-            @todo: should be UserVisiableException, not CommonException
-            '''
-            elif isinstance(e, CommonException):
+            elif isinstance(e, UserVisiableException):
                 user_message = e.__str__()
                 e = HTTPAPIError(417, error_detail=user_message)
                 status_code = e.status_code

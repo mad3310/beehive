@@ -12,27 +12,29 @@ class ComponentContainerClusterValidator(object):
     '''
     classdocs
     '''
-    
-    zk_oper = ZkOpers()
-
     def __init__(self):
         '''
         Constructor
         '''
 
     def container_cluster_status_validator(self, _component_type, cluster):
+        zk_oper = ZkOpers()
         
-        container_ip_list = self.zk_oper.retrieve_container_list(cluster)
-        status_list, cluster_status = [], {}
-        for container_ip in container_ip_list:
-            status = self.zk_oper.retrieve_container_status_value(cluster, container_ip)
-            status_list.append(status.get('status'))
-        
-        ret = self.__get_cluster_status(status_list)
-        cluster_status.setdefault('status', ret)
-        if ret == Status.destroyed:
-            logging.info('delete containerCluster: %s' % cluster)
-            self.zk_oper.delete_container_cluster(cluster)
+        try:
+            container_ip_list = zk_oper.retrieve_container_list(cluster)
+            status_list, cluster_status = [], {}
+            for container_ip in container_ip_list:
+                status = zk_oper.retrieve_container_status_value(cluster, container_ip)
+                status_list.append(status.get('status'))
+            
+            ret = self.__get_cluster_status(status_list)
+            cluster_status.setdefault('status', ret)
+            if ret == Status.destroyed:
+                logging.info('delete containerCluster: %s' % cluster)
+                zk_oper.delete_container_cluster(cluster)
+        finally:
+            zk_oper.close()
+            
         return cluster_status
 
     def __get_cluster_status(self, status_list):

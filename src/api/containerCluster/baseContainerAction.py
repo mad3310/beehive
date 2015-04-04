@@ -42,12 +42,12 @@ class ContainerCluster_Action_Base(Abstract_Async_Thread):
             self.__do_when_remove_cluster()
             
     def __do_when_remove_cluster(self):
-        cluster_info = self.zkOper.retrieve_container_cluster_info(self.cluster)
+        cluster_info = zkOper.retrieve_container_cluster_info(self.cluster)
         use_ip = cluster_info.get('use_ip')
         if use_ip:
-            container_ip_list = self.zkOper.retrieve_container_list(self.cluster)
+            container_ip_list = zkOper.retrieve_container_list(self.cluster)
             logging.info('container_ip_list:%s' % str(container_ip_list) )
-            self.zkOper.recover_ips_to_pool(container_ip_list)
+            zkOper.recover_ips_to_pool(container_ip_list)
 
     def post(self, host_ip, container_name, admin_user, admin_passwd):
         args = {}
@@ -63,11 +63,11 @@ class ContainerCluster_Action_Base(Abstract_Async_Thread):
         
         params, container_info = {}, {}
         
-        container_ip_list = self.zkOper.retrieve_container_list(self.cluster)
+        container_ip_list = zkOper.retrieve_container_list(self.cluster)
         
         for contaier_ip in container_ip_list:
             container_name_list = []
-            container_info = self.zkOper.retrieve_container_node_value(self.cluster, contaier_ip)
+            container_info = zkOper.retrieve_container_node_value(self.cluster, contaier_ip)
             container_name = container_info.get('containerName')
             host_ip = container_info.get('hostIp')
             container_name_list.append(container_name)

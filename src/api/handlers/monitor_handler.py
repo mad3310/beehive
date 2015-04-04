@@ -26,14 +26,14 @@ class ContainerStatus(APIHandler):
     
     def get(self):
         
-        monitor_types = self.zkOper.retrieve_monitor_type()
+        monitor_types = zkOper.retrieve_monitor_type()
         stat_dict = {}
         for monitor_type in monitor_types:
-            monitor_status_list = self.zkOper.retrieve_monitor_status_list(monitor_type)
+            monitor_status_list = zkOper.retrieve_monitor_status_list(monitor_type)
             
             monitor_type_sub_dict = {}
             for monitor_status_key in monitor_status_list:
-                monitor_status_value = self.zkOper.retrieve_monitor_status_value(monitor_type, monitor_status_key)
+                monitor_status_value = zkOper.retrieve_monitor_status_value(monitor_type, monitor_status_key)
                 monitor_type_sub_dict.setdefault(monitor_status_key, monitor_status_value)
                 
             stat_dict.setdefault(monitor_type, monitor_type_sub_dict)
@@ -70,7 +70,7 @@ class CheckServersContainersMemLoad(APIHandler):
     def get(self):
         
         async_client = AsyncHTTPClient()
-        server_list = self.zkOper.retrieve_servers_white_list()
+        server_list = zkOper.retrieve_servers_white_list()
         
         server_cons_mem_load = {}
         try:
@@ -125,7 +125,7 @@ class CheckServersContainersUnderOom(APIHandler):
     def get(self):
         
         async_client = AsyncHTTPClient()
-        server_list = self.zkOper.retrieve_servers_white_list()
+        server_list = zkOper.retrieve_servers_white_list()
         
         server_cons_under_oom = {}
         try:
