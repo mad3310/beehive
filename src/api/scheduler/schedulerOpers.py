@@ -12,7 +12,7 @@ from utils.threading_exception_handle_worker import Thread_Exception_Handler_Wor
 from utils.monitor_backend_handle_worker import Monitor_Backend_Handle_Worker
 
 
-class Sceduler_Opers(object):
+class SchedulerOpers(object):
     '''
     classdocs
     '''
