@@ -226,6 +226,10 @@ class ServerUpdateAction(Abstract_Async_Thread):
         
         create_info.setdefault('hostIp', self.host_ip)
         image = con.image()
+        
+        '''
+        @todo: what means?
+        '''
         if 'gbalancer' in image:
             create_info.setdefault('type', 'mclustervip')
         else:
