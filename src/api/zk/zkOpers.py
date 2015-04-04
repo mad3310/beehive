@@ -388,8 +388,6 @@ class ZkOpers(object):
         return children_to_list
     
     def _retrieveSpecialPathProp(self,path):
-        logging.debug(path)
-        
         data = None
         
         if self.zk.exists(path):
