@@ -3,7 +3,6 @@ Created on Sep 8, 2014
 
 @author: root
 '''
-import traceback
 import logging
 
 from tornado.web import asynchronous
@@ -55,14 +54,14 @@ class SwitchServerUnderoomHandler(APIHandler):
         switch = args.get('switch')
         
         if not switch or (switch!='on' and switch!='off'):
-            raise HTTPAPIError(status_code=400, error_detail="switch params wrong!",\
+            raise HTTPAPIError(status_code=417, error_detail="switch params wrong!",\
                                 notification = "direct", \
                                 log_message= "switch params wrong!",\
                                 response =  "please check params!")
         
         containerNameList = args.get('containerNameList')
         if not containerNameList:
-            raise HTTPAPIError(status_code=400, error_detail="containerNameList params not given!",\
+            raise HTTPAPIError(status_code=417, error_detail="containerNameList params not given!",\
                                 notification = "direct", \
                                 log_message= "containerNameList params not given!",\
                                 response =  "please check params!")
@@ -73,17 +72,10 @@ class SwitchServerUnderoomHandler(APIHandler):
             containerNameList = [containerNameList]
         
         result = {}
-        try:
-            if switch == 'on':
-                result = self.server_opers.open_containers_under_oom(containerNameList)
-            elif switch == 'off':
-                result = self.server_opers.shut_containers_under_oom(containerNameList)
-        except:
-            error_message = str(traceback.format_exc())
-            raise HTTPAPIError(status_code=500, error_detail="switch oom failed!",\
-                                notification = "direct", \
-                                log_message= "switch oom failed!",\
-                                response =  "please check! %s" % (error_message))
+        if switch == 'on':
+            result = self.server_opers.open_containers_under_oom(containerNameList)
+        elif switch == 'off':
+            result = self.server_opers.shut_containers_under_oom(containerNameList)
         
         logging.debug('under_oom result: %s' % str(result))
         self.finish(result)
@@ -104,24 +96,16 @@ class GatherServerContainersDiskLoadHandler(APIHandler):
         containers = args.get('containerNameList')
         container_name_list = containers.split(',')
         if not (container_name_list and isinstance(container_name_list, list)):
-            raise HTTPAPIError(status_code=400, error_detail="containerNameList is illegal!",\
+            raise HTTPAPIError(status_code=417, error_detail="containerNameList is illegal!",\
                                 notification = "direct", \
                                 log_message= "containerNameList is illegal!",\
                                 response =  "please check params!")
         
         host_ip = self.request.remote_ip
-        container_disk_load = {}
-        try:
-            container_disk_load = self.server_opers.get_containers_disk_load(container_name_list)
-        except:
-            error_message = str( traceback.format_exc() )
-            raise HTTPAPIError(status_code=500, error_detail="server exceptions",\
-                                notification = "direct", \
-                                log_message= "server exception",\
-                                response =  "server exception! %s" % (error_message))
         
-        logging.debug('get disk load on this server:%s, result:%s' %( host_ip, str(container_disk_load)) )
-        self.finish(container_disk_load)
+        result = self.server_opers.get_containers_disk_load(container_name_list)
+        logging.debug('get disk load on this server:%s, result:%s' %( host_ip, str(result)) )
+        self.finish(result)
 
 
 @require_basic_auth
@@ -135,21 +119,13 @@ class AddServerMemoryHandler(APIHandler):
         containers = args.get('containerNameList')
         container_name_list = containers.split(',')
         if not (container_name_list and isinstance(container_name_list, list)):
-            raise HTTPAPIError(status_code=400, error_detail="containerNameList is illegal!",\
+            raise HTTPAPIError(status_code=417, error_detail="containerNameList is illegal!",\
                                 notification = "direct", \
                                 log_message= "containerNameList is illegal!",\
                                 response =  "please check params!")
         
         host_ip = self.request.remote_ip
-        mem_add_result = {}
-        try:
-            mem_add_result = self.server_opers.add_containers_memory(container_name_list)
-        except:
-            error_message = str( traceback.format_exc() )
-            raise HTTPAPIError(status_code=500, error_detail="server exceptions",\
-                                notification = "direct", \
-                                log_message= "server exception",\
-                                response =  "server exception! %s" % (error_message))
         
-        logging.debug('add containers :%s memory on this server:%s, result:%s' % ( str(container_name_list), host_ip, str(mem_add_result)) )
-        self.finish(mem_add_result)
+        result = self.server_opers.add_containers_memory(container_name_list)
+        logging.debug('add containers :%s memory on this server:%s, result:%s' % ( str(container_name_list), host_ip, str(result)) )
+        self.finish(result)

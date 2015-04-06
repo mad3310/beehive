@@ -1,7 +1,7 @@
 #!/usr/bin/env python 2.6.6
 import re
 
-from utils.autoutil import *
+from utils import get_containerClusterName_from_containerName
 
 
 class Container():

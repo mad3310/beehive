@@ -10,40 +10,34 @@ import logging
 
 from zk.zkOpers import ZkOpers
 from tornado.options import options
-from utils.autoutil import http_get
+from utils import http_get
 from utils.exceptions import CommonException
 
 
-class ResourceVerify(object):
+class Resource(object):
     
     def __init__(self):
         '''
         constructor
         '''
-    def check_resource(self, component_container_cluster_config):
-        nodeCount = component_container_cluster_config.nodeCount
         
+    def validateResource(self, component_container_cluster_config, server_list):
         zkOper = ZkOpers()
         try:
             ip_list = zkOper.get_ips_from_ipPool()
         finally:
             zkOper.close()
         
+        nodeCount = component_container_cluster_config.nodeCount
         """
             ip or port to diff
         """
         if len(ip_list) < nodeCount:
             raise CommonException('ips are not enough!')
         
-        elect_server = ElectServer()
-        server_list = elect_server.elect_servers(component_container_cluster_config)
-        
-        if server_list < nodeCount:
+        if len(server_list) < nodeCount:
             raise CommonException('usable servers are not enough!')
-
-        return server_list
-
-class ElectServer(object):
+        
     
     def elect_servers(self, component_container_cluster_config):
         host_resource_dict, elect_server_list  = {}, []
@@ -64,16 +58,17 @@ class ElectServer(object):
         '''
         weight_item_score = {'memory': 50, 'disk': 50}
         host_score_dict = self.__count_score(host_resource_dict, weight_item_score)
-        logging.info('host and score:%s' % str(host_score_dict) )
+        logging.info('host and score:%s' % str(host_score_dict))
         score_list = sorted(host_score_dict)
         for score in score_list:
             _host_ip = host_score_dict.get(score)
             elect_server_list.append(_host_ip)
+            
         return elect_server_list
 
     def __count_score(self, host_resource_dict, weight_item_score):
         mem_list, disk_list = [], []
-        score_host_dict = {}
+        
         host_list = sorted(host_resource_dict)
         for host in host_list:
             resource = host_resource_dict.get(host)
@@ -84,28 +79,28 @@ class ElectServer(object):
         disk_memory_score = weight_item_score.get('disk')
         mem_score_dict = self.__get_item_score(mem_list, weight_memory_score)
         disk_score_dict = self.__get_item_score(disk_list, disk_memory_score)
+        
+        score_host_dict = {}
         for index, host in enumerate(host_list):
             mem_score = mem_score_dict.get(mem_list[index])
             disk_score = disk_score_dict.get(disk_list[index])
-            sum_score = mem_score + disk_score
-            score_host_dict.setdefault(sum_score, host)
+            total_score = mem_score + disk_score
+            score_host_dict.setdefault(total_score, host)
+            
         return score_host_dict
     
     def __get_item_score(self, item_list, total_score):
-        result = {}
         max_value = max(item_list)
+        
+        result = {}
         for item in item_list:
             item_score = total_score * item / max_value
             result.setdefault(item, int(item_score))
         return result
 
     def __get_usable_resource(self, host_ip, component_container_cluster_config):
-        
-        resource_result = {}
-
         server_url = 'http://%s:%s/server/resource' % (host_ip, options.port)
         server_res = http_get(server_url)["response"]
-        
         
         '''
             get host usable memory and the condition to create containers
@@ -131,10 +126,9 @@ class ElectServer(object):
         logging.info('disk: %s, host :%s' % (host_disk_can_be_used, host_ip) )
         disk_condition = host_disk_can_be_used > 0
         
-        '''
-            @todo: why is mem_usable/mem_limit? Do you means that mem_usable/(mem_usable+mem_limit)?
-        '''
+        resource_result = {}
         if mem_condition and disk_condition:
             resource_result.setdefault('memory', host_mem_can_be_used)
             resource_result.setdefault('disk', host_disk_can_be_used)
+            
         return resource_result

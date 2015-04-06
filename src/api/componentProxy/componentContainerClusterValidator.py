@@ -37,6 +37,9 @@ class ComponentContainerClusterValidator(object):
             
         return cluster_status
 
+    '''
+    @todo: use container status class
+    '''
     def __get_cluster_status(self, status_list):
         
         cluster_stat = ''
@@ -52,10 +55,12 @@ class ComponentContainerClusterValidator(object):
             for status in status_list:
                 if status == Status.started:
                     i += 1
+                    
             if i == 2:
                 cluster_stat = Status.danger
             elif i ==1:
                 cluster_stat = Status.crisis
             else:
                 cluster_stat = Status.failed
+                
         return cluster_stat

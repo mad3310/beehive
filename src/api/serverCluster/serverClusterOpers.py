@@ -60,6 +60,7 @@ class ServerCluster_Opers(object):
                     fail.append(callback_key)
         finally:
             http_client.close()
+            
         logging.debug('succ:%s' % str(succ))
         logging.debug('fail:%s' % str(fail))
 

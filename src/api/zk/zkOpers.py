@@ -13,7 +13,7 @@ import threading
 from docker_letv.dockerOpers import Docker_Opers
 from kazoo.client import KazooClient
 from container.container_module import Container
-from utils.autoutil import ping_ip_available, nc_ip_port_available
+from utils import ping_ip_available, nc_ip_port_available
 from utils.decorators import singleton
 
 
@@ -392,7 +392,7 @@ class ZkOpers(object):
         
         if self.zk.exists(path):
             logging.debug(path+" existed")
-            data,stat = self.zk.get(path)
+            data,_ = self.zk.get(path)
             
         logging.debug(data)
         

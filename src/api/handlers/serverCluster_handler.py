@@ -9,7 +9,6 @@ Created on Sep 8, 2014
 import uuid
 import json
 import logging
-import traceback
 import urllib
 
 from tornado.options import options
@@ -22,6 +21,7 @@ from utils import _retrieve_userName_passwd
 from serverCluster.serverClusterOpers import ServerCluster_Opers
 from utils.exceptions import HTTPAPIError
 from base import APIHandler
+from zk.zkOpers import ZkOpers
 
 @require_basic_auth
 class ServerClusterHandler(APIHandler):
@@ -33,38 +33,47 @@ class ServerClusterHandler(APIHandler):
     # create server cluster
     # eg. curl --user root:root -d "clusterName=docker_cluster&dataNodeIp=192.168.84.132&dataNodeName=docker_cluster_node_1" "http://localhost:8888/serverCluster"
     def post(self):
-        
         requestParam = self.get_all_arguments()
-        existCluster = zkOper.existCluster()
-        if existCluster:
-            clusterUUID = zkOper.getClusterUUID()
-        else:
-            clusterUUID = str(uuid.uuid1())
-            requestParam.setdefault("clusterUUID", clusterUUID)
-        if requestParam != {}:
-            self.confOpers.setValue(options.server_cluster_property, requestParam)
-            self.confOpers.setValue(options.data_node_property, requestParam)
-          
-        clusterProps = self.confOpers.getValue(options.server_cluster_property)
-        dataNodeProprs = self.confOpers.getValue(options.data_node_property)
-        zkOper.writeClusterInfo(clusterUUID, clusterProps)
-        zkOper.writeDataNodeInfo(clusterUUID, dataNodeProprs)
-
-        dataNodeIp = requestParam.get('dataNodeIp')
-        existDataNode = zkOper.existDataNode(clusterUUID, dataNodeIp)
         
+        zkOper = ZkOpers()
+        
+        try:
+            existCluster = zkOper.existCluster()
+            if existCluster:
+                clusterUUID = zkOper.getClusterUUID()
+            else:
+                clusterUUID = str(uuid.uuid1())
+                requestParam.setdefault("clusterUUID", clusterUUID)
+            
+            if requestParam != {}:
+                self.confOpers.setValue(options.server_cluster_property, requestParam)
+                self.confOpers.setValue(options.data_node_property, requestParam)
+              
+            clusterProps = self.confOpers.getValue(options.server_cluster_property)
+            dataNodeProprs = self.confOpers.getValue(options.data_node_property)
+            zkOper.writeClusterInfo(clusterUUID, clusterProps)
+            zkOper.writeDataNodeInfo(clusterUUID, dataNodeProprs)
+        finally:
+            zkOper.close()
+
         return_message = {}
         return_message.setdefault("message", "creating server cluster successful!")
         self.finish(return_message)
         
     def get(self):
-        clusterUUID = zkOper.getClusterUUID()
-        data, stat = zkOper.retrieveClusterProp(clusterUUID)
+        zkOper = ZkOpers()
+        
+        try:
+            clusterUUID = zkOper.getClusterUUID()
+            data, _ = zkOper.retrieveClusterProp(clusterUUID)
+        finally:
+            zkOper.close()
+        
         self.confOpers.setValue(options.server_cluster_property, eval(data))
         
-        return_message = {}
-        return_message.setdefault("message", "sync server cluster info to local successful!")
-        self.finish(return_message)
+        result = {}
+        result.setdefault("message", "sync server cluster info to local successful!")
+        self.finish(result)
 
 
 @require_basic_auth
@@ -97,7 +106,7 @@ class SwitchServersUnderoomHandler(APIHandler):
         switch = args.get('switch')
         
         if not switch or (switch!='on' and switch!='off'):
-            raise HTTPAPIError(status_code=400, error_detail="switch params wrong!",\
+            raise HTTPAPIError(status_code=417, error_detail="switch params wrong!",\
                                 notification = "direct", \
                                 log_message= "switch params wrong!",\
                                 response =  "please check params!")
@@ -105,12 +114,17 @@ class SwitchServersUnderoomHandler(APIHandler):
         containers = args.get('containerNameList')
         container_name_list = containers.split(',')
         if not (container_name_list and isinstance(container_name_list, list)):
-            raise HTTPAPIError(status_code=400, error_detail="containerNameList params not given correct!",\
+            raise HTTPAPIError(status_code=417, error_detail="containerNameList params not given correct!",\
                                 notification = "direct", \
                                 log_message= "containerNameList params not given correct!",\
                                 response =  "please check params!")
         
-        server_list = zkOper.retrieve_servers_white_list()
+        zkOper = ZkOpers()
+        try:
+            server_list = zkOper.retrieve_servers_white_list()
+        finally:
+            zkOper.close()
+        
         auth_username, auth_password = _retrieve_userName_passwd()
         async_client = AsyncHTTPClient()
         
@@ -126,19 +140,13 @@ class SwitchServersUnderoomHandler(APIHandler):
                 body = json.loads( response.body.strip())
                 ret =  body.get('response')
                 result.update(ret)
-        except:
-            error_message = str(traceback.format_exc() )
-            raise HTTPAPIError(status_code=500, error_detail="switch server under_oom failed, action:%s!" % switch,\
-                                notification = "direct", \
-                                log_message= "switch server under_oom failed, action:%s!" % switch ,\
-                                response =  "please check reasons %s" % (error_message))
         finally:
             async_client.close()
             
         except_cons = list(set(container_name_list) - set(result.keys()))
         for con in except_cons:
             result.setdefault(con, 'no such container or code exception')
-        self.finish( result )
+        self.finish(result)
     
 
 @require_basic_auth
@@ -152,15 +160,20 @@ class GatherServersContainersDiskLoadHandler(APIHandler):
         logging.info('get servers containers disk load method, containerNameList:%s' % str(containers) )
         container_name_list = containers.split(',')
         if not (container_name_list and isinstance(container_name_list, list)):
-            raise HTTPAPIError(status_code=400, error_detail="containerNameList is illegal!",\
+            raise HTTPAPIError(status_code=417, error_detail="containerNameList is illegal!",\
                                 notification = "direct", \
                                 log_message= "containerNameList is illegal!",\
                                 response =  "please check params!")
         
+        zkOper = ZkOpers()
+        
+        try:
+            server_list = zkOper.retrieve_servers_white_list()
+        finally:
+            zkOper.close()
+            
         auth_username, auth_password = _retrieve_userName_passwd()
         async_client = AsyncHTTPClient()
-        server_list = zkOper.retrieve_servers_white_list()
-
         servers_cons_disk_load, cons_disk_load = {}, {}
         try:
             for server in server_list:
@@ -174,12 +187,6 @@ class GatherServersContainersDiskLoadHandler(APIHandler):
                 logging.info('response body : %s' % str(body))
                 cons_disk_load = body.get('response')
                 servers_cons_disk_load.update(cons_disk_load)
-        except:
-            error_message = str(traceback.format_exc() )
-            raise HTTPAPIError(status_code=500, error_detail="get servers containers disk load fails",\
-                                notification = "direct", \
-                                log_message= "get servers containers disk load fails" ,\
-                                response =  "please check reasons %s" % (error_message))
         finally:
             async_client.close()
         
@@ -200,14 +207,20 @@ class AddServersMemoryHandler(APIHandler):
         logging.info('get servers containers memory load method, containerNameList:%s' % str(containers) )
         container_name_list = containers.split(',')
         if not (container_name_list and isinstance(container_name_list, list)):
-            raise HTTPAPIError(status_code=400, error_detail="containerNameList is illegal!",\
+            raise HTTPAPIError(status_code=417, error_detail="containerNameList is illegal!",\
                                 notification = "direct", \
                                 log_message= "containerNameList is illegal!",\
                                 response =  "please check params!")
+            
+        zkOper = ZkOpers()
+        
+        try:
+            server_list = zkOper.retrieve_servers_white_list()
+        finally:
+            zkOper.close()
         
         auth_username, auth_password = _retrieve_userName_passwd()
         async_client = AsyncHTTPClient()
-        server_list = zkOper.retrieve_servers_white_list()
         
         add_mem_result, ret = {}, {}
         try:
@@ -221,16 +234,10 @@ class AddServersMemoryHandler(APIHandler):
                 body = json.loads(response.body.strip())
                 ret = body.get('response')
                 add_mem_result.update(ret)
-        except:
-            error_message = str(traceback.format_exc() )
-            raise HTTPAPIError(status_code=500, error_detail="add memory failed",\
-                                notification = "direct", \
-                                log_message= "add memory failed" ,\
-                                response =  "please check reasons %s" % (error_message))
         finally:
             async_client.close()
             
         except_cons = list(set(container_name_list) - set(add_mem_result.keys()))
         for con in except_cons:
             add_mem_result.setdefault(con, 'no such container or code exception')
-        self.finish( add_mem_result )
+        self.finish(add_mem_result)

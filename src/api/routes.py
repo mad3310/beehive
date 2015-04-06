@@ -18,7 +18,9 @@ handlers = [
     (r"/admin/ports", PortHandler),
     
     ##'''  --------------------serverCluster-------------------------------
-    
+    '''
+    @todo: why many of under_oom link? what mean?
+    '''
     (r"/serverCluster", ServerClusterHandler),
     (r"/serverCluster/update", UpdateServerClusterHandler),
     (r"/serverCluster/containers/under_oom", SwitchServersUnderoomHandler),
@@ -36,14 +38,15 @@ handlers = [
     ##'''  --------------------containerCluster------------------------------'''
     
     (r"/containerCluster", ContainerClusterHandler),
-    #(r"/containerCluster/(.*)", ContainerClusterHandler),
     (r"/containerCluster/start", ContainerClusterStartHandler),
     (r"/containerCluster/stop", ContainerClusterStopHandler),
-    (r"/containerCluster/info", ContainerClustersInfoHandler),
-    (r"/containerCluster/info/(.*)", ContainerClusterInfoHandler),
     (r"/containerCluster/sync", CheckClusterSyncHandler),
     (r"/containerCluster/createStatus/(.*)", CheckCreateClusterStatusHandler),
     (r"/containerCluster/status/(.*)", CheckContainerClusterStatusHandler),
+    
+    '''
+    @todo: used below uri?
+    '''
     (r"/containerCluster/conf", ClusterConfigHandler),
     (r"/containerCluster/stat/(.*)/memory", GatherClusterMemeoyHandler),
     (r"/containerCluster/stat/(.*)/cpuacct", GatherClusterCpuacctHandler),

@@ -2,16 +2,16 @@
 #-*- coding: utf-8 -*-
 
 import logging
-import traceback
 
 from base import APIHandler
 from utils.exceptions import HTTPAPIError
 from utils import get_current_time
 from tornado_letv.tornado_basic_auth import require_basic_auth
 from tornado.web import asynchronous
-from container.containerOpers import Container_Opers, ContainerLoad
+from container.containerOpers import Container_Opers
 from componentProxy.componentDockerModelFactory import ComponentDockerModelFactory
 from status.status_enum import Status
+from state.stateOpers import StateOpers
 
 
 @require_basic_auth
@@ -113,14 +113,14 @@ class StopContainerHandler(APIHandler):
         logging.info('all_arguments: %s' % str(args))
         container_name = args.get('containerName')
         if not container_name:
-            raise HTTPAPIError(status_code=400, error_detail="no container_name argument!",\
+            raise HTTPAPIError(status_code=417, error_detail="no container_name argument!",\
                                 notification = "direct", \
                                 log_message= "no container_name argument!",\
                                 response =  "please check params!")
         
         exists = self.container_opers.check_container_exists(container_name)
         if not exists:
-            raise HTTPAPIError(status_code=400, error_detail="container %s not exist!" % container_name,\
+            raise HTTPAPIError(status_code=417, error_detail="container %s not exist!" % container_name,\
                                 notification = "direct", \
                                 log_message= "container %s not exist!" % container_name,\
                                 response =  "please check!")
@@ -133,14 +133,7 @@ class StopContainerHandler(APIHandler):
             self.finish(massage)
             return
         
-        try: 
-            self.container_opers.stop(container_name)
-        except:
-            logging.error( str(traceback.format_exc()) )
-            raise HTTPAPIError(status_code=500, error_detail="container stop raise exception!",\
-                                notification = "direct", \
-                                log_message= "container stop raise exception",\
-                                response =  "container stop raise exception, please check!!")
+        self.container_opers.stop(container_name)
         
         return_message = {}
         return_message.setdefault("message", "due to stop a container need a little time, please wait and check the result~")
@@ -194,7 +187,7 @@ class GatherContainerMemeoyHandler(APIHandler):
             return
 
         result = {}
-        conl = ContainerLoad(container_name)
+        conl = StateOpers(container_name)
         memory_stat_item = conl.get_memory_stat_item()
         current_time = get_current_time()
         
@@ -220,7 +213,7 @@ class GatherContainerCpuacctHandler(APIHandler):
             return
 
         result = {}
-        conl = ContainerLoad(container_name)
+        conl = StateOpers(container_name)
         cpuacct_stat_item = conl.get_cpuacct_stat_item()
         current_time = get_current_time()
         
@@ -245,7 +238,7 @@ class GatherContainerNetworkioHandler(APIHandler):
             return
 
         result = {}
-        conl = ContainerLoad(container_name)
+        conl = StateOpers(container_name)
         network_io_item = conl.get_network_io()
         current_time = get_current_time()
         
@@ -264,24 +257,7 @@ class CheckContainerStatusHandler(APIHandler):
     
     @asynchronous
     def get(self, container_name):
-        
-        exists = self.container_opers.check_container_exists(container_name)
-        if not exists:
-            massage = {}
-            massage.setdefault("status", "not exist")
-            massage.setdefault("message", "")
-            self.finish(massage)
-            return
-          
-        try:
-            status = self.container_opers.check(container_name)
-        except:
-            logging.error(str( traceback.format_exc() ))
-            raise HTTPAPIError(status_code=578, error_detail="check method exception!",\
-                                notification = "direct", \
-                                log_message= "check method exception",\
-                                response =  "check method failed!")
-        
+        status = self.container_opers.check(container_name)
         self.finish(status)
 
 
@@ -296,12 +272,13 @@ class ManagerStatusHandler(APIHandler):
         container_name = args.get('containerName')
         component_type = args.get('componentType')
         if not (container_name and component_type):
-            raise HTTPAPIError(status_code=400, error_detail="no containerName or componentType argument!",\
+            raise HTTPAPIError(status_code=417, error_detail="no containerName or componentType argument!",\
                                 notification = "direct", \
                                 log_message= "no containerName or componentType argument!",\
-                                response =  "please check params!") 
+                                response =  "please check params!")
         
         ret = self.container_opers.manager_status_validate(component_type, container_name)
-        return_message = {}
-        return_message.setdefault("message", ret)
-        self.finish(return_message)
+        
+        result = {}
+        result.setdefault("message", ret)
+        self.finish(result)

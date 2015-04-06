@@ -7,13 +7,13 @@ Created on Sep 17, 2014
 @author: root
 '''
 
-import os
 import time
 import Queue
 import logging
 
 from zk.zkOpers import ZkOpers
-from utils.autoutil import doInThread, ping_ip_available
+from utils import ping_ip_available
+from utils.threadUtil import doInThread
 from utils.exceptions import CommonException
 from docker_letv.dockerOpers import Docker_Opers
 
@@ -165,5 +165,6 @@ class IpOpers(object):
                 zkOper.unLock_assign_ip(lock)
                 
             zkOper.close()
+            
         return ip_list
 

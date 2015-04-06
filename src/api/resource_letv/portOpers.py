@@ -3,11 +3,9 @@ Created on 2015-2-8
 
 @author: asus
 '''
-import logging
-
 from zk.zkOpers import ZkOpers
 from utils.exceptions import CommonException
-from utils.autoutil import nc_ip_port_available
+from utils import nc_ip_port_available
 
 class PortOpers(object):
     '''

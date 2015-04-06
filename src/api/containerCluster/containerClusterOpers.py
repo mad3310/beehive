@@ -7,9 +7,9 @@ Created on Sep 8, 2014
 @author: root
 '''
 import random, re
-import logging, traceback
+import logging
 
-from utils.autoutil import getHostIp, http_get
+from utils import getHostIp, http_get
 from tornado.options import options
 from common.abstractContainerOpers import Abstract_Container_Opers
 from utils.exceptions import UserVisiableException
@@ -72,7 +72,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
 
     def destory(self, containerClusterName):
         if not containerClusterName:
-            raise UserVisiableException('param not correct, no containerClusterName param')
+            raise UserVisiableException('no containerClusterName param')
         
         zkOper = ZkOpers()
         try:
@@ -81,7 +81,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
             zkOper.close()
         
         if not exists:
-            raise UserVisiableException('containerCluster %s not existe, no need to remove' % containerClusterName)
+            raise UserVisiableException('containerCluster %s not existed, no need to remove' % containerClusterName)
         
         containerCluster_destroy_action = ContainerCluster_destroy_Action(containerClusterName)
         containerCluster_destroy_action.start()
@@ -96,13 +96,24 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         if not exists:
             raise UserVisiableException('containerCluster %s not existed' % containerClusterName)
         
-        if not self.check_cluster_in_zk(containerClusterName):
+        '''
+        @todo: duplicate with above logic? check cluster existed?
+        '''
+        if not self.__check_cluster_in_zk(containerClusterName):
             return {'status': Status.not_exist}
         
+        '''
+        @todo: use container status class
+        '''
         cluster_status = self.component_container_cluster_validator.container_cluster_status_validator(containerClusterName)
         return cluster_status
+    
+    def sync(self):
+        containerCluster_sync_action = ContainerCluster_Sync_Action()
+        clusters = containerCluster_sync_action.sync()
+        return clusters
 
-    def check_cluster_in_zk(self, containerClusterName):
+    def __check_cluster_in_zk(self, containerClusterName):
         zkOper = ZkOpers()
         try:
             container_ip_list = zkOper.retrieve_container_list(containerClusterName)
@@ -111,17 +122,6 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         
         return len(container_ip_list) != 0
         
-    def __get_component_type(self, containerClusterName):
-        zkOper = ZkOpers()
-        try:
-            container_ip_list = zkOper.retrieve_container_list(containerClusterName)
-            container_ip = container_ip_list[0]
-            con_info = zkOper.retrieve_container_node_value(containerClusterName, container_ip)
-        finally:
-            zkOper.close()
-        
-        return con_info.get('type')
-
     def __get_create_info(self, containerClusterName, container_node):
         zkOper = ZkOpers()
         try:
@@ -133,6 +133,9 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         create_info = con.create_info(container_node_value)
         return create_info
 
+    '''
+    @todo: use container status class
+    '''
     def create_status(self, containerClusterName):
         zkOper = ZkOpers()
         try:
@@ -164,6 +167,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
                 for container_node in container_node_list:
                     container_node_value = self.__get_create_info(containerClusterName, container_node)
                     message_list.append(container_node_value)
+                    
                 check_rst_dict.update(succ_rst)
                 check_rst_dict.setdefault('containers', message_list)
                 check_rst_dict.setdefault('message', 'check all containers OK!')
@@ -179,20 +183,18 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
             
             return check_rst_dict
 
+    '''
+    @todo: use? unused?
+    '''
     def config(self, conf_dict={}):
-        try:
-            error_msg = ''
-            logging.info('config args: %s' % conf_dict)
-            
-            if 'servers' in conf_dict:
-                error_msg = self.__update_white_list(conf_dict)
-            else:
-                error_msg = 'the key of the params is not correct'
-        except:
-            error_msg = str( traceback.format_exc() )
-            logging.error( error_msg )
-        finally:
-            return error_msg
+        error_msg = ''
+        logging.info('config args: %s' % conf_dict)
+        
+        if 'servers' in conf_dict:
+            error_msg = self.__update_white_list(conf_dict)
+        else:
+            error_msg = 'the key of the params is not correct'
+        return error_msg
 
     def __update_white_list(self, conf_dict):
         error_msg = ''
@@ -218,17 +220,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         finally:
             zkOper.close()
             
-        return error_msg      
-
-    def __rewrite_conf_info(self, conf_dict, conf_record):
-        for key, value in conf_dict.items():
-            if key == 'mem_limit':
-                value = eval(value)
-            if key in conf_record:
-                conf_record[key] = value
-            else:
-                conf_record.setdefault(key, value)
-        return conf_record
+        return error_msg
 
     def get_clusters_zk(self):
         zkOper = ZkOpers()
@@ -241,6 +233,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         for cluster_name in cluster_name_list:
             cluster_info_dict = self.get_cluster_zk(cluster_name)
             clusters_zk_info.setdefault(cluster_name, cluster_info_dict)
+            
         return clusters_zk_info
 
     def get_cluster_zk(self, cluster_name):
@@ -280,23 +273,40 @@ class ContainerCluster_destroy_Action(ContainerCluster_Action_Base):
     def __init__(self, containerClusterName):
         super(ContainerCluster_destroy_Action, self).__init__(containerClusterName, 'remove')
 
-
-class GetLastestClustersInfo(object):
-    """
-        webportal do info sync every 10 minutes,
-        then interface will invoke this class
-    """
+'''
+@todo: can use scheduler replace this request?
+'''
+class ContainerCluster_Sync_Action(object):
+    
     def __init__(self):
         '''
         Constructor
         '''
         
-    def get_res(self):
+    def sync(self):
         host_ip = self.__random_host_ip()
+        '''
+        @todo: why invoke the update and get containerCluster infos?
+        '''
         self._get(host_ip, '/serverCluster/update')
-        res = self._get(host_ip, '/containerCluster/info')
-        logging.info('res : %s' % str(res) )
-        return self.__reget_res(res)
+        res = self._get(host_ip, '/containerCluster')
+        logging.info('res : %s' % str(res))
+        
+        clusters = []
+        for cluster_name, nodes in res.items():
+            cluster, nodeInfo = {}, []
+            cluster_exist = self.__get_cluster_status(nodes)
+            cluster.setdefault('status', cluster_exist)
+            cluster.setdefault('clusterName', cluster_name)
+            for _,node_value in nodes.items():
+                create_info = node_value.get('create_info')
+                con = Container()
+                create_info = con.create_info(create_info)
+                nodeInfo.append(create_info)
+            cluster.setdefault('nodeInfo', nodeInfo)
+            clusters.append(cluster)
+            
+        return clusters
     
     def __random_host_ip(self):
         zkOper = ZkOpers()
@@ -319,22 +329,9 @@ class GetLastestClustersInfo(object):
         ret = http_get(uri, auth_username = adminUser, auth_password = adminPasswd)
         return ret.get('response')
 
-    def __reget_res(self, res):
-        clusters = []
-        for cluster_name, nodes in res.items():
-            cluster, nodeInfo = {}, []
-            cluster_exist = self.__get_cluster_status(nodes)
-            cluster.setdefault('status', cluster_exist)
-            cluster.setdefault('clusterName', cluster_name)
-            for _,node_value in nodes.items():
-                create_info = node_value.get('create_info')
-                con = Container()
-                create_info = con.create_info(create_info)
-                nodeInfo.append(create_info)
-            cluster.setdefault('nodeInfo', nodeInfo)
-            clusters.append(cluster)
-        return clusters
-    
+    '''
+    @todo: use container status class
+    '''
     def __get_cluster_status(self, nodes):
         n = 0
         for _,container_info in nodes.items():

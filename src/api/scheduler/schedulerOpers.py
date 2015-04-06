@@ -32,7 +32,6 @@ class SchedulerOpers(object):
         
            action_timeout: default monitor timeout
         """
-        
         if action_timeout > 0:
             _monitor_async_t = PeriodicCallback(self.__create_worker_check_monitor,
                                                 action_timeout * 1000)
