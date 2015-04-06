@@ -12,9 +12,15 @@ from zk.zkOpers import ZkOpers
 from tornado.options import options
 from utils import http_get
 from utils.exceptions import CommonException
+from resource_letv.ipOpers import IpOpers
+from resource_letv.portOpers import PortOpers
 
 
 class Resource(object):
+    
+    ipOpers = IpOpers()
+    
+    portOpers = PortOpers()
     
     def __init__(self):
         '''
@@ -132,3 +138,16 @@ class Resource(object):
             resource_result.setdefault('disk', host_disk_can_be_used)
             
         return resource_result
+    
+    def retrieve_ip_port_resource(self, host_ip_list, component_container_cluster_config):
+        containerCount = component_container_cluster_config.nodeCount
+        _network_mode = component_container_cluster_config.network_mode 
+        
+        ip_port_resource_list = []
+        if 'ip' == _network_mode:
+            ip_port_resource_list = self.ipOpers.retrieve_ip_resource(containerCount)
+        elif 'bridge' == _network_mode:
+            ports = component_container_cluster_config.ports
+            ip_port_resource_list = self.portOpers.retrieve_port_resource(host_ip_list, len(ports))
+            
+        return ip_port_resource_list

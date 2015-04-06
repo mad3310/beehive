@@ -107,7 +107,7 @@ class Container_Opers(Abstract_Container_Opers):
         return return_result
 
     def manager_status_validate(self, component_type, container_name):
-        return self.component_manager_status_validator.start_status_validator(component_type, container_name) 
+        return self.component_manager_status_validator.validate_manager_status_for_container(component_type, container_name) 
 
     def get_container_ip_from_container_name(self, cluster, container_name):
         con_ip = ''

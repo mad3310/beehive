@@ -42,6 +42,7 @@ class MclusterManager(BaseComponentManager):
     def manager_status(self, container_name = None):
         if container_name is None:
             return False
+        
         self.__start(container_name)
         time.sleep(1)
         return self.__get_stat(container_name)
