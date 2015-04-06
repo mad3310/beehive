@@ -17,13 +17,13 @@ from common.abstractAsyncThread import Abstract_Async_Thread
 from utils import getHostIp
 from status.status_enum import Status
 from state.stateOpers import StateOpers
+from resource_letv.serverResourceOpers import Server_Res_Opers
 
 
 class Server_Opers(object):
     '''
     classdocs
     '''
-    
     container_opers = Container_Opers()
     
     '''
@@ -31,6 +31,8 @@ class Server_Opers(object):
     whether associated method should be move them into container opers?
     '''
     docker_opers = Docker_Opers()
+    
+    server_res_opers = Server_Res_Opers()
     
     def update(self):
         host_ip = getHostIp()
@@ -116,6 +118,44 @@ class Server_Opers(object):
             load.setdefault('mysql_mount', mysql_mnt_size)
             result.setdefault(container, load)
         return result
+    
+    def write_usable_resource_to_zk(self, component_container_cluster_config):
+        server_res = self.server_res_opers.retrieve_host_stat()
+        '''
+            get host usable memory and the condition to create containers
+        '''
+        host_mem_limit = component_container_cluster_config.mem_free_limit
+        host_mem_can_be_used = float(server_res["mem_res"]["free"]) - host_mem_limit/(1024*1024)
+        logging.info('memory: %s' % (host_mem_can_be_used))
+
+        _mem_limit = component_container_cluster_config.mem_limit
+        container_mem_limit = _mem_limit/(1024*1024)
+        mem_condition = host_mem_can_be_used > container_mem_limit
+        
+        '''
+            get host usable disk and the condition to create containers
+        '''
+        used_server_disk = server_res['server_disk']['used']
+        total_server_disk = server_res['server_disk']['total']
+        
+        host_disk_usage_limit = component_container_cluster_config.disk_usage
+        host_disk_can_be_used_limit = host_disk_usage_limit * total_server_disk
+        host_disk_can_be_used = host_disk_can_be_used_limit - used_server_disk
+        logging.info('disk: %s' % (host_disk_can_be_used))
+        disk_condition = host_disk_can_be_used > 0
+        
+        resource_info = {}
+        if mem_condition and disk_condition:
+            resource_info.setdefault('memory', host_mem_can_be_used)
+            resource_info.setdefault('disk', host_disk_can_be_used)
+        
+        zkOper = ZkOpers()
+        try:
+            host_ip = getHostIp()
+            zkOper.writeDataNodeResource(host_ip, resource_info)
+        finally:
+            zkOper.close()
+        
 
 
 class ServerUpdateAction(Abstract_Async_Thread):
@@ -214,12 +254,7 @@ class ServerUpdateAction(Abstract_Async_Thread):
 
     def _write_container_into_zk(self, container_name, create_info):
         container_stat = self.container_opers.get_container_stat(container_name)
-        
-        zkOper = ZkOpers()
-        try:
-            zkOper.write_container_node_info(container_stat, create_info)
-        finally:
-            zkOper.close()
+        self.container_opers.write_container_node_info(container_stat, create_info)
         
 
     def _get_container_info_as_zk(self, container_name):

@@ -8,7 +8,7 @@ import logging
 from tornado.web import asynchronous
 from base import APIHandler
 from server.serverOpers import Server_Opers
-from resource_letv.resourceOpers import Res_Opers
+from resource_letv.serverResourceOpers import Server_Res_Opers
 from utils.exceptions import HTTPAPIError
 from tornado_letv.tornado_basic_auth import require_basic_auth
 
@@ -28,18 +28,19 @@ class UpdateServerHandler(APIHandler):
 
 
 class CollectServerResHandler(APIHandler):
-    """
-    update server container 
-    """
-    _logger = logging.getLogger("process_info")
-    res_opers = Res_Opers()
+    _server_res_opers = Server_Res_Opers()
     
+    _server_opers = Server_Opers()
+    
+    # eg. curl --user root:root -d '' http://localhost:8888/server/resource
+    @asynchronous
+    def post(self):
+        self._server_opers.write_usable_resource_to_zk(component_container_cluster_config)
     
     # eg. curl http://localhost:8888/server/resource
     @asynchronous
     def get(self):
-        
-        server_res = self.res_opers.retrieve_host_stat()
+        server_res = self._server_res_opers.retrieve_host_stat()
         self.finish(server_res)
 
 

@@ -196,6 +196,30 @@ class Container_Opers(Abstract_Container_Opers):
             zkOper.close()
         
         return container_info.get('hostIp')
+    
+    def write_container_node_info_to_zk(self, container_stat, containerProps):
+        
+        inspect = containerProps.get('inspect')
+        is_use_ip =  containerProps.get('isUseIp')
+        con = Container(inspect=inspect)
+        container_name = con.name()
+        cluster = con.cluster(container_name)
+        logging.info('get container cluster :%s' % cluster)
+        if is_use_ip:
+            container_ip = con.ip()
+            logging.info('get container ip :%s' % container_ip)
+            if not (container_ip and cluster):
+                raise CommonException('get container ip or cluster name failed, not write this info, inspect:%s' % (inspect))
+            
+            container_node = container_ip
+        else:
+            container_node = container_name
+            
+        zkOper = ZkOpers()
+        try:
+            zkOper.write_container_node_info(cluster, container_node, container_stat, containerProps)
+        finally:
+            zkOper.close()
 
 
 class Container_create_action(Abstract_Async_Thread):
@@ -255,11 +279,7 @@ class Container_create_action(Abstract_Async_Thread):
         container_node_info = self._get_container_info()
         logging.info('get container info: %s' % str(container_node_info))
         
-        zkOper = ZkOpers()
-        try:
-            zkOper.write_container_node_info(Status.started, container_node_info)
-        finally:
-            zkOper.close()
+        self.container_opers.write_container_node_info_to_zk(Status.started, container_node_info)
 
     def __make_mount_dir(self):
         binds = self.docker_model.binds

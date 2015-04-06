@@ -18,6 +18,7 @@ from utils.configFileOpers import ConfigFileOpers
 from tornado.gen import engine, Task
 from tornado.httpclient import HTTPRequest, AsyncHTTPClient
 from utils.exceptions import CommonException
+from tornado.gen import Callback, Wait
 
 confOpers = ConfigFileOpers()
 
@@ -200,6 +201,45 @@ def async_http_post(url, body={}, _connect_timeout=40.0, _request_timeout=40.0, 
         logging.info('POST result :%s' % str(return_dict))
     finally:
         async_client.close()
+        
+        
+@engine
+def dispatch_muliti_task(request_ip_port_params_list, uri, http_method):
+    http_client = AsyncHTTPClient()
+    _error_record_dict = {}
+    adminUser, adminPasswd = _retrieve_userName_passwd()
+    try:
+        _key_sets = set()
+        for (req_ip, req_port, params) in request_ip_port_params_list:
+            requesturl = "http://%s:%s%s" % (req_ip, req_port, uri)
+            logging.info('requesturi: %s' % requesturl)
+            request = HTTPRequest(url=requesturl, method=http_method, body=urllib.urlencode(params), \
+                                  connect_timeout=40, request_timeout=40, auth_username=adminUser, auth_password=adminPasswd)
+            
+            callback_key = "%s_%s_%s" % (uri, req_ip, req_port)
+            _key_sets.add(callback_key)
+            http_client.fetch(request, callback=(yield Callback(callback_key)))
+        
+        for callback_key in _key_sets:
+            response = yield Wait(callback_key)
+            
+            if response.error:
+                return_result = False
+                error_record_msg = "remote access,the key:%s,error message:%s" % (callback_key,response.error)
+            else:
+                return_result = response.body.strip()
+            
+            if cmp('false', return_result) == 0:
+                callback_key_ip = callback_key.split("_")[-1]
+                _error_record_dict.setdefault(callback_key_ip, error_record_msg)
+
+        if len(_error_record_dict) > 0:
+            raise CommonException('request occurs error! detail: %s' % str(_error_record_dict))
+        else:
+            logging.info('request finished all!')
+                
+    finally:
+        http_client.close()
 
 def get_containerClusterName_from_containerName(container_name):
     containerClusterName = ''

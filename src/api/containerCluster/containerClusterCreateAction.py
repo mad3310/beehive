@@ -79,7 +79,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         
         self.__create_container_cluser_info_to_zk(_network_mode, _component_container_cluster_config)
         
-        host_ip_list = self.resource.elect_servers(_component_container_cluster_config)
+        host_ip_list = self.resource.retrieve_best_resource_servers(_component_container_cluster_config)
         
         is_res_verify = _component_container_cluster_config.is_res_verify
         if is_res_verify:
@@ -136,7 +136,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         uri = 'http://localhost:%s%s' % (options.port, uri_get)
         
         ret = http_get(uri, auth_username=adminUser, auth_password=adminPasswd)
-        logging.info('get cluster is started result :%s, type:%s' % (str(ret), type(ret)) )
+        logging.info('get cluster is started result :%s, type:%s' % (str(ret), type(ret)))
         status = ret.get('response').get('status')
         return status == Status.started
 

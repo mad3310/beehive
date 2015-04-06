@@ -10,9 +10,7 @@ Created on 2013-7-11
 import logging
 import threading
 
-from docker_letv.dockerOpers import Docker_Opers
 from kazoo.client import KazooClient
-from container.container_module import Container
 from utils import ping_ip_available, nc_ip_port_available
 from utils.decorators import singleton
 
@@ -23,8 +21,6 @@ class ZkOpers(object):
     zk = None
     
     rootPath = "/letv/docker"
-    
-    docker_opers = Docker_Opers()
     
     '''
     classdocs
@@ -89,14 +85,24 @@ class ZkOpers(object):
             return True
         return False
     
-
+    def writeDataNodeResource(self, ip_address, resource_info):
+        _clusterUUID = self.getClusterUUID()
+        _path = "%s/%s/dataNode/%s/resource" % (self.rootPath, _clusterUUID, ip_address)
+        self.zk.ensure_path(_path)
+        self.zk.set(_path, str(resource_info))
+        
+    def retrieveDataNodeResource(self, ip_address):
+        _clusterUUID = self.getClusterUUID()
+        _path = "%s/%s/dataNode/%s/resource" % (self.rootPath, _clusterUUID, ip_address)
+        resultValue = self._retrieveSpecialPathProp(_path)
+        return resultValue
     
     
     
     
     '''
     *************************************container cluster****************************************
-    '''      
+    '''
     
     def retrieve_cluster_list(self):
         clusterUUID = self.getClusterUUID()
@@ -142,43 +148,20 @@ class ZkOpers(object):
         """write container node value not write status value
         
         """
-        
         clusterUUID = self.getClusterUUID()
         path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + cluster + "/" + container_ip
         self.zk.ensure_path(path)
         self.zk.set(path, str(containerProps))
 
-    def write_container_node_info(self, status, containerProps):
+    def write_container_node_info(self, cluster, container_node, status, containerProps):
         """write container value and status value
          
         """
-         
-        '''
-        @todo: put other issues to containerOpers or containerClusterOpers?
-        '''
-        inspect = containerProps.get('inspect')
-        is_use_ip =  containerProps.get('isUseIp')
-        con = Container(inspect=inspect)
-        container_name = con.name()
-        cluster = con.cluster(container_name)
-        logging.info('get container cluster :%s' % cluster)
-        if is_use_ip:
-            container_ip = con.ip()
-            logging.info('get container ip :%s' % container_ip)
-            if not (container_ip and cluster):
-                '''
-                @todo: throw exception replace the return
-                '''
-                logging.error('get container ip or cluster name failed, not write this info')
-                logging.info('inspect : %s' % str(inspect) )
-                return
-            container_node = container_ip
-        else:
-            container_node = container_name
         clusterUUID = self.getClusterUUID()
         path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + cluster + "/" + container_node
         self.zk.ensure_path(path)
         self.zk.set(path, str(containerProps))
+        
         stat = {}
         stat.setdefault('status', status)
         stat.setdefault('message', '')
@@ -196,11 +179,11 @@ class ZkOpers(object):
         path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + cluster + "/" + container_ip +"/status"
         self.zk.ensure_path(path)
         self.zk.set(path, str(record))
-
-    
+        
+        
     '''
     **************************************monitor status**************************************************
-    '''    
+    '''
     '''
     @todo: every container_node has status item, what is the monitor_status?
     '''
@@ -254,8 +237,25 @@ class ZkOpers(object):
         path = self.rootPath + "/" + clusterUUID + "/config/serversWhiteList/" + server_ip
         self.zk.ensure_path(path) 
         self.zk.delete(path)
-
-
+        
+    def retrieve_available_item(self):
+        clusterUUID = self.getClusterUUID()
+        path = "%s/%s/config/serversOrderByResource" % (self.rootPath, clusterUUID)
+        result = self._retrieveSpecialPathProp(path)
+        return result
+    
+    def retrieve_servers_order_by_resource(self, available_item):
+        clusterUUID = self.getClusterUUID()
+        path = "%s/%s/config/serversOrderByResource/%s" % (self.rootPath, clusterUUID, available_item)
+        self.zk.ensure_path(path)
+        data_node_ip_list = self._return_children_to_list(path)
+        return data_node_ip_list
+    
+    def write_servers_order_by_resource(self, available_item, data_node_ip_list):
+        clusterUUID = self.getClusterUUID()
+        path = "%s/%s/config/serversOrderByResource/%s" % (self.rootPath, clusterUUID, available_item)
+        self.zk.ensure_path(path)
+        self.zk.set(path, data_node_ip_list)
 
 
 

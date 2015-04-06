@@ -16,7 +16,7 @@ from utils.invokeCommand import InvokeCommand
 from docker_letv.dockerOpers import Docker_Opers
 
 
-class Res_Opers():
+class Server_Res_Opers():
     '''
     classdocs
     '''
