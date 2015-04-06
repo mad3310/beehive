@@ -5,7 +5,7 @@ import json
 
 from zk.zkOpers import ZkOpers
 from utils.configFileOpers import ConfigFileOpers
-from utils.autoutil import getHostIp
+from utils import getHostIp
 from tornado.options import options
 
 
