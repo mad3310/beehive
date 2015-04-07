@@ -17,9 +17,7 @@ class GbalancerContainerClusterConfig(BaseContainerClusterConfig):
         super(GbalancerContainerClusterConfig, self).__init__(params)
         
         nodeCount = params.get('nodeCount')
-        self.nodeCount = int(nodeCount) if nodeCount else 2
+        self.nodeCount = int(nodeCount) if nodeCount else 1
         image = params.get('image')
-        #self.image = image if image else 'letv/mcluster_vip_gbalancer:0.0.3'
-        self.image = image if image else 'letv/nginx:0.0.8'
-        lib_modules_bind = '/lib/modules/2.6.32-925.431.23.3.letv.el6.x86_64'
-        self.mount_dir = {lib_modules_bind:lib_modules_bind}
+        self.image = image if image else '10.160.140.32:5000/lihanlin1/cbase:V2'
+        self.mount_dir = {'/srv':'/srv/tmp/c1/'}

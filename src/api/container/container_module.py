@@ -2,6 +2,7 @@
 import re
 
 from utils.autoutil import *
+from tornado.options import options
 
 
 class Container():
@@ -81,10 +82,14 @@ class Container():
             if host_port_ip:
                 _info = {}
                 port, protocol = con_port_protocol.split('/')
+                _info.setdefault('type', 'user')
+                if port == str(options.port):
+                    _info.update({'type': 'manager'})
                 host_port = host_port_ip[0].get('HostPort')
                 _info.setdefault('containerPort', port)
                 _info.setdefault('protocol', protocol)
                 _info.setdefault('hostPort', host_port)
+                
                 result.append(_info)
         return result
 
@@ -92,6 +97,7 @@ class Container():
         create_info = {}
         if isinstance(container_node_value, dict):
             self.inspect = container_node_value.get('inspect')
+            isUseIp = container_node_value.get('isUseIp')
             create_info.setdefault('hostIp', container_node_value.get('hostIp') )
             create_info.setdefault('type', container_node_value.get('type') )
             container_name = self.name()
@@ -102,5 +108,6 @@ class Container():
             create_info.setdefault('mountDir', str(self.volumes()) )
             create_info.setdefault('ipAddr', self.ip() )
             create_info.setdefault('containerName', self.name() )
-            create_info.setdefault('port_bindings', self.port_bindings())
+            if not isUseIp:
+                create_info.setdefault('port_bindings', self.port_bindings())
         return create_info
