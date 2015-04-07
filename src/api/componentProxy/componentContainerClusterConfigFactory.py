@@ -7,6 +7,7 @@ from componentProxy.db.mysql.mysqlContainerClusterConfig import MysqlContainerCl
 from componentProxy.loadbalance.gbalancer.gbalancerContainerClusterConfig import GbalancerContainerClusterConfig
 from componentProxy.webcontainer.nginx.nginxContainerClusterConfig import NginxContainerClusterConfig
 from componentProxy.webcontainer.jetty.jettyContainerClusterConfig import JettyContainerClusterConfig
+from componentProxy.store.cbase.cbaseContainerClusterConfig import CbaseContainerClusterConfig
 
 
 class ComponentContainerClusterConfigFactory(object):
@@ -31,6 +32,8 @@ class ComponentContainerClusterConfigFactory(object):
             config = NginxContainerClusterConfig(args)
         elif "jetty" == _component_type:
             config = JettyContainerClusterConfig(args)
+        elif "cbase" == _component_type:
+            config = CbaseContainerClusterConfig(args)
         else:
             pass
             

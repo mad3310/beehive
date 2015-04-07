@@ -8,6 +8,7 @@ from componentProxy.db.mysql.mclusterOper import MclusterManager
 from componentProxy.loadbalance.gbalancer.gbalancerOper import GbalancerManager
 from componentProxy.webcontainer.nginx.nginxOper import NginxManager
 from componentProxy.webcontainer.jetty.jettyOper import JettyManager
+from componentProxy.store.cbase.cbaseOper import CbaseManager
 
 class ComponentManagerStatusValidator(object):
     '''
@@ -29,6 +30,8 @@ class ComponentManagerStatusValidator(object):
             manager_validator = NginxManager()
         elif "jetty" == component_type:
             manager_validator = JettyManager()
+        elif "cbase" == component_type:
+            manager_validator = CbaseManager()
         else:
             manager_validator = None
         

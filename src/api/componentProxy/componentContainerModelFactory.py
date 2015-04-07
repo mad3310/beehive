@@ -7,6 +7,7 @@ from componentProxy.db.mysql.mysqlContainerModelCreator import MySQLContainerMod
 from componentProxy.webcontainer.nginx.nginxContainerModelCreator import NginxContainerModelCreator
 from componentProxy.loadbalance.gbalancer.gbalancerContainerModelCreator import GbalancerContainerModelCreator
 from componentProxy.webcontainer.jetty.jettyContainerModelCreator import JettyContainerModelCreator
+from componentProxy.store.cbase.cbaseContainerModelCreator import CbaseContainerModelCreator
 
 
 class ComponentContainerModelFactory(object):
@@ -31,6 +32,8 @@ class ComponentContainerModelFactory(object):
             creator = NginxContainerModelCreator()
         elif "jetty" == _component_type:
             creator = JettyContainerModelCreator()
+        elif "cbase" == _component_type:
+            creator = CbaseContainerModelCreator()
         else:
             pass
         

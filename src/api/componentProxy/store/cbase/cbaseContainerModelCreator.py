@@ -8,7 +8,7 @@ from componentProxy.abstractContainerModelCreator import AbstractContainerModelC
 from container.container_model import Container_Model
 from utils import _get_gateway_from_ip
 
-class GbalancerContainerModelCreator(AbstractContainerModelCreator):
+class CbaseContainerModelCreator(AbstractContainerModelCreator):
     '''
     classdocs
     '''

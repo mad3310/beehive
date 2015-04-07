@@ -3,10 +3,10 @@
 from componentProxy.baseComponentOpers import BaseComponentManager
 
 
-class GbalancerManager(BaseComponentManager):
+class CbaseManager(BaseComponentManager):
 
     def __init__(self):
-        super(GbalancerManager, self).__init__('cbase-manager')
+        super(CbaseManager, self).__init__('cbase-manager')
     
     def manager_status(self, container_name = None):
         return True
