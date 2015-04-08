@@ -24,10 +24,11 @@ class ComponentManagerStatusValidator(object):
         
     def start_status_validator(self, component_type, container_name):
         _check_result = False
+        manager_validator = None
         if "mclusternode" == component_type:
             manager_validator = MclusterManager()
         
-        if "mclustervip" == component_type:
+        elif "mclustervip" == component_type:
             manager_validator = MclustervipManager()
         
         elif "gbalancer" == component_type:
