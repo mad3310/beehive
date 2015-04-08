@@ -8,6 +8,7 @@ from componentProxy.loadbalance.gbalancer.gbalancerContainerClusterConfig import
 from componentProxy.webcontainer.nginx.nginxContainerClusterConfig import NginxContainerClusterConfig
 from componentProxy.webcontainer.jetty.jettyContainerClusterConfig import JettyContainerClusterConfig
 from componentProxy.store.cbase.cbaseContainerClusterConfig import CbaseContainerClusterConfig
+from componentProxy.loadbalance.mclustervip.mclustervipContainerClusterConfig import MclustervipContainerClusterConfig
 
 
 class ComponentContainerClusterConfigFactory(object):
@@ -24,16 +25,24 @@ class ComponentContainerClusterConfigFactory(object):
     def retrieve_config(self, args):
         config = None
         _component_type = args.get('componentType')
-        if "mclustervip" == _component_type:
+        if "gbalancer" == _component_type:
             config = GbalancerContainerClusterConfig(args)
+        
         elif "mclusternode" == _component_type:
             config = MysqlContainerClusterConfig(args)
+        
+        elif "mclustervip" == _component_type:
+            config = MclustervipContainerClusterConfig(args)
+        
         elif "nginx" == _component_type:
             config = NginxContainerClusterConfig(args)
+        
         elif "jetty" == _component_type:
             config = JettyContainerClusterConfig(args)
+        
         elif "cbase" == _component_type:
             config = CbaseContainerClusterConfig(args)
+        
         else:
             pass
             

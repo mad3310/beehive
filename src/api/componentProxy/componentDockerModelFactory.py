@@ -8,6 +8,7 @@ from componentProxy.loadbalance.gbalancer.gbalancerDockerModelCreator import Gba
 from componentProxy.webcontainer.nginx.nginxDockerModelCreator import NginxDockerModelCreator
 from componentProxy.webcontainer.jetty.jettyDockerModelCreator import JettyDockerModelCreator
 from componentProxy.store.cbase.cbaseDockerModelCreator import CbaseDockerModelCreator
+from componentProxy.loadbalance.mclustervip.mclustervipDockerModelCreator import MclustervipDockerModelCreator
 
 
 class ComponentDockerModelFactory(object):
@@ -23,8 +24,11 @@ class ComponentDockerModelFactory(object):
     def create(self, _component_type, arg_dict):
         if 'mclusternode' == _component_type:
             creator = MysqlDockerModelCreator()
-            
+
         elif 'mclustervip' == _component_type:
+            creator = MclustervipDockerModelCreator()
+            
+        elif 'gbalancer' == _component_type:
             creator = GbalancerDockerModelCreator()
         
         elif 'nginx' == _component_type:

@@ -8,7 +8,7 @@ from componentProxy.abstractContainerModelCreator import AbstractContainerModelC
 from container.container_model import Container_Model
 from utils import _get_gateway_from_ip
 
-class GbalancerContainerModelCreator(AbstractContainerModelCreator):
+class MclustervipContainerModelCreator(AbstractContainerModelCreator):
     '''
     classdocs
     '''
@@ -41,7 +41,7 @@ class GbalancerContainerModelCreator(AbstractContainerModelCreator):
             container_model.volumes = volumes
             container_model.binds = binds
             container_model.lxc_conf = component_container_cluster_config.lxc_conf
-            container_model.component_type = 'gbalancer'
+            container_model.component_type = 'mclustervip'
             container_model.image = component_container_cluster_config.image
             container_model.mem_limit = component_container_cluster_config.mem_limit
             gateway = _get_gateway_from_ip(container_ip_list[0])

@@ -8,6 +8,7 @@ from componentProxy.webcontainer.nginx.nginxContainerModelCreator import NginxCo
 from componentProxy.loadbalance.gbalancer.gbalancerContainerModelCreator import GbalancerContainerModelCreator
 from componentProxy.webcontainer.jetty.jettyContainerModelCreator import JettyContainerModelCreator
 from componentProxy.store.cbase.cbaseContainerModelCreator import CbaseContainerModelCreator
+from componentProxy.loadbalance.mclustervip.mclustervipContainerModelCreator import MclustervipContainerModelCreator
 
 
 class ComponentContainerModelFactory(object):
@@ -24,16 +25,24 @@ class ComponentContainerModelFactory(object):
     def create(self, args={}):
         _component_type = args.get('componentType')
         
-        if "mclustervip" == _component_type:
+        if "gbalancer" == _component_type:
             creator = GbalancerContainerModelCreator()
+            
         elif "mclusternode" == _component_type:
             creator = MySQLContainerModelCreator()
+        
+        elif "mclustervip" == _component_type:
+            creator = MclustervipContainerModelCreator()
+        
         elif "nginx" == _component_type:
             creator = NginxContainerModelCreator()
+            
         elif "jetty" == _component_type:
             creator = JettyContainerModelCreator()
+            
         elif "cbase" == _component_type:
             creator = CbaseContainerModelCreator()
+            
         else:
             pass
         
