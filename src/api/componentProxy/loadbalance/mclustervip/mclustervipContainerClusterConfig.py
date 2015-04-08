@@ -17,6 +17,6 @@ class MclustervipContainerClusterConfig(BaseContainerClusterConfig):
         super(MclustervipContainerClusterConfig, self).__init__(params)
         
         nodeCount = params.get('nodeCount')
-        self.nodeCount = int(nodeCount) if nodeCount else 2
+        self.nodeCount = int(nodeCount) if nodeCount else 1
         image = params.get('image')
         self.image = image if image else 'letv/mcluster_vip_gbalancer:0.0.3'
