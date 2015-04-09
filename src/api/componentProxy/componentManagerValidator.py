@@ -26,7 +26,7 @@ class ComponentManagerStatusValidator(object):
 
     def validate_manager_status_for_container(self, component_type, container_name):
         _check_result = False
-        _component_path = _path.get('_component_type')
+        _component_path = _path.get(component_type)
 
         module_path = '%s.%s.%sOper' % (_component_path, component_type, component_type)
         
