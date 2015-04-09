@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
-
 '''
 Created on Sep 8, 2014
 
@@ -8,7 +7,6 @@ Created on Sep 8, 2014
 '''
 import kazoo
 import logging
-import traceback
 import json
 
 from tornado.web import asynchronous
@@ -20,7 +18,8 @@ from base import APIHandler
 from utils import _retrieve_userName_passwd
 from utils.exceptions import HTTPAPIError
 from container.containerOpers import Container_Opers
-from containerCluster.containerClusterOpers import ContainerCluster_Opers, GetLastestClustersInfo
+from containerCluster.containerClusterOpers import ContainerCluster_Opers
+from zk.zkOpers import ZkOpers
 
 
 @require_basic_auth
@@ -28,23 +27,34 @@ class GatherClusterNetworkioHandler(APIHandler):
     '''
     classdocs
     '''
-    
+    '''
+    @todo: 
+    1. same as GatherClusterNetworkioHandler, GatherClusterMemeoyHandler, GatherClusterCpuacctHandler, need abstract to base logic.
+    2. use scheduler to put these data to zk, these interface only retrieve data from zk and returned.
+    '''
     container_opers = Container_Opers()
     
     # eg . curl --user root:root -X GET http://10.154.156.150:8888/container/stat/d-mcl-test_jll-n-1/networkio
     @asynchronous
     @engine
     def get(self, cluster):
-        logging.info(cluster)
-        exists = self.zkOper.check_containerCluster_exists(cluster)
-        if not exists:
-            content = 'container cluster %s not exist, please check your cluster name' % cluster
-            message = {'message' : content}
-            self.finish(message)
-            return
+        zkOper = ZkOpers()
+        
+        try:
+            exists = zkOper.check_containerCluster_exists(cluster)
+            if not exists:
+                error_message = 'container cluster %s not exist, please check your cluster name' % cluster
+                raise HTTPAPIError(status_code=417, error_detail=error_message,\
+                                    notification = "direct", \
+                                    log_message= error_message,\
+                                    response =  error_message)
+                
+            container_ip_list = zkOper.retrieve_container_list(cluster)
+        finally:
+            zkOper.close()
+        
          
         container_dict, result = {}, {}
-        container_ip_list = self.zkOper.retrieve_container_list(cluster)
         for container_ip in container_ip_list:
             container_name = self.container_opers.get_container_name_from_zk(cluster, container_ip)
             host_ip = self.container_opers.get_host_ip_from_zk(cluster, container_ip)
@@ -80,16 +90,22 @@ class GatherClusterMemeoyHandler(APIHandler):
     @asynchronous
     @engine
     def get(self, cluster):
-        logging.info(cluster)
-        exists = self.zkOper.check_containerCluster_exists(cluster)
-        if not exists:
-            content = 'container cluster %s not exist, please check your cluster name' % cluster
-            message = {'message' : content}
-            self.finish(message)
-            return
+        zkOper = ZkOpers()
+        
+        try:
+            exists = zkOper.check_containerCluster_exists(cluster)
+            if not exists:
+                error_message = 'container cluster %s not exist, please check your cluster name' % cluster
+                raise HTTPAPIError(status_code=417, error_detail=error_message,\
+                                    notification = "direct", \
+                                    log_message= error_message,\
+                                    response =  error_message)
+                
+            container_ip_list = zkOper.retrieve_container_list(cluster)
+        finally:
+            zkOper.close()
         
         container_dict, result = {}, {}
-        container_ip_list = self.zkOper.retrieve_container_list(cluster)
         for container_ip in container_ip_list:
             container_name = self.container_opers.get_container_name_from_zk(cluster, container_ip)
             host_ip = self.container_opers.get_host_ip_from_zk(cluster, container_ip)
@@ -125,17 +141,22 @@ class GatherClusterCpuacctHandler(APIHandler):
     @asynchronous
     @engine
     def get(self, cluster):
-        logging.info(cluster)
-
-        exists = self.zkOper.check_containerCluster_exists(cluster)
-        if not exists:
-            content = 'container cluster %s not exist, please check your cluster name' % cluster
-            message = {'message' : content}
-            self.finish(message)
-            return
+        zkOper = ZkOpers()
+        
+        try:
+            exists = zkOper.check_containerCluster_exists(cluster)
+            if not exists:
+                error_message = 'container cluster %s not exist, please check your cluster name' % cluster
+                raise HTTPAPIError(status_code=417, error_detail=error_message,\
+                                    notification = "direct", \
+                                    log_message= error_message,\
+                                    response =  error_message)
+                
+            container_ip_list = zkOper.retrieve_container_list(cluster)
+        finally:
+            zkOper.close()
 
         container_dict, result = {}, {}
-        container_ip_list = self.zkOper.retrieve_container_list(cluster)
         for container_ip in container_ip_list:
             container_name = self.container_opers.get_container_name_from_zk(cluster, container_ip)
             host_ip = self.container_opers.get_host_ip_from_zk(cluster, container_ip)
@@ -170,7 +191,6 @@ class ContainerClusterHandler(APIHandler):
     @asynchronous
     def post(self):
         args = self.get_all_arguments()
-        logging.info(' args:%s' % str(args))
         
         try:
             self.containerClusterOpers.create(args)
@@ -179,20 +199,38 @@ class ContainerClusterHandler(APIHandler):
                                 notification = "direct", \
                                 log_message= "lock by other thread on assign ip processing",\
                                 response =  "current operation is using by other people, please wait a moment to try again!")
-        return_message = {} 
-        return_message.setdefault("message", "due to create container cluster need a little more times, please wait to finished and email to you, when cluster have started!")
-        self.finish(return_message)
+        result = {} 
+        result.setdefault("message", "due to create container cluster need a little more times, please wait to finished and email to you, when cluster have started!")
+        self.finish(result)
 
     # eg. curl --user root:root -X DELETE http://10.154.156.150:8888/containerCluster?containerClusterName=dh
     def delete(self):
         args = self.get_all_arguments()
         containerClusterName = args.get('containerClusterName')
-        logging.info(' containerClusterName:%s' % containerClusterName)
         self.containerClusterOpers.destory(containerClusterName)
         
-        return_message = {}
-        return_message.setdefault("message", "remove container has been done but need some time, please wait a moment and check the result!")
-        self.finish(return_message)
+        result = {}
+        result.setdefault("message", "delete container has been done but need some time, please wait a moment and check the result!")
+        self.finish(result)
+    
+    #eg. curl --user root:root "http://localhost:8888/containerCluster"
+    #eg. curl --user root:root "http://localhost:8888/containerCluster?containerClusterName='abc'"
+    def get(self):
+        args = self.get_all_arguments()
+        containerClusterName = args.get('containerClusterName')
+        
+        if containerClusterName is not None:
+            clusters_zk_info = self.container_cluster_opers.get_cluster_zk(containerClusterName)
+        else:
+            clusters_zk_info =  self.containerClusterOpers.get_clusters_zk()
+        
+        if not clusters_zk_info:
+            raise HTTPAPIError(status_code=417, error_detail="There is not cluster in zookeeper",\
+                               notification = "direct", \
+                               log_message= "There is not cluster in zookeeper",\
+                               response =  "There is not cluster in zookeeper")
+        
+        self.finish(clusters_zk_info)
 
 
 @require_basic_auth
@@ -203,18 +241,17 @@ class CheckCreateClusterStatusHandler(APIHandler):
     containerClusterOpers = ContainerCluster_Opers()
 
     # eg. curl --user root:root -X GET http://localhost:8888/containerCluster/createStatus/dh
-    def get(self, containerClusterName):        
-        check_result = ''
-        check_result =  self.containerClusterOpers.create_status(containerClusterName)
+    def get(self, containerClusterName):
+        result =  self.containerClusterOpers.create_status(containerClusterName)
         
-        logging.info('check_result : %s, type: %s' % (str(check_result), type(check_result)) )
-        if check_result.get('code') == '000002':
-            error_message = check_result.get('error_msg')
-            raise HTTPAPIError(status_code=579, error_detail=error_message,\
+        logging.info('check_result : %s, type: %s' % (str(result), type(result)))
+        if result.get('code') == '000002':
+            error_message = result.get('error_msg')
+            raise HTTPAPIError(status_code=417, error_detail=error_message,\
                                 notification = "direct", \
                                 log_message= error_message)
         
-        self.finish(check_result)
+        self.finish(result)
 
 
 @require_basic_auth
@@ -226,9 +263,8 @@ class CheckContainerClusterStatusHandler(APIHandler):
     
     # eg. curl --user root:root -X GET http://10.154.156.150:8888/containerCluster/status/dh
     def get(self, containerClusterName):
-        
-        check_result =  self.containerClusterOpers.check(containerClusterName)
-        self.finish(check_result)
+        result = self.containerClusterOpers.check(containerClusterName)
+        self.finish(result)
 
 
 @require_basic_auth
@@ -241,27 +277,20 @@ class ContainerClusterStartHandler(APIHandler):
     # eg. curl --user root:root -d "containerClusterName=dj" http://10.154.156.150:8888/containerCluster/start
     @asynchronous
     def post(self):
-        logging.info('containerClusterName')
         args = self.get_all_arguments()
         containerClusterName = args.get('containerClusterName')
         logging.info('containerClusterName:%s' % containerClusterName)
         if not containerClusterName:
-            raise HTTPAPIError(status_code=400, error_detail="no containerClusterName argument!",\
+            raise HTTPAPIError(status_code=417, error_detail="no containerClusterName argument!",\
                                 notification = "direct", \
                                 log_message= "no containerClusterName argument!",\
                                 response =  "please check params!")
         
-        try:
-            self.containerClusterOpers.start(containerClusterName)
-        except:
-            raise HTTPAPIError(status_code=578, error_detail="start container cluster failed",\
-                                notification = "direct", \
-                                log_message= "start container cluster failed",\
-                                response =  "start container cluster failed, please check!")
+        self.containerClusterOpers.start(containerClusterName)
         
-        massage = {}
-        massage.setdefault("message", "due to start a container cluster need a lot time, please wait and check the result~")
-        self.finish(massage)
+        result = {}
+        result.setdefault("message", "due to start a container cluster need a lot time, please wait and check the result~")
+        self.finish(result)
 
 
 @require_basic_auth
@@ -278,24 +307,16 @@ class ContainerClusterStopHandler(APIHandler):
         containerClusterName = args.get('containerClusterName')
         logging.info('containerClusterName:%s' % containerClusterName)
         if not containerClusterName:
-            raise HTTPAPIError(status_code=400, error_detail="no containerClusterName argument!",\
+            raise HTTPAPIError(status_code=417, error_detail="no containerClusterName argument!",\
                                 notification = "direct", \
                                 log_message= "no containerClusterName argument!",\
                                 response =  "please check params!")
         
-        try:
-            self.containerClusterOpers.stop(containerClusterName)
-        except:
-            logging.error( str(traceback.format_exc()) )
-            raise HTTPAPIError(status_code=578, error_detail="stop container cluster failed",\
-                                notification = "direct", \
-                                log_message= "stop container cluster failed",\
-                                response =  "stop container cluster failed, please check!")
+        self.containerClusterOpers.stop(containerClusterName)
         
-        massage = {}
-        massage.setdefault("message", "due to stop a container cluster need a lot time, please wait and check the result~")
-        self.finish(massage)
-
+        result = {}
+        result.setdefault("message", "due to stop a container cluster need a lot time, please wait and check the result~")
+        self.finish(result)
 
 @require_basic_auth
 class ClusterConfigHandler(APIHandler):
@@ -307,72 +328,29 @@ class ClusterConfigHandler(APIHandler):
         logging.info('config args:%s' % str(args))
         error_msg = self.containerClusterOpers.config(args)
         if error_msg:
-            raise HTTPAPIError(status_code=500, error_detail=error_msg,\
+            raise HTTPAPIError(status_code=417, error_detail=error_msg,\
                                response =  "please check if params correct")
         
-        return_message = {}
-        return_message.setdefault("message", "write config infomation successfully!")
-        self.finish(return_message)
-
-
-@require_basic_auth
-class ContainerClustersInfoHandler(APIHandler):
-    
-    container_cluster_opers = ContainerCluster_Opers()
-    
-    #curl "http://localhost:8888/clusters/info?cluster_name="""
-    #curl "http://localhost:8888/clusters/info?cluster_name="abc""
-    
-    def get(self):
-        
-        clusters_zk_info =  self.container_cluster_opers.get_clusters_zk()
-        
-        if not clusters_zk_info:
-            raise HTTPAPIError(status_code=417, error_detail="There is not cluster in zookeeper",\
-                               notification = "direct", \
-                               log_message= "There is not cluster in zookeeper",\
-                               response =  "There is not cluster in zookeeper")
-        
-        self.finish(clusters_zk_info)
-
-
-@require_basic_auth
-class ContainerClusterInfoHandler(APIHandler):
-    
-    container_cluster_opers = ContainerCluster_Opers()
-    #curl "http://localhost:8888/clusters/info?cluster_name="""
-    #curl "http://localhost:8888/clusters/info?cluster_name="abc""
-    @asynchronous
-    def get(self, containerClusterName):
-        
-        if not containerClusterName:
-            raise HTTPAPIError(status_code=417, error_detail="no containerClusterName argument!",\
-                                notification = "direct", \
-                                log_message= "no containerClusterName argument!",\
-                                response =  "please check params!")
-        
-        
-        cluster_zk_info =  self.container_cluster_opers.get_cluster_zk(containerClusterName)      
-        
-        if not cluster_zk_info:
-            raise HTTPAPIError(status_code=417, error_detail="There is no cluster info in zookeeper",\
-                            notification = "direct", \
-                            log_message= "There is  no cluster info in zookeeper",\
-                            response =  "There is no cluster info in zookeeper")
-
-        self.finish(cluster_zk_info)
+        result = {}
+        result.setdefault("message", "write config infomation successfully!")
+        self.finish(result)
 
 
 @require_basic_auth
 class CheckClusterSyncHandler(APIHandler):
 
-    get_cluster_changes = GetLastestClustersInfo()
+    container_cluster_opers = ContainerCluster_Opers()
     
+    """
+        webportal do info sync every 10 minutes,
+        then interface will invoke this class
+    """
     # eg. curl --user root:root -X GET http://10.154.156.150:8888/containerCluster/sync
     def get(self):
-        res_info =  self.get_cluster_changes.get_res()
-        return_message = {}
-        logging.info('data:%s' % str(res_info))
-        return_message.setdefault('data', res_info)
-        self.finish(return_message)
+        _clusterInfo =  self.container_cluster_opers.sync()
+        logging.info('data:%s' % str(_clusterInfo))
+        
+        result = {}
+        result.setdefault('data', _clusterInfo)
+        self.finish(result)
 

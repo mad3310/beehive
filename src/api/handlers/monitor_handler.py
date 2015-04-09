@@ -7,7 +7,6 @@ Created on 2013-7-21
 '''
 
 import logging
-import traceback
 import json
 
 from base import APIHandler
@@ -17,7 +16,7 @@ from tornado.httpclient import AsyncHTTPClient
 from tornado.options import options
 from tornado_letv.tornado_basic_auth import require_basic_auth
 from server.serverOpers import Server_Opers
-from utils.exceptions import HTTPAPIError
+from zk.zkOpers import ZkOpers
 
 
 # retrieve the status value of all monitor type 
@@ -25,18 +24,22 @@ from utils.exceptions import HTTPAPIError
 class ContainerStatus(APIHandler):
     
     def get(self):
+        zkOper = ZkOpers()
         
-        monitor_types = self.zkOper.retrieve_monitor_type()
-        stat_dict = {}
-        for monitor_type in monitor_types:
-            monitor_status_list = self.zkOper.retrieve_monitor_status_list(monitor_type)
-            
-            monitor_type_sub_dict = {}
-            for monitor_status_key in monitor_status_list:
-                monitor_status_value = self.zkOper.retrieve_monitor_status_value(monitor_type, monitor_status_key)
-                monitor_type_sub_dict.setdefault(monitor_status_key, monitor_status_value)
+        try:
+            monitor_types = zkOper.retrieve_monitor_type()
+            stat_dict = {}
+            for monitor_type in monitor_types:
+                monitor_status_list = zkOper.retrieve_monitor_status_list(monitor_type)
                 
-            stat_dict.setdefault(monitor_type, monitor_type_sub_dict)
+                monitor_type_sub_dict = {}
+                for monitor_status_key in monitor_status_list:
+                    monitor_status_value = zkOper.retrieve_monitor_status_value(monitor_type, monitor_status_key)
+                    monitor_type_sub_dict.setdefault(monitor_status_key, monitor_status_value)
+                    
+                stat_dict.setdefault(monitor_type, monitor_type_sub_dict)
+        finally:
+            zkOper.close()
 
         self.finish(stat_dict)
 
@@ -48,18 +51,10 @@ class CheckServerContainersMemLoad(APIHandler):
     def get(self):
         
         logging.info('server: %s' % self.request.remote_ip)
-        cons_mem_load = {}
-        try:
-            cons_mem_load = self.server_opers.get_all_containers_mem_load()
-        except:
-            logging.error( str( traceback.format_exc() ) )
-            raise HTTPAPIError(status_code=500, error_detail="code error!",\
-                               notification = "direct", \
-                               log_message= "code error!",\
-                               response =  "code error!")
+        cons_mem_load = self.server_opers.get_all_containers_mem_load()
         
         logging.info('get server %s containers memory load :%s' % (self.request.remote_ip, str(cons_mem_load) ) )
-        self.finish( cons_mem_load )
+        self.finish(cons_mem_load)
 
 
 @require_basic_auth
@@ -69,8 +64,15 @@ class CheckServersContainersMemLoad(APIHandler):
     @engine
     def get(self):
         
+        zkOper = ZkOpers()
+        
+        try:
+            server_list = zkOper.retrieve_servers_white_list()
+        finally:
+            zkOper.close()
+            
+        
         async_client = AsyncHTTPClient()
-        server_list = self.zkOper.retrieve_servers_white_list()
         
         server_cons_mem_load = {}
         try:
@@ -82,12 +84,6 @@ class CheckServersContainersMemLoad(APIHandler):
                 body = json.loads(response.body.strip())
                 con_mem_load = body.get('response')
                 server_cons_mem_load.setdefault(server, con_mem_load)
-        except:
-            error_msg = str(traceback.format_exc())
-            raise HTTPAPIError(status_code=500, error_detail="code error!",\
-                               notification = "direct", \
-                               log_message= "code error!",\
-                               response =  {"code error":error_msg} )
         finally:
             async_client.close()
             
@@ -123,10 +119,14 @@ class CheckServersContainersUnderOom(APIHandler):
     @asynchronous
     @engine
     def get(self):
+        zkOper = ZkOpers()
         
+        try:
+            server_list = zkOper.retrieve_servers_white_list()
+        finally:
+            zkOper.close()
+            
         async_client = AsyncHTTPClient()
-        server_list = self.zkOper.retrieve_servers_white_list()
-        
         server_cons_under_oom = {}
         try:
             for server in server_list:
@@ -139,13 +139,7 @@ class CheckServersContainersUnderOom(APIHandler):
                 if not isinstance(under_oom, dict):
                     under_oom = {'serverError': ['code error']}
                 server_cons_under_oom.setdefault(server, under_oom)
-        except:
-            error_msg = str(traceback.format_exc())
-            raise HTTPAPIError(status_code=500, error_detail="code error!",\
-                               notification = "direct", \
-                               log_message= "code error!",\
-                               response = {"code error":error_msg} )
         finally:
             async_client.close()
         
-        self.finish( server_cons_under_oom )
+        self.finish(server_cons_under_oom)

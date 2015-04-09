@@ -7,13 +7,13 @@ from tornado.options import options
 from tornado.gen import Callback, Wait, engine
 from tornado.httpclient import AsyncHTTPClient
 from zk.zkOpers import ZkOpers
+from utils import dispatch_multi_task
 
 class ServerCluster_Opers(object):
     '''
     classdocs
     '''
     
-    zkOper = ZkOpers()
     def __init__(self):
         '''
             constructor
@@ -26,7 +26,13 @@ class ServerCluster_Opers(object):
           
         succ, fail, return_result  = [], [], ''
         key_sets = set()
-        server_list = self.zkOper.retrieve_data_node_list()
+        
+        zkOper = ZkOpers()
+        try:
+            server_list = zkOper.retrieve_data_node_list()
+        finally:
+            zkOper.close()
+        
         try: 
             for server in server_list:
                 requesturi = 'http://%s:%s/inner/server/update' % (server, options.port)
@@ -55,9 +61,24 @@ class ServerCluster_Opers(object):
                     fail.append(callback_key)
         finally:
             http_client.close()
+            
         logging.debug('succ:%s' % str(succ))
         logging.debug('fail:%s' % str(fail))
-
-
-
-
+        
+        
+    def collect_servers_resource_to_zk(self):
+        http_method = 'GET'
+        uri = '/server/resource'
+        
+        zkOper = ZkOpers()
+        try:
+            server_ip_list = zkOper.retrieve_data_node_list()
+        finally:
+            zkOper.close()
+            
+        request_ip_port_params_list = []
+        
+        for server_ip in server_ip_list:
+            request_ip_port_params_list.append((server_ip, options.port, ''))
+        
+        dispatch_multi_task(request_ip_port_params_list, uri, http_method)

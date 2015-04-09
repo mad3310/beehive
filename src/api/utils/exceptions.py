@@ -64,6 +64,14 @@ class ImageNotFoundError(Exception):
     def __init__(self, image, tag):
         super(ImageNotFoundError, self).__init__(
             "Image %s with tag %s not found." % (image, tag))
+        
+class UserVisiableException(CommonException):
+    def __init__(self, value):
+        super(UserVisiableException, self).__init__(value)
+        
+class ZKLockException(CommonException):
+    def __init__(self, value):
+        super(ZKLockException, self).__init__(value)
 
 _error_types = {400: "param_error",
                 401: "invalid_auth",

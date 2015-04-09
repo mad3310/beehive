@@ -28,6 +28,11 @@ class ResInfoAsyncHandler:
     check_res_ip_usable = CheckResIpUsable()
     check_res_ip_num = CheckResIpNum()
         
+    '''
+    @todo: 
+    1. the rest value of disk
+    2. the rest value of memory
+    '''
     def retrieve_info(self):
         self.check_res_ip_usable.check()
         self.check_res_ip_num.check()

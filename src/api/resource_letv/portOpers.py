@@ -3,31 +3,33 @@ Created on 2015-2-8
 
 @author: asus
 '''
-import logging
-
 from zk.zkOpers import ZkOpers
 from utils.exceptions import CommonException
-from utils.autoutil import nc_ip_port_available
+from utils import nc_ip_port_available
 
 class PortOpers(object):
     '''
     classdocs
     '''
     
-    zkOper = ZkOpers()
-    
     def retrieve_port_resource(self, host_ip_list, every_host_port_count=1):
 
         port_dict = {}
-        isLock,lock = self.zkOper.lock_assign_port()
+        
+        zkOper = ZkOpers()
+        
         try:
+            isLock,lock = zkOper.lock_assign_port()
             if isLock:
                 for host_ip in host_ip_list:
-                    retrieve_port_list = self.zkOper.retrieve_port(host_ip, every_host_port_count)
+                    retrieve_port_list = zkOper.retrieve_port(host_ip, every_host_port_count)
                     port_dict.setdefault(host_ip, retrieve_port_list)
         finally:
             if isLock:
-                self.zkOper.unLock_assign_port(lock)
+                zkOper.unLock_assign_port(lock)
+                
+            zkOper.close()
+            
         return port_dict
 
     def write_into_portPool(self, args):
@@ -36,8 +38,14 @@ class PortOpers(object):
         start_port = int(args.get('startPort'))
 
         choosed_ports = self.__get_needed_ports(host_ip, start_port, port_count)
-        for port in choosed_ports:
-            self.zkOper.write_port_into_portPool(host_ip, str(port) )
+        
+        zkOper = ZkOpers()
+        try:
+            for port in choosed_ports:
+                zkOper.write_port_into_portPool(host_ip, str(port) )
+        finally:
+            zkOper.close()
+        
 
     def __get_needed_ports(self, host_ip, start_port, port_count):
         port_list = []

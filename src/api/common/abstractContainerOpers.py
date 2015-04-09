@@ -1,7 +1,5 @@
 #-*- coding: utf-8 -*-
 from abc import abstractmethod
-from zk.zkOpers import ZkOpers
-
 '''
 Created on 2013-7-21
 
@@ -9,8 +7,6 @@ Created on 2013-7-21
 '''
 
 class Abstract_Container_Opers(object):
-    
-    zkOper = ZkOpers()
     
     @abstractmethod
     def create(self, arg_dict):

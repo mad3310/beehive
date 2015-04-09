@@ -13,7 +13,7 @@ import logging.config
 
 from tornado.options import options
 from appdefine import appDefine
-from sceduler.scedulerOpers import Sceduler_Opers
+from scheduler.schedulerOpers import SchedulerOpers
 from check_sync import CheckSync
 
 
@@ -37,7 +37,7 @@ def main():
     http_server = tornado.httpserver.HTTPServer(Application())
     http_server.listen(options.port)
     
-    Sceduler_Opers()
+    SchedulerOpers()
     tornado.ioloop.IOLoop.instance().start()
 
 

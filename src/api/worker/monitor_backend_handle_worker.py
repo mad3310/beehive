@@ -8,6 +8,7 @@ import sys
 
 from monitor.monitorOpers import ResInfoAsyncHandler, ContainerInfoAsyncHandler
 from common.abstractAsyncThread import Abstract_Async_Thread
+from zk.zkOpers import ZkOpers
 
 class Monitor_Backend_Handle_Worker(Abstract_Async_Thread):
     
@@ -20,8 +21,10 @@ class Monitor_Backend_Handle_Worker(Abstract_Async_Thread):
 
     def run(self):
         isLock, lock = False, None
+        
+        zkOper = ZkOpers()
         try:
-            isLock, lock = self.zkOper.lock_async_monitor_action()
+            isLock, lock = zkOper.lock_async_monitor_action()
         except kazoo.exceptions.LockTimeout:
             logging.info("a thread is running the monitor async, give up this oper on this machine!")
             return
@@ -41,7 +44,11 @@ class Monitor_Backend_Handle_Worker(Abstract_Async_Thread):
         except Exception:
             self.threading_exception_queue.put(sys.exc_info())
         finally:
-            self.zkOper.unLock_aysnc_monitor_action(lock)
+            if isLock:
+                zkOper.unLock_aysnc_monitor_action(lock)
+                
+            zkOper.close()
+            
                 
     def __action_monitor_async(self):
         self.res_handler.retrieve_info()

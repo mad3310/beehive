@@ -16,7 +16,7 @@ from utils.invokeCommand import InvokeCommand
 from docker_letv.dockerOpers import Docker_Opers
 
 
-class Res_Opers():
+class Server_Res_Opers():
     '''
     classdocs
     '''
@@ -44,16 +44,23 @@ class Res_Opers():
 
         # disk_over_load = self.disk_loadavg()
         # resource.setdefault("disk_over_load", disk_over_load)
-        
+        '''
+        @todo: why comment?
+        '''
 #         disk_instant_spd = self.disk_instant_load()
 #         resource.setdefault("disk_instant_spd", disk_instant_spd)
         
+        '''
+        @todo: why comment?
+        '''
 #         _cpu_info = self.cpu_info()
 #         resource.setdefault("cpu_info" , _cpu_info)
-       
 #         cur_cpu_usage = self.get_cur_cpu_usage()
 #         resource.setdefault("cur_cpu_idle", cur_cpu_usage)
 
+        '''
+        @todo: why comment?
+        '''
 #         cur_net_load = self.get_cur_net_load()
 #         resource.setdefault("cur_net_load", cur_net_load)
         return resource

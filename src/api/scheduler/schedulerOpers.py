@@ -8,11 +8,11 @@ Created on 2013-7-21
 '''
 
 from tornado.ioloop import PeriodicCallback
-from utils.threading_exception_handle_worker import Thread_Exception_Handler_Worker
-from utils.monitor_backend_handle_worker import Monitor_Backend_Handle_Worker
+from worker.threading_exception_handle_worker import Thread_Exception_Handler_Worker
+from worker.monitor_backend_handle_worker import Monitor_Backend_Handle_Worker
 
 
-class Sceduler_Opers(object):
+class SchedulerOpers(object):
     '''
     classdocs
     '''
@@ -26,13 +26,23 @@ class Sceduler_Opers(object):
         self.monitor_timeout = monitor_timeout
         self.thread_exception_hanlder(5)
         self.sced_monitor_handler(55)
+        self.collect_servers_resource(10)
+        
+    def collect_servers_resource(self, action_timeout):
+        
+        def __collect_resource_woker():
+            pass
+            
+        _worker = PeriodicCallback(self.__collect_resource_woker, action_timeout * 1000)
+        _worker.start()
+        
+    
 
-    def sced_monitor_handler(self, action_timeout = 30):
+    def sced_monitor_handler(self, action_timeout = 55):
         """Create a periodic callback that tries to access async monitor interface
         
            action_timeout: default monitor timeout
         """
-        
         if action_timeout > 0:
             _monitor_async_t = PeriodicCallback(self.__create_worker_check_monitor,
                                                 action_timeout * 1000)

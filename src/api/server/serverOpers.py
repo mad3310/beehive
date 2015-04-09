@@ -12,19 +12,27 @@ import sys
 from docker_letv.dockerOpers import Docker_Opers
 from zk.zkOpers import ZkOpers
 from container.container_module import Container
-from container.containerOpers import Container_Opers, ContainerLoad
+from container.containerOpers import Container_Opers
 from common.abstractAsyncThread import Abstract_Async_Thread
-from utils.autoutil import getHostIp
+from utils import getHostIp
 from status.status_enum import Status
+from state.stateOpers import StateOpers
+from resource_letv.serverResourceOpers import Server_Res_Opers
 
 
 class Server_Opers(object):
     '''
     classdocs
     '''
-    
     container_opers = Container_Opers()
+    
+    '''
+    @todo: please notice that:Server opers don't reference docker opers.
+    whether associated method should be move them into container opers?
+    '''
     docker_opers = Docker_Opers()
+    
+    server_res_opers = Server_Res_Opers()
     
     def update(self):
         host_ip = getHostIp()
@@ -36,7 +44,7 @@ class Server_Opers(object):
         containers = self.container_opers.get_all_containers(False)
         for container in containers:
             load = {}
-            conl = ContainerLoad(container)
+            conl = StateOpers(container)
             mem_load = conl.get_mem_load()
             memsw_load = conl.get_memsw_load()
             load.update(mem_load)
@@ -48,7 +56,7 @@ class Server_Opers(object):
         containers = self.container_opers.get_all_containers(False)
         alarm_item = []
         for container in containers:
-            conl = ContainerLoad(container)
+            conl = StateOpers(container)
             under_oom = conl.get_under_oom_value()
             if under_oom:
                 alarm_item.append(container)
@@ -62,7 +70,7 @@ class Server_Opers(object):
         result = {}
         containers = self._get_containers(container_name_list)
         for container in containers:
-            conl = ContainerLoad(container)
+            conl = StateOpers(container)
             ret = conl.open_container_under_oom()
             if not ret:
                 logging.error('container %s under oom value open failed' % container)
@@ -73,7 +81,7 @@ class Server_Opers(object):
         result = {}
         containers = self._get_containers(container_name_list)
         for container in containers:
-            conl = ContainerLoad(container)
+            conl = StateOpers(container)
             ret = conl.shut_container_under_oom()
             if not ret:
                 logging.error('container %s under oom value shut down failed' % container)
@@ -87,13 +95,16 @@ class Server_Opers(object):
             _inspect = self.docker_opers.inspect_container(container)
             con = Container(_inspect)
             inspect_limit_mem = con.memory()
-            conl = ContainerLoad(container)
+            conl = StateOpers(container)
             con_limit_mem = conl.get_con_limit_mem()
+            
             if con_limit_mem == inspect_limit_mem *2:
                 add_ret.setdefault(container, 'done before, do nothing!')
                 continue
+            
             ret = conl.double_mem()
             add_ret.setdefault(container, ret)
+            
         return add_ret
 
     def get_containers_disk_load(self, container_name_list):
@@ -101,17 +112,64 @@ class Server_Opers(object):
         containers = self._get_containers(container_name_list)
         for container in containers:
             load = {}
-            conl = ContainerLoad(container)
+            conl = StateOpers(container)
             root_mnt_size, mysql_mnt_size = conl.get_sum_disk_load()
             load.setdefault('root_mount', root_mnt_size)
             load.setdefault('mysql_mount', mysql_mnt_size)
             result.setdefault(container, load)
         return result
+    
+    def write_usable_resource_to_zk(self, resource_limit_args):
+        server_res = self.server_res_opers.retrieve_host_stat()
+         
+        zkOper = ZkOpers()
+        try:
+            host_ip = getHostIp()
+            zkOper.writeDataNodeResource(host_ip, server_res)
+        finally:
+            zkOper.close()
+    
+#     def write_usable_resource_to_zk(self, resource_limit_args):
+#         
+#         server_res = self.server_res_opers.retrieve_host_stat()
+#         '''
+#             get host usable memory and the condition to create containers
+#         '''
+#         host_mem_limit = resource_limit_args.get('mem_free_limit')
+#         host_mem_can_be_used = float(server_res["mem_res"]["free"]) - host_mem_limit/(1024*1024)
+#         logging.info('memory: %s' % (host_mem_can_be_used))
+# 
+#         _container_mem_limit = resource_limit_args.get('container_mem_limit')
+#         container_mem_limit = _container_mem_limit/(1024*1024)
+#         mem_condition = host_mem_can_be_used > container_mem_limit
+#         
+#         '''
+#             get host usable disk and the condition to create containers
+#         '''
+#         used_server_disk = server_res['server_disk']['used']
+#         total_server_disk = server_res['server_disk']['total']
+#         
+#         host_disk_usage_limit = resource_limit_args.get('disk_usage')
+#         host_disk_can_be_used_limit = host_disk_usage_limit * total_server_disk
+#         host_disk_can_be_used = host_disk_can_be_used_limit - used_server_disk
+#         logging.info('disk: %s' % (host_disk_can_be_used))
+#         disk_condition = host_disk_can_be_used > 0
+#         
+#         resource_info = {}
+#         if mem_condition and disk_condition:
+#             resource_info.setdefault('memory', host_mem_can_be_used)
+#             resource_info.setdefault('disk', host_disk_can_be_used)
+#         
+#         zkOper = ZkOpers()
+#         try:
+#             host_ip = getHostIp()
+#             zkOper.writeDataNodeResource(host_ip, resource_info)
+#         finally:
+#             zkOper.close()
 
 
 class ServerUpdateAction(Abstract_Async_Thread):
 
-    zkOper = ZkOpers()
     docker_opers = Docker_Opers()
     container_opers = Container_Opers()
 
@@ -175,22 +233,27 @@ class ServerUpdateAction(Abstract_Async_Thread):
         """if the status container in zookeeper is destroyed, regard this container as not exist.
         
         """
-        
         container_name_list, container_info= [], {}
-        clusters = self.zkOper.retrieve_cluster_list()
-        for cluster in clusters:
-            container_ip_list = self.zkOper.retrieve_container_list(cluster)
-            for container_ip in container_ip_list:
-                container_info = self.zkOper.retrieve_container_node_value(cluster, container_ip)
-                host_ip = container_info.get('hostIp')
-                if self.host_ip == host_ip:
-                    if container_info.has_key('containerName'):
-                        container_name = container_info.get('containerName')
-                    else:
-                        inspect = container_info.get('inspect')
-                        con = Container(inspect=inspect)
-                        container_name = con.name()
-                    container_name_list.append(container_name)
+        
+        zkOper = ZkOpers()
+        try:
+            clusters = zkOper.retrieve_cluster_list()
+            for cluster in clusters:
+                container_ip_list = zkOper.retrieve_container_list(cluster)
+                for container_ip in container_ip_list:
+                    container_info = zkOper.retrieve_container_node_value(cluster, container_ip)
+                    host_ip = container_info.get('hostIp')
+                    if self.host_ip == host_ip:
+                        if container_info.has_key('containerName'):
+                            container_name = container_info.get('containerName')
+                        else:
+                            inspect = container_info.get('inspect')
+                            con = Container(inspect=inspect)
+                            container_name = con.name()
+                        container_name_list.append(container_name)
+        finally:
+            zkOper.close()
+        
         return container_name_list
 
     def _compare(self, host_container_list, zk_container_list):
@@ -201,7 +264,8 @@ class ServerUpdateAction(Abstract_Async_Thread):
 
     def _write_container_into_zk(self, container_name, create_info):
         container_stat = self.container_opers.get_container_stat(container_name)
-        self.zkOper.write_container_node_info(container_stat, create_info)
+        self.container_opers.write_container_node_info(container_stat, create_info)
+        
 
     def _get_container_info_as_zk(self, container_name):
         create_info = {}
@@ -210,6 +274,10 @@ class ServerUpdateAction(Abstract_Async_Thread):
         
         create_info.setdefault('hostIp', self.host_ip)
         image = con.image()
+        
+        '''
+        @todo: what means?
+        '''
         if 'gbalancer' in image:
             create_info.setdefault('type', 'mclustervip')
         else:
