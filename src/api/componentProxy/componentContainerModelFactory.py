@@ -27,7 +27,7 @@ class ComponentContainerModelFactory(object):
         cls_name = '%sContainerModelCreator' % _component_type.capitalize()
         
         module_obj = importlib.import_module(module_path)
-        creator = getattr(module_obj, cls_name)(args)
+        creator = getattr(module_obj, cls_name)()
         
         _arg_list = creator.create(args)
         return _arg_list

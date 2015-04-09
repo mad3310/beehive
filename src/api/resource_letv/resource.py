@@ -66,7 +66,7 @@ class Resource(object):
         '''
             get usable servers and their resource.
         '''
-        host_resource_dict = self.retrieve_usable_host_resource()
+        host_resource_dict = self.retrieve_usable_host_resource(component_container_cluster_config)
             
 
         weight_item_score = {
@@ -87,7 +87,7 @@ class Resource(object):
         '''
             elect servers by their scores
         '''
-        score_list = sorted(score_host_dict)
+        score_list = sorted(score_host_dict, reverse=True)
         for score in score_list:
             _host_ip = score_host_dict.get(score)
             elect_server_list.append(_host_ip)

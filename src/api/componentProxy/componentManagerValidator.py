@@ -33,7 +33,7 @@ class ComponentManagerStatusValidator(object):
         cls_name = '%sManager' % component_type.capitalize()
         
         module_obj = importlib.import_module(module_path)
-        manager_validator = getattr(module_obj, cls_name)(container_name)
+        manager_validator = getattr(module_obj, cls_name)()
         
         _check_result = manager_validator.manager_status(container_name)
         return _check_result
