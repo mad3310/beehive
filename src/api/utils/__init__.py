@@ -191,18 +191,15 @@ def http_get(url, _connect_timeout=40.0, _request_timeout=40.0, auth_username=No
     
 
 @engine
-def async_http_post(url, body={}, _connect_timeout=40.0, _request_timeout=40.0, auth_username=None, auth_password=None):
-    async_client = AsyncHTTPClient()
-    try:
-        request = HTTPRequest(url=url, method='POST', body=urllib.urlencode(body), connect_timeout=_connect_timeout, \
-                              request_timeout=_request_timeout, auth_username = auth_username, auth_password = auth_password)
-        response = yield Task(async_client.fetch, request)
-        return_dict = json.loads( response.body.strip())
-        logging.info('POST result :%s' % str(return_dict))
-    finally:
-        async_client.close()
-        
-        
+def async_http_post(async_client, url, body={}, _connect_timeout=40.0, _request_timeout=40.0, auth_username=None, auth_password=None):
+    request = HTTPRequest(url=url, method='POST', body=urllib.urlencode(body), connect_timeout=_connect_timeout, \
+                          request_timeout=_request_timeout, auth_username = auth_username, auth_password = auth_password)
+    yield Task(async_client.fetch, request)
+
+
+'''
+    This method below only dispatch task, not validate result actually.
+'''
 @engine
 def dispatch_multi_task(request_ip_port_params_list, uri, http_method):
     http_client = AsyncHTTPClient()

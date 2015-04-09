@@ -10,6 +10,7 @@ Created on 2013-7-21
 from tornado.ioloop import PeriodicCallback
 from worker.threading_exception_handle_worker import Thread_Exception_Handler_Worker
 from worker.monitor_backend_handle_worker import Monitor_Backend_Handle_Worker
+from worker.collect_servers_resource_worker import Collect_Servers_Resource_Worker
 
 
 class SchedulerOpers(object):
@@ -31,12 +32,11 @@ class SchedulerOpers(object):
     def collect_servers_resource(self, action_timeout):
         
         def __collect_resource_woker():
-            pass
+            collect_servers_resource_worker = Collect_Servers_Resource_Worker(action_timeout)
+            collect_servers_resource_worker.start()
             
         _worker = PeriodicCallback(self.__collect_resource_woker, action_timeout * 1000)
         _worker.start()
-        
-    
 
     def sced_monitor_handler(self, action_timeout = 55):
         """Create a periodic callback that tries to access async monitor interface

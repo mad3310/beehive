@@ -75,14 +75,14 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         
         self.__create_container_cluser_info_to_zk(_network_mode, _component_container_cluster_config)
         
-        host_ip_list = self.resource.retrieve_best_resource_servers(_component_container_cluster_config)
-        
         is_res_verify = _component_container_cluster_config.is_res_verify
         if is_res_verify:
             '''
             @todo: why remove the self.res_verify.get_create_containers_hostip_list(usable_hostip_num_list, _component_container_cluster_config)
             '''
             self.resource.validateResource(_component_container_cluster_config)
+        
+        host_ip_list = self.resource.retrieve_best_resource_servers(_component_container_cluster_config)
         
         logging.info('host_ip_list:%s' % str(host_ip_list))
         args.setdefault('host_ip_list', host_ip_list)

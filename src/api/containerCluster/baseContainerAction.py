@@ -7,10 +7,12 @@ import logging
 import sys
 
 from tornado.options import options
+from tornado.httpclient import AsyncHTTPClient
 from common.abstractAsyncThread import Abstract_Async_Thread
 from utils import _retrieve_userName_passwd
 from utils import async_http_post
 from zk.zkOpers import ZkOpers
+
 
 
 class ContainerCluster_Action_Base(Abstract_Async_Thread):
@@ -30,13 +32,18 @@ class ContainerCluster_Action_Base(Abstract_Async_Thread):
         params = self.__get_params()
         adminUser, adminPasswd = _retrieve_userName_passwd()
         logging.info('params: %s' % str(params))
-        for host_ip, container_name_list in params.items():
-            logging.info('container_name_list %s in host %s ' % (str(container_name_list), host_ip) )
-            for container_name in container_name_list:
-                args = {'containerName':container_name}
-                request_uri = 'http://%s:%s/container/%s' % (host_ip, options.port, self.action)
-                logging.info('post-----  url: %s, \n body: %s' % ( request_uri, str (args) ) )
-                async_http_post(request_uri, body=args, auth_username=adminUser, auth_password=adminPasswd)
+        
+        async_client = AsyncHTTPClient()
+        try:
+            for host_ip, container_name_list in params.items():
+                logging.info('container_name_list %s in host %s ' % (str(container_name_list), host_ip) )
+                for container_name in container_name_list:
+                    args = {'containerName':container_name}
+                    request_uri = 'http://%s:%s/container/%s' % (host_ip, options.port, self.action)
+                    logging.info('post-----  url: %s, \n body: %s' % ( request_uri, str (args) ) )
+                    async_http_post(async_client, request_uri, body=args, auth_username=adminUser, auth_password=adminPasswd)
+        finally:
+            async_client.close()
         
         if self.action == 'remove':
             self.__do_when_remove_cluster()

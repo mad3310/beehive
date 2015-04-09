@@ -128,44 +128,6 @@ class Server_Opers(object):
             zkOper.writeDataNodeResource(host_ip, server_res)
         finally:
             zkOper.close()
-    
-#     def write_usable_resource_to_zk(self, resource_limit_args):
-#         
-#         server_res = self.server_res_opers.retrieve_host_stat()
-#         '''
-#             get host usable memory and the condition to create containers
-#         '''
-#         host_mem_limit = resource_limit_args.get('mem_free_limit')
-#         host_mem_can_be_used = float(server_res["mem_res"]["free"]) - host_mem_limit/(1024*1024)
-#         logging.info('memory: %s' % (host_mem_can_be_used))
-# 
-#         _container_mem_limit = resource_limit_args.get('container_mem_limit')
-#         container_mem_limit = _container_mem_limit/(1024*1024)
-#         mem_condition = host_mem_can_be_used > container_mem_limit
-#         
-#         '''
-#             get host usable disk and the condition to create containers
-#         '''
-#         used_server_disk = server_res['server_disk']['used']
-#         total_server_disk = server_res['server_disk']['total']
-#         
-#         host_disk_usage_limit = resource_limit_args.get('disk_usage')
-#         host_disk_can_be_used_limit = host_disk_usage_limit * total_server_disk
-#         host_disk_can_be_used = host_disk_can_be_used_limit - used_server_disk
-#         logging.info('disk: %s' % (host_disk_can_be_used))
-#         disk_condition = host_disk_can_be_used > 0
-#         
-#         resource_info = {}
-#         if mem_condition and disk_condition:
-#             resource_info.setdefault('memory', host_mem_can_be_used)
-#             resource_info.setdefault('disk', host_disk_can_be_used)
-#         
-#         zkOper = ZkOpers()
-#         try:
-#             host_ip = getHostIp()
-#             zkOper.writeDataNodeResource(host_ip, resource_info)
-#         finally:
-#             zkOper.close()
 
 
 class ServerUpdateAction(Abstract_Async_Thread):

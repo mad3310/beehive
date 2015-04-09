@@ -17,7 +17,7 @@ from tornado.web import asynchronous
 from tornado.gen import engine, Task
 from utils.configFileOpers import ConfigFileOpers
 from tornado_letv.tornado_basic_auth import require_basic_auth
-from utils import _retrieve_userName_passwd
+from utils import _retrieve_userName_passwd, async_http_post
 from serverCluster.serverClusterOpers import ServerCluster_Opers
 from utils.exceptions import HTTPAPIError
 from base import APIHandler
@@ -133,10 +133,7 @@ class SwitchServersUnderoomHandler(APIHandler):
             for server in server_list:
                 requesturi = 'http://%s:%s/server/containers/under_oom' % (server, options.port)
                 logging.info('server requesturi: %s' % str(requesturi))
-                request = HTTPRequest(url=requesturi, method='POST', body=urllib.urlencode(args), connect_timeout=40, \
-                                      request_timeout=40, auth_username = auth_username, auth_password = auth_password)
-                
-                response = yield Task(async_client.fetch, request)
+                response = async_http_post(async_client, requesturi, body=args, 40, 40, auth_username, auth_password) 
                 body = json.loads( response.body.strip())
                 ret =  body.get('response')
                 result.update(ret)
