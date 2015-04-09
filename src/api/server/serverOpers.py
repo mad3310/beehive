@@ -121,13 +121,13 @@ class Server_Opers(object):
     
     def write_host_resource_to_zk(self):
         server_res = self.server_res_opers.retrieve_host_stat()
-         
+        
         zkOper = ZkOpers()
-        try:
-            host_ip = getHostIp()
-            zkOper.writeDataNodeResource(host_ip, server_res)
-        finally:
-            zkOper.close()
+        host_ip = getHostIp()
+        zkOper.writeDataNodeResource(host_ip, server_res)
+        '''
+            need to close zk
+        '''
 
 
 class ServerUpdateAction(Abstract_Async_Thread):
