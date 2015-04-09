@@ -24,9 +24,9 @@ class SchedulerOpers(object):
         
         '''
         
-        self.monitor_timeout = monitor_timeout
-        self.thread_exception_hanlder(5)
-        self.sced_monitor_handler(55)
+        #self.monitor_timeout = monitor_timeout
+        #self.thread_exception_hanlder(5)
+        #self.sced_monitor_handler(55)
         self.collect_servers_resource(10)
         
     def collect_servers_resource(self, action_timeout):

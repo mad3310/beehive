@@ -35,7 +35,7 @@ class CollectServerResHandler(APIHandler):
     # eg. curl --user root:root -d '' http://localhost:8888/server/resource
     @asynchronous
     def post(self):
-        self._server_opers.write_usable_resource_to_zk(component_container_cluster_config)
+        self._server_opers.write_host_resource_to_zk(component_container_cluster_config)
     
     
     # eg. curl http://localhost:8888/server/resource

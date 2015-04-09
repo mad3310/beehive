@@ -42,5 +42,5 @@ class Collect_Servers_Resource_Worker(Abstract_Async_Thread):
             zkOper.close()
 
     def __action_collect_servers_resource(self):
-        self.server_opers.write_usable_resource_to_zk()
+        self.server_opers.write_host_resource_to_zk()
         
