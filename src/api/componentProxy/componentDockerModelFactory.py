@@ -21,9 +21,13 @@ class ComponentDockerModelFactory(object):
     
     def create(self, component_type, arg_dict):
         _component_path = _path.get(component_type)
-        creator = importlib.import_module('%s.%s.%sDockerModelCreator.%sDockerModelCreator'%(_component_path, 
-                                                                                             component_type, 
-                                                                                             component_type, 
-                                                                                             component_type.capitalize())) 
+
+        module_path = '%s.%s.%sDockerModelCreator' % (_component_path, component_type, component_type)
+        
+        cls_name = '%sDockerModelCreator' % component_type.capitalize()
+        
+        module_obj = importlib.import_module(module_path)
+        creator = getattr(module_obj, cls_name)(arg_dict)
+        
         docker_py_model = creator.create(arg_dict)
         return docker_py_model

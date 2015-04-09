@@ -16,7 +16,7 @@ from utils.decorators import singleton
 from kazoo.retry import KazooRetry
 
 
-@singleton
+#@singleton
 class ZkOpers(object):
     
     zk = None

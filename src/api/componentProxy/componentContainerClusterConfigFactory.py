@@ -23,8 +23,10 @@ class ComponentContainerClusterConfigFactory(object):
     def retrieve_config(self, args):
         _component_type = args.get('componentType')
         _component_path = _path.get(_component_type)
-        config = importlib.import_module('%s.%s.%sContainerClusterConfig.%sContainerClusterConfig'%(_component_path, 
-                                                                                                    _component_type, 
-                                                                                                    _component_type, 
-                                                                                                    _component_type.capitalize())) 
+        module_path = '%s.%s.%sContainerClusterConfig' % (_component_path, _component_type, _component_type)
+        
+        cls_name = '%sContainerClusterConfig' % _component_type.capitalize()
+        
+        module_obj = importlib.import_module(module_path)
+        config = getattr(module_obj, cls_name)(args)
         return config

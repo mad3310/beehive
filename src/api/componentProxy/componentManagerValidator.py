@@ -27,10 +27,14 @@ class ComponentManagerStatusValidator(object):
     def validate_manager_status_for_container(self, component_type, container_name):
         _check_result = False
         _component_path = _path.get('_component_type')
-        manager_validator = importlib.import_module('%s.%s.%sOper.%sManager'%(_component_path, 
-                                                                              component_type, 
-                                                                              component_type, 
-                                                                              component_type.capitalize())) 
+
+        module_path = '%s.%s.%sOper' % (_component_path, component_type, component_type)
+        
+        cls_name = '%sManager' % component_type.capitalize()
+        
+        module_obj = importlib.import_module(module_path)
+        manager_validator = getattr(module_obj, cls_name)(container_name)
+        
         _check_result = manager_validator.manager_status(container_name)
         return _check_result
     

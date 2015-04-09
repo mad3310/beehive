@@ -82,7 +82,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
             '''
             self.resource.validateResource(_component_container_cluster_config)
         
-        host_ip_list = self.resource.retrieve_best_resource_servers(_component_container_cluster_config)
+        host_ip_list = self.resource.elect_servers(_component_container_cluster_config)
         
         logging.info('host_ip_list:%s' % str(host_ip_list))
         args.setdefault('host_ip_list', host_ip_list)

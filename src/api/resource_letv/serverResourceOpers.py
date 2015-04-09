@@ -540,7 +540,6 @@ class Server_Res_Opers():
         stat['total'] = int(mem['MemTotal']/(1024*1024))
         stat['used'] = int(mem['MemTotal'] - mem['MemFree'] - mem['Buffers'] - mem['Cached'])/(1024*1024)
         stat['free'] = int(mem['MemFree'] + mem['Buffers'] + mem['Cached'])/(1024*1024)
-        self._logger.info("Memory stat : "  + str(stat))
         return stat
 
     def disk_stat(self):
@@ -552,7 +551,6 @@ class Server_Res_Opers():
         hd['free'] = disk.f_bsize * disk.f_bavail / (1024*1024)
         hd['total'] = disk.f_bsize * disk.f_blocks / (1024*1024)
         hd['used'] = hd['total'] - hd['free']
-        self._logger.info("hard disk stat :" + str(hd))
         return hd
    
     def disk_loadavg(self):  

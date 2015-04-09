@@ -167,7 +167,6 @@ def getHostIp():
     out_ip = os.popen("ifconfig $(route -n|grep UG|awk '{print $NF}')|grep 'inet addr'|awk '{print $2}'").read()
     ip = out_ip.split('\n')[0]
     ip = re.findall('.*:(.*)', ip)[0]
-    logging.info("host ip: %s" % (ip))
     return ip
 
 def ping_ip_available(ip):
