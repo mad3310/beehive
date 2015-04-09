@@ -11,7 +11,6 @@ import os, time
 import logging
 import docker
 
-from utils.autoutil import *
 from utils.invokeCommand import InvokeCommand
 from docker_letv.dockerOpers import Docker_Opers
 

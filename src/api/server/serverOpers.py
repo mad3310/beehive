@@ -119,7 +119,7 @@ class Server_Opers(object):
             result.setdefault(container, load)
         return result
     
-    def write_host_resource_to_zk(self, resource_limit_args):
+    def write_host_resource_to_zk(self):
         server_res = self.server_res_opers.retrieve_host_stat()
          
         zkOper = ZkOpers()

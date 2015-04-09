@@ -24,6 +24,18 @@ confOpers = ConfigFileOpers()
 
 TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 
+
+def get_zk_address():
+    ret_dict = confOpers.getValue(options.container_manager_property, ['zkAddress','zkPort'])
+    zk_address = ret_dict['zkAddress']
+    zk_port = ret_dict['zkPort']
+    return zk_address, zk_port
+
+def getClusterUUID():
+    ret_dict = confOpers.getValue(options.cluster_property, ['clusterUUID'])
+    clusterUUID = ret_dict['clusterUUID']
+    return clusterUUID
+
 def get_random_password():
     a = list(string.letters+string.digits)
     random.shuffle(a)

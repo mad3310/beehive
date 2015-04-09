@@ -11,8 +11,9 @@ import logging
 import threading
 
 from kazoo.client import KazooClient
-from utils import ping_ip_available, nc_ip_port_available
+from utils import ping_ip_available, nc_ip_port_available, get_zk_address
 from utils.decorators import singleton
+from kazoo.retry import KazooRetry
 
 
 @singleton
@@ -29,12 +30,18 @@ class ZkOpers(object):
         '''
         Constructor
         '''
-        logging.info("start zk")
-        self.zk = KazooClient(hosts=zkAddress+':'+str(zkPort))
+
+        self.zkaddress, self.zkport = get_zk_address()
+        self.retry = KazooRetry(max_tries=3, delay=0.5)
+        self.zk = KazooClient(hosts=self.zkaddress+':'+str(self.zkport), connection_retry=self.retry)
         self.zk.start()
     
     def close(self):
-        self.zk.close()
+        try:
+            self.zk.stop()
+            self.zk.close()
+        except Exception, e:
+            logging.error(e)
     
     def writeClusterInfo(self, clusterUUID, clusterProps):
         path = self.rootPath + "/" + clusterUUID

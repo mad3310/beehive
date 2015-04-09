@@ -133,7 +133,7 @@ class SwitchServersUnderoomHandler(APIHandler):
             for server in server_list:
                 requesturi = 'http://%s:%s/server/containers/under_oom' % (server, options.port)
                 logging.info('server requesturi: %s' % str(requesturi))
-                response = async_http_post(async_client, requesturi, body=args, 40, 40, auth_username, auth_password) 
+                response = async_http_post(async_client, requesturi, args, 40, 40, auth_username, auth_password) 
                 body = json.loads( response.body.strip())
                 ret =  body.get('response')
                 result.update(ret)

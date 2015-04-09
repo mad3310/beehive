@@ -35,7 +35,7 @@ class SchedulerOpers(object):
             collect_servers_resource_worker = Collect_Servers_Resource_Worker(action_timeout)
             collect_servers_resource_worker.start()
             
-        _worker = PeriodicCallback(self.__collect_resource_woker, action_timeout * 1000)
+        _worker = PeriodicCallback(__collect_resource_woker, action_timeout * 1000)
         _worker.start()
 
     def sced_monitor_handler(self, action_timeout = 55):
