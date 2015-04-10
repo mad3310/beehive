@@ -112,9 +112,35 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         return cluster_status
 
     def sync(self):
-        containerCluster_sync_action = ContainerCluster_Sync_Action()
-        clusters = containerCluster_sync_action.sync()
+        clusters_zk_info = self.get_clusters_zk()
+        
+        clusters = []
+        for cluster_name, nodes in clusters_zk_info.items():
+            cluster, nodeInfo = {}, []
+            cluster_exist = self.__get_cluster_status(nodes)
+            cluster.setdefault('status', cluster_exist)
+            cluster.setdefault('clusterName', cluster_name)
+            for _,node_value in nodes.items():
+                container_info = node_value.get('container_info')
+                con = Container()
+                create_info = con.create_info(container_info)
+                nodeInfo.append(create_info)
+            cluster.setdefault('nodeInfo', nodeInfo)
+            clusters.append(cluster)
+            
         return clusters
+
+    def __get_cluster_status(self, nodes):
+        n = 0
+        for _,container_info in nodes.items():
+            stat = container_info.get('status').get('status')
+            if stat == Status.destroyed:
+                n += 1
+        if n == len(nodes):
+            exist = Status.destroyed
+        else:
+            exist = Status.alive
+        return exist
 
     def __check_cluster_in_zk(self, containerClusterName):
         zkOper = ZkOpers()
@@ -250,7 +276,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
                 container_node = {}
                 create_info = zkOper.retrieve_container_node_value(cluster_name, container_ip)
                 status = zkOper.retrieve_container_status_value(cluster_name, container_ip)
-                container_node.setdefault('create_info', create_info)
+                container_node.setdefault('container_info', create_info)
                 container_node.setdefault('status', status)
                 cluster_zk_info.setdefault(container_ip, container_node)
         finally:
@@ -286,44 +312,44 @@ class ContainerCluster_Sync_Action(object):
         Constructor
         '''
         
-    def sync(self):
-        host_ip = self.__random_host_ip()
-        '''
-        @todo: why invoke the update and get containerCluster infos?
-        '''
-        self._get(host_ip, '/serverCluster/update')
-        res = self._get(host_ip, '/containerCluster')
-        logging.info('res : %s' % str(res))
-        
-        clusters = []
-        for cluster_name, nodes in res.items():
-            cluster, nodeInfo = {}, []
-            cluster_exist = self.__get_cluster_status(nodes)
-            cluster.setdefault('status', cluster_exist)
-            cluster.setdefault('clusterName', cluster_name)
-            for _,node_value in nodes.items():
-                create_info = node_value.get('create_info')
-                con = Container()
-                create_info = con.create_info(create_info)
-                nodeInfo.append(create_info)
-            cluster.setdefault('nodeInfo', nodeInfo)
-            clusters.append(cluster)
-            
-        return clusters
+#     def sync(self):
+#         #host_ip = self.__random_host_ip()
+#         '''
+#         @todo: why invoke the update and get containerCluster infos?
+#         '''
+#         self._get(host_ip, '/serverCluster/update')
+#         res = self._get(host_ip, '/containerCluster')
+#         logging.info('res : %s' % str(res))
+#         
+#         clusters = []
+#         for cluster_name, nodes in res.items():
+#             cluster, nodeInfo = {}, []
+#             cluster_exist = self.__get_cluster_status(nodes)
+#             cluster.setdefault('status', cluster_exist)
+#             cluster.setdefault('clusterName', cluster_name)
+#             for _,node_value in nodes.items():
+#                 create_info = node_value.get('create_info')
+#                 con = Container()
+#                 create_info = con.create_info(create_info)
+#                 nodeInfo.append(create_info)
+#             cluster.setdefault('nodeInfo', nodeInfo)
+#             clusters.append(cluster)
+#             
+#         return clusters
     
-    def __random_host_ip(self):
-        zkOper = ZkOpers()
-        
-        try:
-            host_ip_list = zkOper.retrieve_data_node_list()
-        finally:
-            zkOper.close()
-            
-        host = getHostIp()
-        if host in host_ip_list:
-            host_ip_list.remove(host)
-        host_ip = random.choice(host_ip_list)
-        return host_ip
+#     def __random_host_ip(self):
+#         zkOper = ZkOpers()
+#         
+#         try:
+#             host_ip_list = zkOper.retrieve_data_node_list()
+#         finally:
+#             zkOper.close()
+#             
+#         host = getHostIp()
+#         if host in host_ip_list:
+#             host_ip_list.remove(host)
+#         host_ip = random.choice(host_ip_list)
+#         return host_ip
     
     def _get(self, host_ip, url_get):
         adminUser, adminPasswd = _retrieve_userName_passwd()

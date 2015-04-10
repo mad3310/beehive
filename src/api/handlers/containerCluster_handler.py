@@ -337,7 +337,7 @@ class ClusterConfigHandler(APIHandler):
 
 @require_basic_auth
 class CheckClusterSyncHandler(APIHandler):
-
+    
     container_cluster_opers = ContainerCluster_Opers()
     
     """

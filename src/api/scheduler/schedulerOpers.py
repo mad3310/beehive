@@ -27,11 +27,19 @@ class SchedulerOpers(object):
         #self.monitor_timeout = monitor_timeout
         #self.thread_exception_hanlder(5)
         #self.sced_monitor_handler(55)
-        self.collect_servers_resource(10)
+        self.collect_servers_resource_handler(10)
+        self.sync_server_zk_handler(120)
         
+    def sync_server_zk_handler(self, action_timeout):
         
+        def __sync_server_zk_woker():
+            sync_server_zk_woker = Sync_Server_Zk_Worker(action_timeout)
+            sync_server_zk_woker.start()
+            
+        _worker = PeriodicCallback(__sync_server_zk_woker, action_timeout * 1000)
+        _worker.start()
         
-    def collect_servers_resource(self, action_timeout):
+    def collect_servers_resource_handler(self, action_timeout):
         
         def __collect_resource_woker():
             collect_servers_resource_worker = Collect_Servers_Resource_Worker(action_timeout)
