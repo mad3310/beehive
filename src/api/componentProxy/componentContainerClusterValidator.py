@@ -7,6 +7,7 @@ import logging
 from zk.zkOpers import ZkOpers
 from status.status_enum import Status
 from utils.exceptions import UserVisiableException
+from container.container_module import Container
 
 
 class ComponentContainerClusterValidator(object):
@@ -17,10 +18,45 @@ class ComponentContainerClusterValidator(object):
         '''
         Constructor
         '''
+    
+    def container_cluster_status_validator(self, containerClusterName):
+        zkOper = ZkOpers()
+        try:
+            exists = zkOper.check_containerCluster_exists(containerClusterName)
+        finally:
+            zkOper.close()
+        
+        if not exists:
+            raise UserVisiableException('containerCluster %s not existed' % containerClusterName)
+        
+        create_successful = {'code':"000000"}
+        creating = {'code':"000001", 'status': Status.creating}
+        create_failed = {'code':"000002", 'status': Status.create_failed}
+        
+        result = {}
+        
+        zkOper = ZkOpers()
+        try:
+            container_cluster_info = zkOper.retrieve_container_cluster_info(containerClusterName)
+        finally:
+            zkOper.close()
+        
+        start_flag = container_cluster_info.get('start_flag')
+        
+        if not start_flag:
+            return creating
+        else:
+            if start_flag == Status.failed:
+                result.update(create_failed)
+                result.setdefault('error_msg', 'create containers failed!')
+            
+            elif start_flag == Status.succeed:
+                cluster_status_info = self.cluster_status_info(containerClusterName)
+                result.update(create_successful)
+                result.update(cluster_status_info)
+            
+            return result
 
-    '''
-    @todo: use container status class
-    '''
     def __get_cluster_status(self, status_list):
         
         cluster_stat = ''
@@ -70,40 +106,13 @@ class ComponentContainerClusterValidator(object):
             
         return result
 
-    def container_cluster_status_validator(self, containerClusterName):
+    def __get_create_info(self, containerClusterName, container_node):
         zkOper = ZkOpers()
         try:
-            exists = zkOper.check_containerCluster_exists(containerClusterName)
+            container_node_value = zkOper.retrieve_container_node_value(containerClusterName, container_node)
         finally:
             zkOper.close()
         
-        if not exists:
-            raise UserVisiableException('containerCluster %s not existed' % containerClusterName)
-        
-        create_successful = {'code':"000000"}
-        creating = {'code':"000001", 'status': Status.creating}
-        create_failed = {'code':"000002", 'status': Status.create_failed}
-        
-        result = {}
-        
-        zkOper = ZkOpers()
-        try:
-            container_cluster_info = zkOper.retrieve_container_cluster_info(containerClusterName)
-        finally:
-            zkOper.close()
-        
-        start_flag = container_cluster_info.get('start_flag')
-        
-        if not start_flag:
-            return creating
-        else:
-            if start_flag == Status.failed:
-                result.update(create_failed)
-                result.setdefault('error_msg', 'create containers failed!')
-            
-            elif start_flag == Status.succeed:
-                cluster_status_info = self.cluster_status_info(containerClusterName)
-                result.update(create_successful)
-                result.update(cluster_status_info)
-            
-            return result
+        con = Container()
+        create_info = con.create_info(container_node_value)
+        return create_info

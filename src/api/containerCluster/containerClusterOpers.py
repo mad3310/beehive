@@ -189,17 +189,6 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
             zkOper.close()
         
         return len(container_ip_list) != 0
-        
-    def __get_create_info(self, containerClusterName, container_node):
-        zkOper = ZkOpers()
-        try:
-            container_node_value = zkOper.retrieve_container_node_value(containerClusterName, container_node)
-        finally:
-            zkOper.close()
-        
-        con = Container()
-        create_info = con.create_info(container_node_value)
-        return create_info
 
     def config(self, conf_dict={}):
         error_msg = ''
