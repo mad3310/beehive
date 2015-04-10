@@ -12,6 +12,7 @@ from worker.threading_exception_handle_worker import Thread_Exception_Handler_Wo
 from worker.monitor_backend_handle_worker import Monitor_Backend_Handle_Worker
 from worker.collect_servers_resource_worker import Collect_Servers_Resource_Worker
 from worker.sync_server_zk_worker import Sync_Server_Zk_Worker
+from worker.check_ip_legality_worker import Check_Ip_Legality_Worker
 
 
 class SchedulerOpers(object):
@@ -25,11 +26,21 @@ class SchedulerOpers(object):
         
         '''
         
-        #self.monitor_timeout = monitor_timeout
+        self.monitor_timeout = monitor_timeout
         self.thread_exception_hanlder(5)
-        #self.sced_monitor_handler(55)
+        self.sced_monitor_handler(55)
         self.collect_servers_resource_handler(10)
         self.sync_server_zk_handler(120)
+        self.check_ip_legality_handler(600)
+
+    def check_ip_legality_handler(self, action_timeout):
+        
+        def __check_ip_legality_woker():
+            sync_server_zk_woker = Check_Ip_Legality_Worker(action_timeout)
+            sync_server_zk_woker.start()
+            
+        _worker = PeriodicCallback(__sync_server_zk_woker, action_timeout * 1000)
+        _worker.start()
         
     def sync_server_zk_handler(self, action_timeout):
         

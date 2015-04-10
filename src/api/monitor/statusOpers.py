@@ -88,7 +88,7 @@ class CheckResIpNum(CheckStatusBase):
             return options.alarm_serious
 
 
-class CheckResIpUsable(CheckStatusBase):
+class CheckResIpLegality(CheckStatusBase):
     
     ip_opers = IpOpers()
     
@@ -114,7 +114,7 @@ class CheckResIpUsable(CheckStatusBase):
             
             
         alarm_level = self.retrieve_alarm_level(0, 0, failed_count)
-        super(CheckResIpUsable, self).write_status(0, 0, \
+        super(CheckResIpLegality, self).write_status(0, 0, \
                                                     failed_count, \
                                                     alarm_level, error_record, monitor_type, \
                                                     monitor_key)

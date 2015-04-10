@@ -83,56 +83,6 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         containerCluster_destroy_action = ContainerCluster_destroy_Action(containerClusterName)
         containerCluster_destroy_action.start()
 
-#     '''
-#     @todo: use container status class
-#     '''
-#     def create_status(self, containerClusterName):
-#         zkOper = ZkOpers()
-#         try:
-#             exists = zkOper.check_containerCluster_exists(containerClusterName)
-#         finally:
-#             zkOper.close()
-#         
-#         if not exists:
-#             raise UserVisiableException('containerCluster %s not existed' % containerClusterName)
-#         
-#         failed_rst = {'code':"000001"}
-#         succ_rst = {'code':"000000"}
-#         lack_rst = {'code':"000002"}
-#         check_rst_dict, message_list  = {}, []
-#         
-#         zkOper = ZkOpers()
-#         try:
-#             container_node_list = zkOper.retrieve_container_list(containerClusterName)
-#             container_cluster_info = zkOper.retrieve_container_cluster_info(containerClusterName)
-#         finally:
-#             zkOper.close()
-#         
-#         start_flag = container_cluster_info.get('start_flag')
-#         
-#         if not start_flag:
-#             return failed_rst
-#         else:
-#             if start_flag == Status.succeed:
-#                 for container_node in container_node_list:
-#                     container_node_value = self.__get_create_info(containerClusterName, container_node)
-#                     message_list.append(container_node_value)
-#                     
-#                 check_rst_dict.update(succ_rst)
-#                 check_rst_dict.setdefault('containers', message_list)
-#                 check_rst_dict.setdefault('message', 'check all containers OK!')
-#             
-#             elif  start_flag == 'lack_resource':
-#                 check_rst_dict.update(lack_rst)
-#                 check_rst_dict.setdefault('error_msg', container_cluster_info.get('error_msg'))
-#                 logging.info('return info:%s' % str(check_rst_dict))
-#             
-#             elif start_flag == Status.failed:
-#                 check_rst_dict.update(lack_rst)
-#                 check_rst_dict.setdefault('error_msg', 'create containers failed!')
-#             
-#             return check_rst_dict
-
     def check(self, containerClusterName):
         zkOper = ZkOpers()
         try:

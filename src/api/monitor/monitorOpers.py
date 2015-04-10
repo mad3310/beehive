@@ -6,7 +6,7 @@ Created on 2013-7-21
 @author: asus
 '''
 
-from statusOpers import CheckContainersUnderOom, CheckResIpUsable, CheckResIpNum 
+from statusOpers import CheckContainersUnderOom, CheckResIpNum 
 
 
 class ContainerInfoAsyncHandler:
@@ -25,7 +25,6 @@ class ResInfoAsyncHandler:
     
     """
     
-    check_res_ip_usable = CheckResIpUsable()
     check_res_ip_num = CheckResIpNum()
         
     '''
@@ -34,5 +33,4 @@ class ResInfoAsyncHandler:
     2. the rest value of memory
     '''
     def retrieve_info(self):
-        self.check_res_ip_usable.check()
         self.check_res_ip_num.check()
