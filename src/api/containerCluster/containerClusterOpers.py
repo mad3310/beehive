@@ -130,6 +130,10 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
             
         return clusters
 
+
+    '''
+        one cluster status func
+    '''
     def __get_cluster_status(self, nodes):
         n = 0
         for _,container_info in nodes.items():

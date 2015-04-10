@@ -11,6 +11,7 @@ from tornado.ioloop import PeriodicCallback
 from worker.threading_exception_handle_worker import Thread_Exception_Handler_Worker
 from worker.monitor_backend_handle_worker import Monitor_Backend_Handle_Worker
 from worker.collect_servers_resource_worker import Collect_Servers_Resource_Worker
+from worker.sync_server_zk_worker import Sync_Server_Zk_Worker
 
 
 class SchedulerOpers(object):
