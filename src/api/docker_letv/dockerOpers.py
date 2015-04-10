@@ -175,62 +175,39 @@ class Docker_Opers(client):
         for image in images:
             for k,v in image.items():
                 if k == 'RepoTags':
-                    image_list.append(v)
+                    image_list.extend(v)
         return image_list
 
-    def image_id_list(self, filters=None):
-        self.client.images(filters=filters, quiet=True)
+    def image_id_list(self):
+        return self.client.images(quiet=True)
         
     def tag(self, image):
         parts = image.split(':')
-        repo = parts[0]
-        if len(parts) > 1:
+        if len(parts) == 1:
+            repo = parts[0]
+            tag = 'latest'
+        elif len(parts) == 2:
+            repo = parts[0]
             tag = parts[1]
         else:
-            tag = 'latest'
+            repo = ':'.join(parts[:-1])
+            tag = parts[-1]
         return (repo, tag)
-    
-    def image(self, tag=None, id=None):
 
-        for image in self.images():
-
-            if tag and not tag in image['RepoTags']:
-                continue
-
-            if id and id != image['Id']:
-                continue
-
-            return image
-
-        return None
-
-    def images(self):
-
-        if not len(self.image_cache):
-            self.image_cache = self.image_id_list()
-
-        return self.image_cache
-    
-    def flush_images(self):
-        self.image_cache = []
-        
     def pull(self, image):
-        (repository, tag) = self.tag(image)
-        existing = self.image(image)
-
-        for line in self.client.pull(repository=repository, tag=tag, stream=True, insecure_registry=True):
+        image_name_list = self.image_name_list()
+        if image in image_name_list:
+            logging.info('image exist, no need to pull')
+            return True
+        
+        repository, tag = self.tag(image)
+        pull_result = self.client.pull(repository=repository, tag=tag, stream=True)
+        for line in pull_result:
             parsed = json.loads(line)
             if 'error' in parsed:
                 raise CommonException(parsed['error'])
+        return True
 
-        # Check if image updated
-        self.flush_images()
-        newer = self.image(image)
-        if not existing or (newer['Id'] != existing['Id']):
-            return True
-
-        return False
-    
     def rmi(self, image):
         # Force removal, sometimes conflicts result from truncated pulls
         self.client.remove_image(image, force=True)

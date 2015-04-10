@@ -29,6 +29,8 @@ class SchedulerOpers(object):
         #self.sced_monitor_handler(55)
         self.collect_servers_resource(10)
         
+        
+        
     def collect_servers_resource(self, action_timeout):
         
         def __collect_resource_woker():

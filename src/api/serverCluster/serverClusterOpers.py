@@ -9,6 +9,7 @@ from tornado.httpclient import AsyncHTTPClient
 from zk.zkOpers import ZkOpers
 from utils import dispatch_multi_task
 
+
 class ServerCluster_Opers(object):
     '''
     classdocs
@@ -64,21 +65,3 @@ class ServerCluster_Opers(object):
             
         logging.debug('succ:%s' % str(succ))
         logging.debug('fail:%s' % str(fail))
-        
-        
-    def collect_servers_resource_to_zk(self):
-        http_method = 'GET'
-        uri = '/server/resource'
-        
-        zkOper = ZkOpers()
-        try:
-            server_ip_list = zkOper.retrieve_data_node_list()
-        finally:
-            zkOper.close()
-            
-        request_ip_port_params_list = []
-        
-        for server_ip in server_ip_list:
-            request_ip_port_params_list.append((server_ip, options.port, ''))
-        
-        dispatch_multi_task(request_ip_port_params_list, uri, http_method)

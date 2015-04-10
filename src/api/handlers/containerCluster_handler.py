@@ -52,7 +52,6 @@ class GatherClusterNetworkioHandler(APIHandler):
             container_ip_list = zkOper.retrieve_container_list(cluster)
         finally:
             zkOper.close()
-        
          
         container_dict, result = {}, {}
         for container_ip in container_ip_list:
