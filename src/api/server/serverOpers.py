@@ -235,6 +235,10 @@ class ServerUpdateAction(Abstract_Async_Thread):
         image = con.image()
         
         '''
+            need get 'type' and 'useIp' 
+        '''
+        
+        '''
         @todo: what means?
         '''
         if 'gbalancer' in image:

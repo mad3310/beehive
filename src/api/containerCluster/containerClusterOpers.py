@@ -6,14 +6,11 @@ Created on Sep 8, 2014
 
 @author: root
 '''
-import random, re
+import re
 import logging
 
-from utils import getHostIp, http_get
-from tornado.options import options
 from common.abstractContainerOpers import Abstract_Container_Opers
 from utils.exceptions import UserVisiableException
-from utils import _retrieve_userName_passwd
 from container.container_module import Container
 from zk.zkOpers import ZkOpers
 from containerCluster.baseContainerAction import ContainerCluster_Action_Base
@@ -216,9 +213,6 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
             
             return check_rst_dict
 
-    '''
-    @todo: use? unused?
-    '''
     def config(self, conf_dict={}):
         error_msg = ''
         logging.info('config args: %s' % conf_dict)
@@ -305,74 +299,3 @@ class ContainerCluster_destroy_Action(ContainerCluster_Action_Base):
     
     def __init__(self, containerClusterName):
         super(ContainerCluster_destroy_Action, self).__init__(containerClusterName, 'remove')
-
-'''
-@todo: can use scheduler replace this request?
-'''
-class ContainerCluster_Sync_Action(object):
-    
-    def __init__(self):
-        '''
-        Constructor
-        '''
-        
-#     def sync(self):
-#         #host_ip = self.__random_host_ip()
-#         '''
-#         @todo: why invoke the update and get containerCluster infos?
-#         '''
-#         self._get(host_ip, '/serverCluster/update')
-#         res = self._get(host_ip, '/containerCluster')
-#         logging.info('res : %s' % str(res))
-#         
-#         clusters = []
-#         for cluster_name, nodes in res.items():
-#             cluster, nodeInfo = {}, []
-#             cluster_exist = self.__get_cluster_status(nodes)
-#             cluster.setdefault('status', cluster_exist)
-#             cluster.setdefault('clusterName', cluster_name)
-#             for _,node_value in nodes.items():
-#                 create_info = node_value.get('create_info')
-#                 con = Container()
-#                 create_info = con.create_info(create_info)
-#                 nodeInfo.append(create_info)
-#             cluster.setdefault('nodeInfo', nodeInfo)
-#             clusters.append(cluster)
-#             
-#         return clusters
-    
-#     def __random_host_ip(self):
-#         zkOper = ZkOpers()
-#         
-#         try:
-#             host_ip_list = zkOper.retrieve_data_node_list()
-#         finally:
-#             zkOper.close()
-#             
-#         host = getHostIp()
-#         if host in host_ip_list:
-#             host_ip_list.remove(host)
-#         host_ip = random.choice(host_ip_list)
-#         return host_ip
-    
-    def _get(self, host_ip, url_get):
-        adminUser, adminPasswd = _retrieve_userName_passwd()
-        uri = 'http://%s:%s%s' % (host_ip, options.port, url_get)
-        logging.info('get uri :%s' % uri)
-        ret = http_get(uri, auth_username = adminUser, auth_password = adminPasswd)
-        return ret.get('response')
-
-    '''
-    @todo: use container status class
-    '''
-    def __get_cluster_status(self, nodes):
-        n = 0
-        for _,container_info in nodes.items():
-            stat = container_info.get('status').get('status')
-            if stat == Status.destroyed:
-                n += 1
-        if n == len(nodes):
-            exist = Status.destroyed
-        else:
-            exist = Status.alive
-        return exist
