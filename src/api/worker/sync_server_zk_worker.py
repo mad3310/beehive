@@ -20,23 +20,23 @@ class Sync_Server_Zk_Worker(Abstract_Async_Thread):
 
     def run(self):
         isLock, lock = False, None
-          
+        logging.info('do sync server')
         zkOper = ZkOpers()
         try:
-            isLock, lock = zkOper.lock_collect_resource_action()
+            isLock, lock = zkOper.lock_sync_server_zk_action()
         except kazoo.exceptions.LockTimeout:
             logging.info("a thread is running on collect resource, give up this operation on this machine!")
             return
-          
+        
         if not isLock:
             return
         
         try:
-            self.serverCluster_opers.Update()
+            self.serverCluster_opers.update()
         except Exception:
             self.threading_exception_queue.put(sys.exc_info())
         finally:
             if isLock:
-                zkOper.unLock_collect_resource_action(lock)
+                zkOper.unLock_sync_server_zk_action(lock)
                   
             zkOper.close()

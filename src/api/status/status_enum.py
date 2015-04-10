@@ -8,7 +8,7 @@ class Enum(set):
             return name
         raise AttributeError
 
-_status = ['starting', 'started', 'stopping', 'stopped', 'destroying', 'destroyed', 
-           'not_exist', 'alive', 'failed', 'crisis', 'danger', 'succeed']
+_status = ['creating', 'create_failed', 'starting', 'started', 'stopping', 'stopped', 'destroying', 
+           'destroyed', 'not_exist', 'alive', 'failed', 'crisis', 'danger', 'succeed']
 
 Status = Enum(_status)

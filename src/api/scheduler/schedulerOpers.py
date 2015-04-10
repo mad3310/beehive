@@ -26,7 +26,7 @@ class SchedulerOpers(object):
         '''
         
         #self.monitor_timeout = monitor_timeout
-        #self.thread_exception_hanlder(5)
+        self.thread_exception_hanlder(5)
         #self.sced_monitor_handler(55)
         self.collect_servers_resource_handler(10)
         self.sync_server_zk_handler(120)

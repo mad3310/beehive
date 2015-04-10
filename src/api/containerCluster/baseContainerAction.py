@@ -59,7 +59,6 @@ class ContainerCluster_Action_Base(Abstract_Async_Thread):
                 zkOper.recover_ips_to_pool(container_ip_list)
         finally:
             zkOper.close()
-        
 
     def __get_params(self):
         """

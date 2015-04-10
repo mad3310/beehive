@@ -241,7 +241,7 @@ class CheckCreateClusterStatusHandler(APIHandler):
 
     # eg. curl --user root:root -X GET http://localhost:8888/containerCluster/createStatus/dh
     def get(self, containerClusterName):
-        result =  self.containerClusterOpers.create_status(containerClusterName)
+        result =  self.containerClusterOpers.check(containerClusterName)
         
         logging.info('check_result : %s, type: %s' % (str(result), type(result)))
         if result.get('code') == '000002':

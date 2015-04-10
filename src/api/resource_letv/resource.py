@@ -9,7 +9,6 @@ Created on Sep 8, 2014
 import logging
 
 from zk.zkOpers import ZkOpers
-from tornado.options import options
 from utils.exceptions import CommonException
 from resource_letv.ipOpers import IpOpers
 from resource_letv.portOpers import PortOpers
@@ -39,26 +38,6 @@ class Resource(object):
         """
         if len(ip_list) < nodeCount:
             raise CommonException('ips are not enough!')
-
-    def retrieve_best_resource_servers(self, component_container_cluster_config):
-        zkOper = ZkOpers()
-        try:
-            available_item_dict = zkOper.retrieve_available_item()
-            available_item = available_item_dict.get('available_item')
-            if available_item not in ['s0','s1']:
-                raise CommonException("error available_item, not [s0,s1], please confirm zk value!")
-            
-            best_resource_ips = zkOper.retrieve_servers_order_by_resource(available_item)
-            
-        finally:
-            zkOper.close()
-            
-        node_count = component_container_cluster_config.nodeCount
-            
-        if len(best_resource_ips) < node_count:
-            raise CommonException('usable servers are not enough!')
-        
-        return best_resource_ips[:node_count]
 
     def elect_servers(self, component_container_cluster_config):
         elect_server_list  = []
@@ -91,7 +70,11 @@ class Resource(object):
         for score in score_list:
             _host_ip = score_host_dict.get(score)
             elect_server_list.append(_host_ip)
-
+        
+        node_count = component_container_cluster_config.nodeCount
+        if len(elect_server_list) < node_count:
+            raise CommonException('usable servers are not enough!')
+        
         return elect_server_list
 
     def retrieve_usable_host_resource(self, component_container_cluster_config):

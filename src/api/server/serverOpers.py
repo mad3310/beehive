@@ -226,6 +226,11 @@ class ServerUpdateAction(Abstract_Async_Thread):
         both = list( set(host_container_list) & set( zk_container_list) )
         return add, delete, both
 
+
+    '''
+        @todo
+        need get 'type' and 'useIp'
+    '''
     def _get_container_info_as_zk(self, container_name):
         create_info = {}
         _inspect = self.docker_opers.inspect_container(container_name)
@@ -233,10 +238,6 @@ class ServerUpdateAction(Abstract_Async_Thread):
         
         create_info.setdefault('hostIp', self.host_ip)
         image = con.image()
-        
-        '''
-            need get 'type' and 'useIp' 
-        '''
         
         '''
         @todo: what means?
