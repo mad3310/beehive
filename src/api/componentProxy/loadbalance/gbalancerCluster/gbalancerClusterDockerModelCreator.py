@@ -7,7 +7,7 @@ Created on 2015-2-1
 from componentProxy.baseDockerModelCreator import BaseDockerModelCreator
 
 
-class MclustervipDockerModelCreator(BaseDockerModelCreator):
+class GbalancerClusterDockerModelCreator(BaseDockerModelCreator):
     '''
     classdocs
     '''

@@ -28,8 +28,7 @@ class GbalancerContainerModelCreator(AbstractContainerModelCreator):
         host_ip_list = args.get('host_ip_list')
         containerCount = component_container_cluster_config.nodeCount
         create_container_arg_list = []
-        mount_dir = component_container_cluster_config.mount_dir
-        volumes, binds = self.__get_volumes_args(mount_dir)
+
         for i in range(int(containerCount)):
             container_model = Container_Model()
             container_model.container_cluster_name = containerClusterName
@@ -38,10 +37,8 @@ class GbalancerContainerModelCreator(AbstractContainerModelCreator):
             container_name = 'd-mcl-%s-n-%s' % (containerClusterName, str(i+1))
             container_model.container_name = container_name
             container_model.network_mode = network_mode
-            container_model.volumes = volumes
-            container_model.binds = binds
             container_model.lxc_conf = component_container_cluster_config.lxc_conf
-            container_model.component_type = 'gbalancer'
+            container_model.component_type = 'mclustervip'
             container_model.image = component_container_cluster_config.image
             container_model.mem_limit = component_container_cluster_config.mem_limit
             gateway = _get_gateway_from_ip(container_ip_list[0])
@@ -56,10 +53,3 @@ class GbalancerContainerModelCreator(AbstractContainerModelCreator):
             create_container_arg_list.append(container_model)
         
         return create_container_arg_list
-
-    def __get_volumes_args(self, mount_dir):
-        volumes, binds = {}, {}
-        for k,v in mount_dir.items():
-            volumes.setdefault(k, v)
-            binds.setdefault(v, {'bind': k})
-        return volumes, binds

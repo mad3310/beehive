@@ -10,6 +10,7 @@ from monitor.monitorOpers import ResInfoAsyncHandler, ContainerInfoAsyncHandler
 from common.abstractAsyncThread import Abstract_Async_Thread
 from zk.zkOpers import ZkOpers
 
+
 class Monitor_Backend_Handle_Worker(Abstract_Async_Thread):
     
     res_handler = ResInfoAsyncHandler()
@@ -48,8 +49,8 @@ class Monitor_Backend_Handle_Worker(Abstract_Async_Thread):
                 zkOper.unLock_aysnc_monitor_action(lock)
                 
             zkOper.close()
-            
-                
+
+
     def __action_monitor_async(self):
         self.res_handler.retrieve_info()
         self.con_handler.retrieve_info()

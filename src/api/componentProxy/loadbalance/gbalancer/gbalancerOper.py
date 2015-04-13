@@ -6,7 +6,7 @@ from componentProxy.baseComponentOpers import BaseComponentManager
 class GbalancerManager(BaseComponentManager):
 
     def __init__(self):
-        super(GbalancerManager, self).__init__('gbalancer-cluster-manager')
+        super(GbalancerManager, self).__init__('gbalancer-manager')
     
     def manager_status(self, container_name = None):
         return True

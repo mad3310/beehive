@@ -9,6 +9,7 @@ from common.abstractAsyncThread import Abstract_Async_Thread
 from zk.zkOpers import ZkOpers
 from monitor.statusOpers import CheckResIpLegality
 
+
 class Check_Ip_Legality_Worker(Abstract_Async_Thread):
     
     check_ip_legality = CheckResIpLegality()

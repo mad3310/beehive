@@ -3,10 +3,10 @@
 from componentProxy.baseComponentOpers import BaseComponentManager
 
 
-class MclustervipManager(BaseComponentManager):
+class GbalancerClusterManager(BaseComponentManager):
 
     def __init__(self):
-        super(MclustervipManager, self).__init__('gbalancer-manager')
+        super(GbalancerClusterManager, self).__init__('gbalancer-cluster-manager')
     
     def manager_status(self, container_name = None):
         return True

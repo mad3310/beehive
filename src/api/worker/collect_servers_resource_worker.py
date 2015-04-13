@@ -1,8 +1,6 @@
 #!/usr/bin/env python2.6.6
 #coding:utf-8
 
-
-
 import sys
 
 from common.abstractAsyncThread import Abstract_Async_Thread

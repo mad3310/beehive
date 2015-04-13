@@ -19,7 +19,7 @@ class SchedulerOpers(object):
     '''
     classdocs
     '''
-    
+
     def __init__(self, monitor_timeout=55):
         '''PeriodicCallback class init  callback has no params
            so add monitor_timrout  
@@ -39,9 +39,9 @@ class SchedulerOpers(object):
             sync_server_zk_woker = Check_Ip_Legality_Worker(action_timeout)
             sync_server_zk_woker.start()
             
-        _worker = PeriodicCallback(__sync_server_zk_woker, action_timeout * 1000)
+        _worker = PeriodicCallback(__check_ip_legality_woker, action_timeout * 1000)
         _worker.start()
-        
+
     def sync_server_zk_handler(self, action_timeout):
         
         def __sync_server_zk_woker():
@@ -50,7 +50,7 @@ class SchedulerOpers(object):
             
         _worker = PeriodicCallback(__sync_server_zk_woker, action_timeout * 1000)
         _worker.start()
-        
+
     def collect_servers_resource_handler(self, action_timeout):
         
         def __collect_resource_woker():
@@ -69,7 +69,7 @@ class SchedulerOpers(object):
             _monitor_async_t = PeriodicCallback(self.__create_worker_check_monitor,
                                                 action_timeout * 1000)
             _monitor_async_t.start()
-    
+
     '''
     the different of action_timeout and monitor_timeout
     reason: the callback of the class PeriodicCallback have no params 
@@ -88,4 +88,3 @@ class SchedulerOpers(object):
     def __create_worker_exception_handler(self):
         exception_hanlder_worker = Thread_Exception_Handler_Worker()
         exception_hanlder_worker.start()
-
