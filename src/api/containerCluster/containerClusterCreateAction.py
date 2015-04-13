@@ -11,7 +11,7 @@ from common.abstractAsyncThread import Abstract_Async_Thread
 from resource_letv.ipOpers import IpOpers
 from resource_letv.portOpers import PortOpers
 from resource_letv.resource import Resource
-from utils import handleTimeout, _get_property_dict, dispatch_multi_task
+from utils import handleTimeout, _get_property_dict, dispatch_mutil_task
 from utils.exceptions import CommonException
 from componentProxy.componentManagerValidator import ComponentManagerStatusValidator
 from componentProxy.componentContainerModelFactory import ComponentContainerModelFactory
@@ -159,4 +159,4 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
             host_ip = property_dict.get('host_ip')
             ip_port_params_list.append((host_ip, options.port, property_dict))
         
-        dispatch_multi_task(ip_port_params_list, '/inner/container', 'POST')
+        dispatch_mutil_task(ip_port_params_list, '/inner/container', 'POST')

@@ -26,6 +26,7 @@ class GbalancerClusterContainerModelCreator(AbstractContainerModelCreator):
         network_mode = args.get('networkMode')
         container_ip_list = args.get('ip_port_resource_list')
         host_ip_list = args.get('host_ip_list')
+        component_type = args.get('componentType')
         containerCount = component_container_cluster_config.nodeCount
         create_container_arg_list = []
         mount_dir = component_container_cluster_config.mount_dir
@@ -41,7 +42,7 @@ class GbalancerClusterContainerModelCreator(AbstractContainerModelCreator):
             container_model.volumes = volumes
             container_model.binds = binds
             container_model.lxc_conf = component_container_cluster_config.lxc_conf
-            container_model.component_type = 'gbalancer'
+            container_model.component_type = component_type
             container_model.image = component_container_cluster_config.image
             container_model.mem_limit = component_container_cluster_config.mem_limit
             gateway = _get_gateway_from_ip(container_ip_list[0])

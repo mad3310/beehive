@@ -7,7 +7,7 @@ from tornado.options import options
 from tornado.gen import Callback, Wait, engine
 from tornado.httpclient import AsyncHTTPClient
 from zk.zkOpers import ZkOpers
-from utils import dispatch_multi_task
+from utils import dispatch_mutil_task
 
 
 class ServerCluster_Opers(object):

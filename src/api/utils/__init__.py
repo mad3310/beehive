@@ -212,7 +212,7 @@ def async_http_post(async_client, url, body={}, _connect_timeout=40.0, _request_
     This method below only dispatch task, not validate result actually.
 '''
 @engine
-def dispatch_multi_task(request_ip_port_params_list, uri, http_method):
+def dispatch_mutil_task(request_ip_port_params_list, uri, http_method):
     http_client = AsyncHTTPClient()
     _error_record_dict = {}
     adminUser, adminPasswd = _retrieve_userName_passwd()
@@ -221,6 +221,7 @@ def dispatch_multi_task(request_ip_port_params_list, uri, http_method):
         for (req_ip, req_port, params) in request_ip_port_params_list:
             requesturl = "http://%s:%s%s" % (req_ip, req_port, uri)
             logging.info('requesturi: %s' % requesturl)
+            logging.info('dispatch mutil task params :%s' % str(params))
             request = HTTPRequest(url=requesturl, method=http_method, body=urllib.urlencode(params), \
                                   connect_timeout=40, request_timeout=40, auth_username=adminUser, auth_password=adminPasswd)
             
