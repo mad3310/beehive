@@ -172,18 +172,20 @@ class StateOpers(object):
     def get_root_mnt_size(self):
         return self.get_dir_size(self.root_mnt_path)
 
-    def get_mysql_mnt_size(self):
-        mysql_mnt_path = ''
+    def get_volume_mnt_size(self):
         _inspect = self.docker_opers.inspect_container(self.container_name)
         con = Container_Model(_inspect)
         volumes = con.inspect_volumes()
         if volumes:
-            mysql_mnt_path = volumes.get('/srv/mcluster')
-            return self.get_dir_size(mysql_mnt_path)
+            volume_sum_dir = 0
+            for _, server_dir in volumes.items():
+                volume_dir = int(self.get_dir_size(server_dir))
+                volume_sum_dir += volume_dir
+        return volume_sum_dir
 
     def get_sum_disk_load(self):
         root_mnt_size = self.get_root_mnt_size()
-        mysql_mnt_size = self.get_mysql_mnt_size()
+        mysql_mnt_size = self.get_volume_mnt_size()
         return root_mnt_size, mysql_mnt_size
 
     def __double_memsw_size(self):
