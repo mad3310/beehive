@@ -5,18 +5,13 @@ Created on 2015-2-2
 '''
 import logging
 import sys
-import tornado
-import urllib
-import time
 
 from tornado.options import options
-from tornado.gen import Callback, Wait
-from tornado.httpclient import HTTPRequest, AsyncHTTPClient
 from common.abstractAsyncThread import Abstract_Async_Thread
 from resource_letv.ipOpers import IpOpers
 from resource_letv.portOpers import PortOpers
 from resource_letv.resource import Resource
-from utils import handleTimeout, _get_property_dict, _retrieve_userName_passwd, dispatch_multi_task
+from utils import handleTimeout, _get_property_dict, dispatch_multi_task
 from utils.exceptions import CommonException
 from componentProxy.componentManagerValidator import ComponentManagerStatusValidator
 from componentProxy.componentContainerModelFactory import ComponentContainerModelFactory
