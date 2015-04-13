@@ -34,7 +34,7 @@ class SchedulerOpers(object):
         self.check_ip_legality_handler(600)
         
         self.monitor_record_handler(55)
-        self.monitor_check_handler(55)
+        #self.monitor_check_handler(55)
         
         self.retrieve_containers_resource_handler(55)
 
