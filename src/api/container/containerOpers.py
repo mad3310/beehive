@@ -20,12 +20,13 @@ from docker_letv.dockerOpers import Docker_Opers
 from container.container_model import Container_Model
 from utils.exceptions import CommonException, RetryException, UserVisiableException
 from utils.log import _log_docker_run_command
-from utils import _mask_to_num
+from utils import _mask_to_num, get_current_time, getHostIp
 from zk.zkOpers import ZkOpers
 from docker import Client
 from status.status_enum import Status
 from componentProxy.componentManagerValidator import ComponentManagerStatusValidator
 from utils import get_containerClusterName_from_containerName
+from state.stateOpers import StateOpers
 
 
 class Container_Opers(Abstract_Container_Opers):
@@ -218,6 +219,117 @@ class Container_Opers(Abstract_Container_Opers):
         zkOper = ZkOpers()
         try:
             zkOper.write_container_node_info(cluster, container_node, container_stat, containerProps)
+        finally:
+            zkOper.close()
+
+    def get_all_containers_mem_load(self):
+        load_dict = {}
+        containers = self.get_all_containers(False)
+        for container in containers:
+            load = {}
+            conl = StateOpers(container)
+            mem_load = conl.get_mem_load()
+            memsw_load = conl.get_memsw_load()
+            load.update(mem_load)
+            load.update(memsw_load)
+            load_dict.setdefault(container, load)
+        return load_dict
+
+    def get_all_containers_under_oom(self):
+        containers = self.get_all_containers(False)
+        alarm_item = []
+        for container in containers:
+            conl = StateOpers(container)
+            under_oom = conl.get_under_oom_value()
+            if under_oom:
+                alarm_item.append(container)
+        return alarm_item
+
+    def _get_containers(self, container_name_list):
+        host_cons = self.get_all_containers(False)
+        return list ( set(host_cons) & set(container_name_list) )
+
+    def open_containers_under_oom(self, container_name_list):
+        result = {}
+        containers = self._get_containers(container_name_list)
+        for container in containers:
+            conl = StateOpers(container)
+            ret = conl.open_container_under_oom()
+            if not ret:
+                logging.error('container %s under oom value open failed' % container)
+            result.setdefault(container, ret)
+        return result
+
+    def shut_containers_under_oom(self, container_name_list):
+        result = {}
+        containers = self._get_containers(container_name_list)
+        for container in containers:
+            conl = StateOpers(container)
+            ret = conl.shut_container_under_oom()
+            if not ret:
+                logging.error('container %s under oom value shut down failed' % container)
+            result.setdefault(container, ret)
+        return result
+
+    def add_containers_memory(self, container_name_list):
+        add_ret = {}
+        containers = self._get_containers(container_name_list)
+        for container in containers:
+            _inspect = self.docker_opers.inspect_container(container)
+            con = Container_Model(_inspect)
+            inspect_limit_mem = con.memory()
+            conl = StateOpers(container)
+            con_limit_mem = conl.get_con_limit_mem()
+            
+            if con_limit_mem == inspect_limit_mem *2:
+                add_ret.setdefault(container, 'done before, do nothing!')
+                continue
+            
+            ret = conl.double_mem()
+            add_ret.setdefault(container, ret)
+            
+        return add_ret
+
+    def get_containers_disk_load(self, container_name_list):
+        result = {}
+        containers = self._get_containers(container_name_list)
+        for container in containers:
+            load = {}
+            conl = StateOpers(container)
+            root_mnt_size, mysql_mnt_size = conl.get_sum_disk_load()
+            load.setdefault('root_mount', root_mnt_size)
+            load.setdefault('mysql_mount', mysql_mnt_size)
+            result.setdefault(container, load)
+        return result
+
+    def get_containers_resource(self, resource_type):
+        '''
+            resource_type: memory, networkio, cpuacct and so on.
+        '''
+        
+        resource_func_dict = {'memory' : 'get_memory_stat_item',
+                              'cpuacct' : 'get_cpuacct_stat_item',
+                              'networkio' : 'get_network_io'
+                              }
+        
+        container_name_list = self.get_all_containers()
+        for container_name in container_name_list:
+            state_opers = StateOpers(container_name)
+            _method = resource_func_dict.get(resource_type)
+            resource_item = getattr(state_opers, _method)()
+            current_time = get_current_time()
+            
+        resource_info = {}
+        resource_info.setdefault(str(resource_type), resource_item)
+        resource_info.setdefault('time', current_time)
+        resource_info.setdefault('containerName', container_name)
+        return resource_info
+
+    def write_containers_resource_to_zk(self, resource_type, resource_info):
+        zkOper = ZkOpers()
+        try:
+            host_ip = getHostIp()
+            zkOper.writeDataNodeContainersResource(host_ip, resource_type, resource_info)
         finally:
             zkOper.close()
 
@@ -450,7 +562,7 @@ class Container_start_action(Abstract_Async_Thread):
         
         self.container_opers.write_container_status_by_containerName(self.container_name, start_rst)
 
-        
+
 class Container_stop_action(Abstract_Async_Thread):
     
     docker_opers = Docker_Opers()

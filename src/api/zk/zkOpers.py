@@ -92,20 +92,19 @@ class ZkOpers(object):
             return True
         return False
     
-    def writeDataNodeResource(self, ip_address, resource_info):
+    def writeDataNodeContainersResource(self, ip_address, resource_type, resource_info):
         _clusterUUID = self.getClusterUUID()
-        _path = "%s/%s/config/serversWhiteList/%s/resource" % (self.rootPath, _clusterUUID, ip_address)
+        _path = "%s/%s/config/dataNode/%s/containersResource/%s" % (self.rootPath, _clusterUUID, ip_address, resource_type)
         self.zk.ensure_path(_path)
         self.zk.set(_path, str(resource_info))
-        
-    def retrieveDataNodeResource(self, ip_address):
+
+    def retrieveDataNodeContainersResource(self, ip_address, resource_type):
         _clusterUUID = self.getClusterUUID()
-        _path = "%s/%s/config/serversWhiteList/%s/resource" % (self.rootPath, _clusterUUID, ip_address)
+        _path = "%s/%s/config/dataNode/%s/containersResource/%s" % (self.rootPath, _clusterUUID, ip_address, resource_type)
         resultValue = self._retrieveSpecialPathProp(_path)
         return resultValue
     
-    
-    
+
     
     '''
     *************************************container cluster****************************************
@@ -227,6 +226,19 @@ class ZkOpers(object):
     '''
     ***************************************config********************************************
     '''
+
+    def writeServersWhiteListResource(self, ip_address, resource_info):
+        _clusterUUID = self.getClusterUUID()
+        _path = "%s/%s/config/serversWhiteList/%s/resource" % (self.rootPath, _clusterUUID, ip_address)
+        self.zk.ensure_path(_path)
+        self.zk.set(_path, str(resource_info))
+        
+    def retrieveServersWhiteListResource(self, ip_address):
+        _clusterUUID = self.getClusterUUID()
+        _path = "%s/%s/config/serversWhiteList/%s/resource" % (self.rootPath, _clusterUUID, ip_address)
+        resultValue = self._retrieveSpecialPathProp(_path)
+        return resultValue
+
     def retrieve_servers_white_list(self):
         clusterUUID = self.getClusterUUID()
         path = self.rootPath + "/" + clusterUUID + "/config/serversWhiteList"

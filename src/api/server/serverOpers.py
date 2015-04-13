@@ -16,7 +16,6 @@ from container.containerOpers import Container_Opers
 from common.abstractAsyncThread import Abstract_Async_Thread
 from utils import getHostIp
 from status.status_enum import Status
-from state.stateOpers import StateOpers
 from resource_letv.serverResourceOpers import Server_Res_Opers
 
 
@@ -24,14 +23,12 @@ class Server_Opers(object):
     '''
     classdocs
     '''
-    container_opers = Container_Opers()
     
     '''
     @todo: please notice that:Server opers don't reference docker opers.
     whether associated method should be move them into container opers?
     '''
-    docker_opers = Docker_Opers()
-    
+        
     server_res_opers = Server_Res_Opers()
     
     def update(self):
@@ -39,96 +36,15 @@ class Server_Opers(object):
         server_update_action = ServerUpdateAction(host_ip)
         server_update_action.start()
 
-    def get_all_containers_mem_load(self):
-        load_dict = {}
-        containers = self.container_opers.get_all_containers(False)
-        for container in containers:
-            load = {}
-            conl = StateOpers(container)
-            mem_load = conl.get_mem_load()
-            memsw_load = conl.get_memsw_load()
-            load.update(mem_load)
-            load.update(memsw_load)
-            load_dict.setdefault(container, load)
-        return load_dict
-
-    def get_all_containers_under_oom(self):
-        containers = self.container_opers.get_all_containers(False)
-        alarm_item = []
-        for container in containers:
-            conl = StateOpers(container)
-            under_oom = conl.get_under_oom_value()
-            if under_oom:
-                alarm_item.append(container)
-        return alarm_item
-
-    def _get_containers(self, container_name_list):
-        host_cons = self.container_opers.get_all_containers(False)
-        return list ( set(host_cons) & set(container_name_list) )
-
-    def open_containers_under_oom(self, container_name_list):
-        result = {}
-        containers = self._get_containers(container_name_list)
-        for container in containers:
-            conl = StateOpers(container)
-            ret = conl.open_container_under_oom()
-            if not ret:
-                logging.error('container %s under oom value open failed' % container)
-            result.setdefault(container, ret)
-        return result
-
-    def shut_containers_under_oom(self, container_name_list):
-        result = {}
-        containers = self._get_containers(container_name_list)
-        for container in containers:
-            conl = StateOpers(container)
-            ret = conl.shut_container_under_oom()
-            if not ret:
-                logging.error('container %s under oom value shut down failed' % container)
-            result.setdefault(container, ret)
-        return result
-
-    def add_containers_memory(self, container_name_list):
-        add_ret = {}
-        containers = self._get_containers(container_name_list)
-        for container in containers:
-            _inspect = self.docker_opers.inspect_container(container)
-            con = Container_Model(_inspect)
-            inspect_limit_mem = con.memory()
-            conl = StateOpers(container)
-            con_limit_mem = conl.get_con_limit_mem()
-            
-            if con_limit_mem == inspect_limit_mem *2:
-                add_ret.setdefault(container, 'done before, do nothing!')
-                continue
-            
-            ret = conl.double_mem()
-            add_ret.setdefault(container, ret)
-            
-        return add_ret
-
-    def get_containers_disk_load(self, container_name_list):
-        result = {}
-        containers = self._get_containers(container_name_list)
-        for container in containers:
-            load = {}
-            conl = StateOpers(container)
-            root_mnt_size, mysql_mnt_size = conl.get_sum_disk_load()
-            load.setdefault('root_mount', root_mnt_size)
-            load.setdefault('mysql_mount', mysql_mnt_size)
-            result.setdefault(container, load)
-        return result
-
     def write_host_resource_to_zk(self):
         server_res = self.server_res_opers.retrieve_host_stat()
         
         zkOper = ZkOpers()
         try:
             host_ip = getHostIp()
-            zkOper.writeDataNodeResource(host_ip, server_res)
+            zkOper.writeServersWhiteListResource(host_ip, server_res)
         finally:
             zkOper.close()
-
 
 
 class ServerUpdateAction(Abstract_Async_Thread):

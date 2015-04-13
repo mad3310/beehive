@@ -131,7 +131,7 @@ class Resource(object):
         resource_result = {}
         zkOper = ZkOpers()
         try:
-            server_res = zkOper.retrieveDataNodeResource(host_ip)
+            server_res = zkOper.retrieveServersWhiteListResource(host_ip)
         finally:
             zkOper.close()
         

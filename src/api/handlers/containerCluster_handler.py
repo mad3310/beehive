@@ -49,12 +49,12 @@ class GatherClusterNetworkioHandler(APIHandler):
                                     log_message= error_message,\
                                     response =  error_message)
                 
-            container_ip_list = zkOper.retrieve_container_list(cluster)
+            container_node_list = zkOper.retrieve_container_list(cluster)
         finally:
             zkOper.close()
          
         container_dict, result = {}, {}
-        for container_ip in container_ip_list:
+        for container_ip in container_node_list:
             container_name = self.container_opers.get_container_name_from_zk(cluster, container_ip)
             host_ip = self.container_opers.get_host_ip_from_zk(cluster, container_ip)
             container_dict.setdefault(host_ip, container_name)
@@ -100,12 +100,12 @@ class GatherClusterMemeoyHandler(APIHandler):
                                     log_message= error_message,\
                                     response =  error_message)
                 
-            container_ip_list = zkOper.retrieve_container_list(cluster)
+            container_node_list = zkOper.retrieve_container_list(cluster)
         finally:
             zkOper.close()
         
         container_dict, result = {}, {}
-        for container_ip in container_ip_list:
+        for container_ip in container_node_list:
             container_name = self.container_opers.get_container_name_from_zk(cluster, container_ip)
             host_ip = self.container_opers.get_host_ip_from_zk(cluster, container_ip)
             container_dict.setdefault(host_ip, container_name)
@@ -129,12 +129,15 @@ class GatherClusterMemeoyHandler(APIHandler):
 
 
 @require_basic_auth
-class GatherClusterCpuacctHandler(APIHandler):
+class GatherClusterResourceHandler(APIHandler):
     '''
     classdocs
     '''
     
     container_opers = Container_Opers()
+    
+    def __init__(self, resource_type):
+        self.resource_type = resource_type
     
     # eg. curl --user root:root -X GET http://10.154.156.150:8888/container/stat/d-mcl-test_jll-n-1/cpuacct
     @asynchronous
@@ -150,31 +153,20 @@ class GatherClusterCpuacctHandler(APIHandler):
                                     notification = "direct", \
                                     log_message= error_message,\
                                     response =  error_message)
+            
+            container_node_list = zkOper.retrieve_container_list(cluster)
+            container_dict, result = {}, {}
+            for container_node in container_node_list:
+                container_name = self.container_opers.get_container_name_from_zk(cluster, container_node)
+                host_ip = self.container_opers.get_host_ip_from_zk(cluster, container_node)
+                container_dict.setdefault(host_ip, container_name)
+            
+            for host_ip, container_name in container_dict.items():
+                resource_info = zkOper.retrieveDataNodeContainersResource(host_ip, self.resource_type)
                 
-            container_ip_list = zkOper.retrieve_container_list(cluster)
         finally:
             zkOper.close()
-
-        container_dict, result = {}, {}
-        for container_ip in container_ip_list:
-            container_name = self.container_opers.get_container_name_from_zk(cluster, container_ip)
-            host_ip = self.container_opers.get_host_ip_from_zk(cluster, container_ip)
-            container_dict.setdefault(host_ip, container_name)
         
-        auth_username, auth_password = _retrieve_userName_passwd()
-        async_client = AsyncHTTPClient()
-        for host_ip, container_name in container_dict.items():
-            requesturi = 'http://%s:%s/container/stat/%s/cpuacct' % (host_ip, options.port, container_name)
-            logging.info('cpuacct requesturi: %s' % str(requesturi))
-            request = HTTPRequest(url=requesturi, method='GET', connect_timeout=40, request_timeout=40, \
-                                  auth_username = auth_username, auth_password = auth_password)
-            
-            response = yield Task(async_client.fetch, request)
-            body = json.loads(response.body.strip())
-            ret = body.get('response')
-            result.update({host_ip:ret})
-        
-        async_client.close()
         self.finish(result)
 
 

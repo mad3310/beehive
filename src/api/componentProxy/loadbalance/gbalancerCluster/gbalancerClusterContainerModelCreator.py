@@ -13,7 +13,6 @@ class GbalancerclusterContainerModelCreator(AbstractContainerModelCreator):
     classdocs
     '''
 
-
     def __init__(self):
         '''
         Constructor

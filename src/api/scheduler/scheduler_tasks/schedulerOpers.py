@@ -13,6 +13,7 @@ from scheduler.worker.monitor_backend_handle_worker import Monitor_Backend_Handl
 from scheduler.worker.collect_servers_resource_worker import Collect_Servers_Resource_Worker
 from scheduler.worker.sync_server_zk_worker import Sync_Server_Zk_Worker
 from scheduler.worker.check_ip_legality_worker import Check_Ip_Legality_Worker
+from scheduler.worker.record_containers_resource_worker import Record_Containers_Resource_Worker
 
 
 class SchedulerOpers(object):
@@ -34,6 +35,17 @@ class SchedulerOpers(object):
         
         self.monitor_record_handler(55)
         self.monitor_check_handler(55)
+        
+        self.retrieve_containers_resource_handler(55)
+
+    def retrieve_containers_resource_handler(self, action_timeout):
+        
+        def __record_containers_resource_woker():
+            _woker = Record_Containers_Resource_Worker(action_timeout)
+            _woker.start()
+            
+        _worker = PeriodicCallback(__record_containers_resource_woker, action_timeout * 1000)
+        _worker.start()
 
     def check_ip_legality_handler(self, action_timeout):
         
