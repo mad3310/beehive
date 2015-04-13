@@ -173,11 +173,11 @@ class StateOpers(object):
         return self.get_dir_size(self.root_mnt_path)
 
     def get_volume_mnt_size(self):
+        volume_sum_dir = 0
         _inspect = self.docker_opers.inspect_container(self.container_name)
         con = Container_Model(_inspect)
         volumes = con.inspect_volumes()
         if volumes:
-            volume_sum_dir = 0
             for _, server_dir in volumes.items():
                 volume_dir = int(self.get_dir_size(server_dir))
                 volume_sum_dir += volume_dir

@@ -36,7 +36,7 @@ class SchedulerOpers(object):
         self.monitor_record_handler(55)
         #self.monitor_check_handler(55)
         
-        self.retrieve_containers_resource_handler(55)
+        self.retrieve_containers_resource_handler(25)
 
     def retrieve_containers_resource_handler(self, action_timeout):
         
