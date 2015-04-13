@@ -13,6 +13,7 @@ from docker_letv.dockerOpers import Docker_Opers
 from container.container_model import Container_Model
 from tornado.options import options
 
+
 class StateOpers(object):
     
     docker_opers = Docker_Opers()
@@ -30,7 +31,7 @@ class StateOpers(object):
         self.root_mnt_path = '/srv/docker/devicemapper/mnt/%s' % self.container_id
         self.memory_stat_path = '/cgroup/memory/lxc/%s/memory.stat' % self.container_id
         self.cpuacct_stat_path = '/cgroup/cpuacct/lxc/%s/cpuacct.stat' % self.container_id
-        
+
     def get_container_id(self):
         _inspect = self.docker_opers.inspect_container(self.container_name)
         con = Container_Model(_inspect)

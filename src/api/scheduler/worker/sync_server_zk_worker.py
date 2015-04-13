@@ -14,8 +14,7 @@ class Sync_Server_Zk_Worker(Abstract_Async_Thread):
     
     serverCluster_opers = ServerCluster_Opers()
     
-    def __init__(self, timeout=55):
-        self.timeout = timeout
+    def __init__(self):
         super(Sync_Server_Zk_Worker, self).__init__()
 
     def run(self):

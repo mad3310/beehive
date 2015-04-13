@@ -30,7 +30,7 @@ class GatherClusterNetworkioHandler(APIHandler):
     '''
     @todo: 
     1. same as GatherClusterNetworkioHandler, GatherClusterMemeoyHandler, GatherClusterCpuacctHandler, need abstract to base logic.
-    2. use scheduler to put these data to zk, these interface only retrieve data from zk and returned.
+    2. use scheduler_tesk to put these data to zk, these interface only retrieve data from zk and returned.
     '''
     container_opers = Container_Opers()
     
