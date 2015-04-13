@@ -309,7 +309,8 @@ class Container_Opers(Abstract_Container_Opers):
         
         resource_func_dict = {'memory' : 'get_memory_stat_item',
                               'cpuacct' : 'get_cpuacct_stat_item',
-                              'networkio' : 'get_network_io'
+                              'networkio' : 'get_network_io',
+                              'disk' : 'get_sum_disk_load'
                               }
         
         container_name_list = self.get_all_containers()

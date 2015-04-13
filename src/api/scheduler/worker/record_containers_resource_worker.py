@@ -25,7 +25,7 @@ class Record_Containers_Resource_Worker(Abstract_Async_Thread):
     
     def __action_record_containers_resource(self):
         logging.info('record containers resource')
-        resource_items = ['memory', 'cpuacct', 'networkio']
+        resource_items = ['memory', 'cpuacct', 'networkio', 'disk']
         for resource_item in resource_items:
             resource_info = self.container_opers.get_containers_resource(resource_item)
             logging.info('%s info:%s' % (resource_item, str(resource_info) ) )
