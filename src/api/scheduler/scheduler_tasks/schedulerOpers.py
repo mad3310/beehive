@@ -74,11 +74,11 @@ class SchedulerOpers(object):
         _worker = PeriodicCallback(__collect_resource_woker, action_timeout * 1000)
         _worker.start()
 
-    def monitor_check_handler(self, action_timeout = 55):
-        if action_timeout > 0:
-            _monitor_async_t = PeriodicCallback(self.__create_worker_check_monitor,
-                                                action_timeout * 1000)
-            _monitor_async_t.start()
+#     def monitor_check_handler(self, action_timeout = 55):
+#         if action_timeout > 0:
+#             _monitor_async_t = PeriodicCallback(self.__create_worker_check_monitor,
+#                                                 action_timeout * 1000)
+#             _monitor_async_t.start()
 
     def monitor_record_handler(self, action_timeout = 55):
         """Create a periodic callback that tries to access async monitor interface
