@@ -6,7 +6,7 @@ Created on 2015-2-5
 
 from componentProxy.baseClusterConfig import BaseContainerClusterConfig
 
-class GbalancerClusterContainerClusterConfig(BaseContainerClusterConfig):
+class GbalancerclusterContainerClusterConfig(BaseContainerClusterConfig):
     '''
     classdocs
     '''
@@ -14,7 +14,7 @@ class GbalancerClusterContainerClusterConfig(BaseContainerClusterConfig):
 
     def __init__(self, params={}):
 
-        super(GbalancerClusterContainerClusterConfig, self).__init__(params)
+        super(GbalancerclusterContainerClusterConfig, self).__init__(params)
         
         nodeCount = params.get('nodeCount')
         self.nodeCount = int(nodeCount) if nodeCount else 2
