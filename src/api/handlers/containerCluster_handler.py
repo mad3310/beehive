@@ -171,6 +171,10 @@ class GatherClusterResourceHandler(APIHandler):
 
 
 @require_basic_auth
+class GatherClusterCpuacctHandler(APIHandler): pass
+
+
+@require_basic_auth
 class ContainerClusterHandler(APIHandler):
     '''
     classdocs
