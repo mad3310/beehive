@@ -78,60 +78,9 @@ class GatherClusterNetworkioHandler(APIHandler):
 
 
 @require_basic_auth
-class GatherClusterMemeoyHandler(APIHandler):
-    '''
-    classdocs
-    '''
-    
-    container_opers = Container_Opers()
-    
-    # eg. curl --user root:root -X GET http://10.154.156.150:8888/container/stat/d-mcl-test_jll-n-1/memory
-    @asynchronous
-    @engine
-    def get(self, cluster):
-        zkOper = ZkOpers()
-        
-        try:
-            exists = zkOper.check_containerCluster_exists(cluster)
-            if not exists:
-                error_message = 'container cluster %s not exist, please check your cluster name' % cluster
-                raise HTTPAPIError(status_code=417, error_detail=error_message,\
-                                    notification = "direct", \
-                                    log_message= error_message,\
-                                    response =  error_message)
-                
-            container_node_list = zkOper.retrieve_container_list(cluster)
-        finally:
-            zkOper.close()
-        
-        container_dict, result = {}, {}
-        for container_ip in container_node_list:
-            container_name = self.container_opers.get_container_name_from_zk(cluster, container_ip)
-            host_ip = self.container_opers.get_host_ip_from_zk(cluster, container_ip)
-            container_dict.setdefault(host_ip, container_name)
-        
-        auth_username, auth_password = _retrieve_userName_passwd()
-        
-        async_client = AsyncHTTPClient()
-        for host_ip, container_name in container_dict.items():
-            requesturi = 'http://%s:%s/container/stat/%s/memory' % (host_ip, options.port, container_name)
-            logging.info('memory stat requesturi: %s' % str(requesturi))
-            request = HTTPRequest(url=requesturi, method='GET', connect_timeout=40, request_timeout=40, \
-                                  auth_username = auth_username, auth_password = auth_password)
-            
-            response = yield Task(async_client.fetch, request)
-            body = json.loads(response.body.strip())
-            ret = body.get('response')
-            result.update({host_ip:ret})
-        
-        async_client.close()
-        self.finish(result)
-
-
-@require_basic_auth
 class GatherClusterResourceHandler(APIHandler):
     '''
-    classdocs
+        the result is webportal need
     '''
     
     container_opers = Container_Opers()
@@ -140,8 +89,7 @@ class GatherClusterResourceHandler(APIHandler):
         self.resource_type = resource_type
     
     # eg. curl --user root:root -X GET http://10.154.156.150:8888/container/stat/d-mcl-test_jll-n-1/cpuacct
-    @asynchronous
-    @engine
+    
     def get(self, cluster):
         zkOper = ZkOpers()
         
@@ -163,11 +111,21 @@ class GatherClusterResourceHandler(APIHandler):
             
             for host_ip, container_name in container_dict.items():
                 resource_info = zkOper.retrieveDataNodeContainersResource(host_ip, self.resource_type)
-                
+                resource_detail = resource_info.get(self.resource_type)
+                result.update(resource_detail)
+                result.setdefault('hostIp', host_ip)
+                result.setdefault('containerName', resource_info.get('containerName'))
         finally:
             zkOper.close()
         
         self.finish(result)
+
+
+@require_basic_auth
+class GatherClusterMemeoyHandler(GatherClusterResourceHandler):
+    
+    def __init__(self):
+        super(GatherClusterMemeoyHandler).__init__('memory')
 
 
 @require_basic_auth
