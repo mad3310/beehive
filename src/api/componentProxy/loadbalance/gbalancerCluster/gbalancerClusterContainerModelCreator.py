@@ -29,7 +29,7 @@ class GbalancerClusterContainerModelCreator(AbstractContainerModelCreator):
         containerCount = component_container_cluster_config.nodeCount
         create_container_arg_list = []
         mount_dir = component_container_cluster_config.mount_dir
-        volumes, binds = self.__get_volumes_args(mount_dir)
+        volumes, binds = self.__inspect_volumes_args(mount_dir)
         for i in range(int(containerCount)):
             container_model = Container_Model()
             container_model.container_cluster_name = containerClusterName
@@ -57,7 +57,7 @@ class GbalancerClusterContainerModelCreator(AbstractContainerModelCreator):
         
         return create_container_arg_list
 
-    def __get_volumes_args(self, mount_dir):
+    def __inspect_volumes_args(self, mount_dir):
         volumes, binds = {}, {}
         for k,v in mount_dir.items():
             volumes.setdefault(k, v)

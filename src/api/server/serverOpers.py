@@ -11,7 +11,7 @@ import sys
 
 from docker_letv.dockerOpers import Docker_Opers
 from zk.zkOpers import ZkOpers
-from container.container_module import Container
+from container.container_model import Container_Model
 from container.containerOpers import Container_Opers
 from common.abstractAsyncThread import Abstract_Async_Thread
 from utils import getHostIp
@@ -93,7 +93,7 @@ class Server_Opers(object):
         containers = self._get_containers(container_name_list)
         for container in containers:
             _inspect = self.docker_opers.inspect_container(container)
-            con = Container(_inspect)
+            con = Container_Model(_inspect)
             inspect_limit_mem = con.memory()
             conl = StateOpers(container)
             con_limit_mem = conl.get_con_limit_mem()
@@ -118,7 +118,7 @@ class Server_Opers(object):
             load.setdefault('mysql_mount', mysql_mnt_size)
             result.setdefault(container, load)
         return result
-    
+
     def write_host_resource_to_zk(self):
         server_res = self.server_res_opers.retrieve_host_stat()
         
@@ -212,7 +212,7 @@ class ServerUpdateAction(Abstract_Async_Thread):
                             container_name = container_info.get('containerName')
                         else:
                             inspect = container_info.get('inspect')
-                            con = Container(inspect=inspect)
+                            con = Container_Model(inspect=inspect)
                             container_name = con.name()
                         container_name_list.append(container_name)
         finally:
@@ -234,10 +234,10 @@ class ServerUpdateAction(Abstract_Async_Thread):
     def _get_container_info_as_zk(self, container_name):
         create_info = {}
         _inspect = self.docker_opers.inspect_container(container_name)
-        con = Container(_inspect)
+        con = Container_Model(_inspect)
         
         create_info.setdefault('hostIp', self.host_ip)
-        image = con.image()
+        image = con.inspect_image()
         
         '''
         @todo: what means?

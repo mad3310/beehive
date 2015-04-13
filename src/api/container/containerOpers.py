@@ -17,7 +17,7 @@ import pexpect
 from common.abstractContainerOpers import Abstract_Container_Opers
 from common.abstractAsyncThread import Abstract_Async_Thread
 from docker_letv.dockerOpers import Docker_Opers
-from container.container_module import Container
+from container.container_model import Container_Model
 from utils.exceptions import CommonException, RetryException, UserVisiableException
 from utils.log import _log_docker_run_command
 from utils import _mask_to_num
@@ -543,7 +543,7 @@ class Container_destroy_action(Abstract_Async_Thread):
         mount_dir_list  = []
         _inspect = self.docker_opers.inspect_container(self.container_name)
         con = Container(_inspect)
-        volumes = con.volumes()
+        volumes = con.inspect_volumes()
         for _, mount_dir in volumes.items():
             mount_dir_list.append(mount_dir)
         return mount_dir_list

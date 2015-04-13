@@ -12,7 +12,7 @@ import logging
 
 from common.abstractContainerOpers import Abstract_Container_Opers
 from utils.exceptions import UserVisiableException
-from container.container_module import Container
+from container.container_model import Container_Model
 from zk.zkOpers import ZkOpers
 from containerCluster.baseContainerAction import ContainerCluster_Action_Base
 from containerCluster.containerClusterCreateAction import ContainerCluster_create_Action
@@ -108,7 +108,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
             cluster.setdefault('clusterName', cluster_name)
             for _,node_value in nodes.items():
                 container_info = node_value.get('container_info')
-                con = Container()
+                con = Container_Model()
                 create_info = con.create_info(container_info)
                 nodeInfo.append(create_info)
             cluster.setdefault('nodeInfo', nodeInfo)

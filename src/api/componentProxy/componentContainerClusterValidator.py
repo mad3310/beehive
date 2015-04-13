@@ -7,7 +7,7 @@ import logging
 from zk.zkOpers import ZkOpers
 from status.status_enum import Status
 from utils.exceptions import UserVisiableException
-from container.container_module import Container
+from container.container_model import Container_Model
 
 
 class ComponentContainerClusterValidator(object):
@@ -113,6 +113,6 @@ class ComponentContainerClusterValidator(object):
         finally:
             zkOper.close()
         
-        con = Container()
+        con = Container_Model()
         create_info = con.create_info(container_node_value)
         return create_info

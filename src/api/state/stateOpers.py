@@ -10,7 +10,7 @@ import logging
 
 from utils.invokeCommand import InvokeCommand
 from docker_letv.dockerOpers import Docker_Opers
-from container.container_module import Container
+from container.container_model import Container_Model
 from tornado.options import options
 
 class StateOpers(object):
@@ -33,7 +33,7 @@ class StateOpers(object):
         
     def get_container_id(self):
         _inspect = self.docker_opers.inspect_container(self.container_name)
-        con = Container(_inspect)
+        con = Container_Model(_inspect)
         return con.id()
 
     def get_file_value(self, file_path):
@@ -174,15 +174,11 @@ class StateOpers(object):
     def get_mysql_mnt_size(self):
         mysql_mnt_path = ''
         _inspect = self.docker_opers.inspect_container(self.container_name)
-        con = Container(_inspect)
-        volumes = con.volumes()
-        type = con.type()
+        con = Container_Model(_inspect)
+        volumes = con.inspect_volumes()
         if volumes:
             mysql_mnt_path = volumes.get('/srv/mcluster')
             return self.get_dir_size(mysql_mnt_path)
-        elif type == 'mclustervip':
-            logging.info('VIP node, no mysql mount~')
-            return 0
 
     def get_sum_disk_load(self):
         root_mnt_size = self.get_root_mnt_size()
