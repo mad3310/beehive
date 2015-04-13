@@ -118,7 +118,7 @@ class Container_Opers(Abstract_Container_Opers):
             for container_ip in container_ip_list:
                 container_info = zkOper.retrieve_container_node_value(cluster, container_ip)
                 inspect = container_info.get('inspect')
-                con = Container(inspect=inspect)
+                con = Container_Model(inspect=inspect)
                 con_name = con.name()
                 if container_name == con_name:
                     con_ip = container_ip
@@ -185,7 +185,7 @@ class Container_Opers(Abstract_Container_Opers):
             zkOper.close()
         
         inspect = container_info.get('inspect')
-        con = Container(inspect=inspect)
+        con = Container_Model(inspect=inspect)
         return con.name()
 
     def get_host_ip_from_zk(self, cluster, container_ip):
@@ -201,7 +201,7 @@ class Container_Opers(Abstract_Container_Opers):
         
         inspect = containerProps.get('inspect')
         is_use_ip =  containerProps.get('isUseIp')
-        con = Container(inspect=inspect)
+        con = Container_Model(inspect=inspect)
         container_name = con.name()
         cluster = con.cluster(container_name)
         logging.info('get container cluster :%s' % cluster)
@@ -322,7 +322,7 @@ class Container_create_action(Abstract_Async_Thread):
         timeout = 5
         
         _inspect = self.docker_opers.inspect_container(container_name)
-        con = Container(_inspect)
+        con = Container_Model(_inspect)
         ip = con.ip()
         mask = con.netmask()
         
@@ -385,7 +385,7 @@ class Container_create_action(Abstract_Async_Thread):
     def _get_container_info(self):
         container_name = self.docker_model.name
         _inspect = self.docker_opers.inspect_container(container_name)
-        con = Container(_inspect)
+        con = Container_Model(_inspect)
         container_node_info= {}
         container_node_info.setdefault('containerName', container_name)
         container_node_info.setdefault('inspect', con.inspect)
@@ -542,7 +542,7 @@ class Container_destroy_action(Abstract_Async_Thread):
     def __get_mount_dir(self):
         mount_dir_list  = []
         _inspect = self.docker_opers.inspect_container(self.container_name)
-        con = Container(_inspect)
+        con = Container_Model(_inspect)
         volumes = con.inspect_volumes()
         for _, mount_dir in volumes.items():
             mount_dir_list.append(mount_dir)

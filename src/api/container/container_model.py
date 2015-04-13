@@ -22,7 +22,7 @@ class Container_Model(object):
         '''
         
         self.inspect = inspect
-        
+
     @property
     def component_type(self):
         return self._component_type
