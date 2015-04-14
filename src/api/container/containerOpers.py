@@ -312,14 +312,14 @@ class Container_Opers(Abstract_Container_Opers):
                               'disk' : 'get_sum_disk_load'
                               }
         
+        resource_info, resource_item = {}, {}
         container_name_list = self.get_all_containers()
         for container_name in container_name_list:
             state_opers = StateOpers(container_name)
             _method = resource_func_dict.get(resource_type)
             resource_item = getattr(state_opers, _method)()
             current_time = get_current_time()
-            
-        resource_info = {}
+        
         resource_info.setdefault(str(resource_type), resource_item)
         resource_info.setdefault('time', current_time)
         resource_info.setdefault('containerName', container_name)
