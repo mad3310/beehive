@@ -41,7 +41,7 @@ class BaseContainerClusterConfig(object):
         self.disk_usage = float(disk_usage) if disk_usage else 0.8
         
         lxc_conf = params.get('LxcConf')
-        self.lxc_conf = dict(lxc_conf) if lxc_conf else {'lxc.cgroup.memory.oom_control':1}       
+        self.lxc_conf = dict(lxc_conf) if lxc_conf else {'lxc.cgroup.memory.oom_control':1}
         
         
         '''
