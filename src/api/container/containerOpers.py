@@ -166,7 +166,6 @@ class Container_Opers(Abstract_Container_Opers):
         finally:
             zkOper.close()
         
-
     def write_container_status_by_containerName(self, container_name, record):
         containerClusterName = get_containerClusterName_from_containerName(container_name)
         container_ip = self.get_container_ip_from_container_name(containerClusterName, container_name)
@@ -354,6 +353,9 @@ class Container_create_action(Abstract_Async_Thread):
     def __issue_create_action(self):
         
         self.__make_mount_dir()
+        
+        self.issue_image()
+        
         _log_docker_run_command(self.docker_model)
         '''
         orginal:
@@ -394,10 +396,18 @@ class Container_create_action(Abstract_Async_Thread):
         
         self.container_opers.write_container_node_info_to_zk(Status.started, container_node_info)
 
+    def issue_image(self):
+        image = self.docker_model.image
+        logging.info('create container image :%s' % image)
+        exist = self.docker_opers.image_exist(image)
+        if not exist:
+            if not self.docker_opers.pull(image):
+                raise CommonException('pull image %s failed, please check reason' % image)
+    
     def __make_mount_dir(self):
         binds = self.docker_model.binds
         if binds:
-            for server_dir,con_dir in binds.items():
+            for server_dir,_ in binds.items():
                 if not os.path.exists(server_dir):
                     os.makedirs(server_dir)
             

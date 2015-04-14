@@ -30,10 +30,10 @@ class SchedulerOpers(object):
         self.thread_exception_hanlder(5)
         
         self.collect_servers_resource_handler(10)
-        self.sync_server_zk_handler(120)
+        self.sync_server_zk_handler(300)
         self.check_ip_legality_handler(600)
         
-        self.monitor_record_handler(55)
+        #self.monitor_record_handler(55)
         #self.monitor_check_handler(55)
         
         self.retrieve_containers_resource_handler(25)

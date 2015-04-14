@@ -180,7 +180,11 @@ class Docker_Opers(client):
 
     def image_id_list(self):
         return self.client.images(quiet=True)
-        
+
+    def image_exist(self, image):
+        image_list = self.image_name_list()
+        return image in image_list
+
     def tag(self, image):
         parts = image.split(':')
         if len(parts) == 1:
@@ -206,7 +210,7 @@ class Docker_Opers(client):
             parsed = json.loads(line)
             if 'error' in parsed:
                 raise CommonException(parsed['error'])
-        return True
+        return self.image_exist(image)
 
     def rmi(self, image):
         # Force removal, sometimes conflicts result from truncated pulls
