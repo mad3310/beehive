@@ -19,6 +19,6 @@ class NginxContainerClusterConfig(BaseContainerClusterConfig):
         nodeCount = params.get('nodeCount')                          
         self.nodeCount = int(nodeCount) if nodeCount else 2
         image = params.get('image')
-        self.image = image if image else 'letv/nginx:0.0.6'
+        self.image = image if image else 'letv/nginx:0.0.7'
         ports = params.get('ports')
         self.ports = eval(ports) if ports else [8888, 8001]

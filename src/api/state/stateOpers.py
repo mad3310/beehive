@@ -184,9 +184,12 @@ class StateOpers(object):
         return volume_sum_dir
 
     def get_sum_disk_load(self):
+        result = {}
         root_mnt_size = self.get_root_mnt_size()
-        mysql_mnt_size = self.get_volume_mnt_size()
-        return root_mnt_size, mysql_mnt_size
+        volume_mnt_size = self.get_volume_mnt_size()
+        result.setdefault('root_mount', root_mnt_size)
+        result.setdefault('volumes_mount', volume_mnt_size)
+        return result
 
     def __double_memsw_size(self):
         memsw_value = self.get_con_limit_memsw()

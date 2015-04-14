@@ -38,18 +38,20 @@ class GatherClusterResourceHandler(APIHandler):
                                     response =  error_message)
             
             container_node_list = zkOper.retrieve_container_list(cluster)
-            container_dict, result = {}, {}
+            container_dict, result  = {}, []
             for container_node in container_node_list:
                 container_name = self.container_opers.get_container_name_from_zk(cluster, container_node)
                 host_ip = self.container_opers.get_host_ip_from_zk(cluster, container_node)
                 container_dict.setdefault(host_ip, container_name)
             
             for host_ip, container_name in container_dict.items():
+                resource = {}
                 resource_info = zkOper.retrieveDataNodeContainersResource(host_ip, resource_type)
                 resource_detail = resource_info.get(resource_type)
-                result.update(resource_detail)
-                result.setdefault('hostIp', host_ip)
-                result.setdefault('containerName', resource_info.get('containerName'))
+                resource.setdefault(resource_type, resource_detail)
+                resource.setdefault('hostIp', host_ip)
+                resource.setdefault('containerName', resource_info.get('containerName'))
+                result.append(resource)
         finally:
             zkOper.close()
         
@@ -61,7 +63,7 @@ class GatherClusterMemeoyHandler(GatherClusterResourceHandler):
     
     def get(self, cluster):
         result = self.cluster_resoure(cluster, 'memory')
-        self.finish(result)
+        self.finish({'data': result})
 
 
 @require_basic_auth
@@ -69,7 +71,7 @@ class GatherClusterCpuacctHandler(GatherClusterResourceHandler):
 
     def get(self, cluster):
         result = self.cluster_resoure(cluster, 'cpuacct')
-        self.finish(result)
+        self.finish({'data': result})
 
 
 @require_basic_auth
@@ -77,7 +79,7 @@ class GatherClusterNetworkioHandler(GatherClusterResourceHandler):
         
     def get(self, cluster):
         result = self.cluster_resoure(cluster, 'networkio')
-        self.finish(result)
+        self.finish({'data': result})
 
 
 @require_basic_auth
@@ -85,7 +87,7 @@ class GatherClusterDiskHandler(GatherClusterResourceHandler):
         
     def get(self, cluster):
         result = self.cluster_resoure(cluster, 'disk')
-        self.finish(result)
+        self.finish({'data': result})
 
 
 @require_basic_auth

@@ -19,6 +19,6 @@ class JettyContainerClusterConfig(BaseContainerClusterConfig):
         nodeCount = params.get('nodeCount')                          
         self.nodeCount = int(nodeCount) if nodeCount else 2
         image = params.get('image')
-        self.image = image if image else 'letv/jetty:0.0.3'
+        self.image = image if image else 'letv/jetty:0.0.5'
         ports = params.get('ports')
         self.ports = eval(ports) if ports else [8080, 8888, 9888]
