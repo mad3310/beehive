@@ -303,23 +303,26 @@ class Container_Opers(Abstract_Container_Opers):
 
     def get_containers_resource(self, resource_type):
         '''
-            resource_type: memory, networkio, cpuacct and so on.
+            resource_type: memory, networkio, cpuacct, disk and so on.
         '''
+        
+        container_name_list = self.get_all_containers()
+        if not container_name_list:
+            return {}
         
         resource_func_dict = {'memory' : 'get_memory_stat_item',
                               'cpuacct' : 'get_cpuacct_stat_item',
                               'networkio' : 'get_network_io',
                               'disk' : 'get_sum_disk_load'
                               }
-        
+                
         resource_info, resource_item = {}, {}
-        container_name_list = self.get_all_containers()
+        current_time = get_current_time()
         for container_name in container_name_list:
             state_opers = StateOpers(container_name)
             _method = resource_func_dict.get(resource_type)
             resource_item = getattr(state_opers, _method)()
-            current_time = get_current_time()
-        
+            
         resource_info.setdefault(str(resource_type), resource_item)
         resource_info.setdefault('time', current_time)
         resource_info.setdefault('containerName', container_name)
