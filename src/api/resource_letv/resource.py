@@ -162,6 +162,7 @@ class Resource(object):
         if mem_condition and disk_condition:
             resource_result.setdefault('memory', host_mem_can_be_used)
             resource_result.setdefault('disk', host_disk_can_be_used)
+        logging.info('resource result:%s' % str(resource_result))
         return resource_result
 
     def retrieve_ip_port_resource(self, host_ip_list, component_container_cluster_config):

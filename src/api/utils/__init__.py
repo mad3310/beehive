@@ -163,8 +163,9 @@ def handleTimeout(func, timeout, *params, **kwargs):
         timeout -= time.time() - t
     return rst
 
-def getHostIp():
-    out_ip = os.popen("ifconfig $(route -n|grep UG|awk '{print $NF}')|grep 'inet addr'|awk '{print $2}'").read()
+def getHostIp(NIC = 'bond0'):
+    cmd = "ifconfig %s|grep 'inet addr'|awk '{print $2}'" % NIC
+    out_ip = os.popen(cmd).read()
     ip = out_ip.split('\n')[0]
     ip = re.findall('.*:(.*)', ip)[0]
     return ip

@@ -173,6 +173,7 @@ class Container_Model(object):
                 return self.__get_value(item)
         
     def gateway(self):
+        
         Env = self.inspect.get('Config').get('Env')
         for item in Env:
             if item.startswith('GATEWAY'):
@@ -223,6 +224,9 @@ class Container_Model(object):
                 result.append(_info)
         return result
 
+    def default_container_ip(self):
+        return self.inspect.get('NetworkSettings').get('IPAddress')
+
     def create_info(self, container_node_value):
         create_info = {}
         if isinstance(container_node_value, dict):
@@ -236,8 +240,10 @@ class Container_Model(object):
             create_info.setdefault('gateAddr', self.gateway() )
             create_info.setdefault('netMask', self.netmask() )
             create_info.setdefault('mountDir', str(self.inspect_volumes()) )
-            create_info.setdefault('ipAddr', self.ip() )
             create_info.setdefault('containerName', self.name() )
-            if not isUseIp:
+            if isUseIp:
+                create_info.setdefault('ipAddr', self.ip() )
+            else:
                 create_info.setdefault('port_bindings', self.inspect_port_bindings())
+                create_info.setdefault('ipAddr', self.default_container_ip())
         return create_info

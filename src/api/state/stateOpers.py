@@ -56,8 +56,6 @@ class StateOpers(object):
             value = commands.getoutput(dir_cmd)
             if value:
                 size = re.findall('(.*)\\t.*', value)[0]
-        else:
-            logging.info('path %s not exist, may be VIP node' % dir_path)
         return size
 
     def get_con_used_mem(self):

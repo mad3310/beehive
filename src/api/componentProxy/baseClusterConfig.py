@@ -14,7 +14,7 @@ class BaseContainerClusterConfig(object):
         Constructor
         '''
         
-        self.is_res_verify = True
+        self.is_res_verify = False
         self.need_validate_manager_status = True
         
 

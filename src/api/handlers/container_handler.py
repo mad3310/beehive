@@ -172,7 +172,6 @@ class RemoveContainerHandler(APIHandler):
         self.finish(return_message)
 
 
-@require_basic_auth
 class GatherContainerMemeoyHandler(APIHandler):
     
     container_opers = Container_Opers()
@@ -197,7 +196,6 @@ class GatherContainerMemeoyHandler(APIHandler):
         self.finish(result)
 
 
-@require_basic_auth
 class GatherContainerCpuacctHandler(APIHandler):
     
     container_opers = Container_Opers()
@@ -223,7 +221,6 @@ class GatherContainerCpuacctHandler(APIHandler):
         self.finish(result)
 
 
-@require_basic_auth
 class GatherContainerNetworkioHandler(APIHandler):
     
     container_opers = Container_Opers()

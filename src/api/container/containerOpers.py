@@ -634,7 +634,7 @@ class Container_destroy_action(Abstract_Async_Thread):
             destroy container and remove docker mount dir data
         """
 
-        destroy_rst, destroy_flag = {}, {}
+        destroy_rst = {}
         logging.info('write destroy flag')
         destroy_flag = {'status':Status.destroying, 'message':''}
         self.container_opers.write_container_status_by_containerName(self.container_name, destroy_flag)
@@ -643,9 +643,10 @@ class Container_destroy_action(Abstract_Async_Thread):
            get mount dir first, otherwise get nothing where container removed~
         '''
         
-        mount_dir_list = self.__get_mount_dir()
+        mount_dir_list = self.__get_delete_mount_dir()
         self.docker_opers.destroy(self.container_name)
         logging.info('container_name :%s' % str(self.container_name) )
+        
         self.__remove_mount_dir(mount_dir_list)
             
         exists = self.container_opers.check_container_exists(self.container_name)
@@ -665,7 +666,7 @@ class Container_destroy_action(Abstract_Async_Thread):
         for mount_dir in mount_dir_list:
             os.system('rm -rf %s' % mount_dir)
 
-    def __get_mount_dir(self):
+    def __get_delete_mount_dir(self):
         mount_dir_list  = []
         _inspect = self.docker_opers.inspect_container(self.container_name)
         con = Container_Model(_inspect)
@@ -673,3 +674,4 @@ class Container_destroy_action(Abstract_Async_Thread):
         for _, mount_dir in volumes.items():
             mount_dir_list.append(mount_dir)
         return mount_dir_list
+        

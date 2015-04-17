@@ -122,16 +122,16 @@ class Docker_Opers(client):
     def kill(self, container, signal='HUP'):
         self.client.kill(container, signal)
     
-    def remove_container(self, container, v=False, link=False, force=False):
+    def remove_container(self, container, v=True, link=False, force=False):
         self.client.remove_container(container, v, link, force)
     
     def destroy(self, container):
         self.kill(container)
         self.remove_container(container, force=True)
-        
+
     def restart(self, container):
         self.client.restart(container)
-    
+
     def containers(self, quiet=False, all=False, trunc=True, latest=False,
                    since=None, before=None, limit=-1, size=False):
         return self.client.containers(quiet, 

@@ -17,7 +17,6 @@ from containerCluster.containerClusterOpers import ContainerCluster_Opers
 from zk.zkOpers import ZkOpers
 
 
-@require_basic_auth
 class GatherClusterResourceHandler(APIHandler):
     '''
         the result is webportal need
@@ -48,9 +47,10 @@ class GatherClusterResourceHandler(APIHandler):
                 resource = {}
                 resource_info = zkOper.retrieveDataNodeContainersResource(host_ip, resource_type)
                 resource_detail = resource_info.get(resource_type)
-                resource.setdefault(resource_type, resource_detail)
+                resource.setdefault('value', resource_detail)
                 resource.setdefault('hostIp', host_ip)
                 resource.setdefault('containerName', resource_info.get('containerName'))
+                resource.setdefault('containerIp', resource_info.get('containerIp'))
                 result.append(resource)
         finally:
             zkOper.close()
@@ -58,7 +58,6 @@ class GatherClusterResourceHandler(APIHandler):
         return result
 
 
-@require_basic_auth
 class GatherClusterMemeoyHandler(GatherClusterResourceHandler):
     
     def get(self, cluster):
@@ -66,7 +65,6 @@ class GatherClusterMemeoyHandler(GatherClusterResourceHandler):
         self.finish({'data': result})
 
 
-@require_basic_auth
 class GatherClusterCpuacctHandler(GatherClusterResourceHandler):
 
     def get(self, cluster):
@@ -74,7 +72,6 @@ class GatherClusterCpuacctHandler(GatherClusterResourceHandler):
         self.finish({'data': result})
 
 
-@require_basic_auth
 class GatherClusterNetworkioHandler(GatherClusterResourceHandler):
         
     def get(self, cluster):
@@ -82,7 +79,6 @@ class GatherClusterNetworkioHandler(GatherClusterResourceHandler):
         self.finish({'data': result})
 
 
-@require_basic_auth
 class GatherClusterDiskHandler(GatherClusterResourceHandler):
         
     def get(self, cluster):
