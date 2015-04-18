@@ -38,7 +38,7 @@ class StateOpers(object):
         return con.id()
 
     def get_file_value(self, file_path):
-        value = 0
+        value = ''
         file_cmd = 'cat %s' % file_path
         if os.path.exists(file_path):
             value = commands.getoutput(file_cmd)
@@ -75,9 +75,11 @@ class StateOpers(object):
         under_oom_value = re.findall('.*under_oom (\d)$', value)[0]
         return int(under_oom_value)
 
-    def get_memory_stat_value(self):
+    def get_memory_stat_value_list(self):
         value = self.get_file_value(self.memory_stat_path)
-        return value.split('\n')
+        if value:
+            return value.split('\n')
+        return []
 
     def get_cpuacct_stat_value(self):
         value = self.get_file_value(self.cpuacct_stat_path)
@@ -85,7 +87,7 @@ class StateOpers(object):
 
     def get_memory_stat_item(self):
         mem_stat_dict = {}
-        mem_stat_items = self.get_memory_stat_value()
+        mem_stat_items = self.get_memory_stat_value_list()
         for item in mem_stat_items:
             if 'total_rss' in item:
                 total_rss = item.split(' ')[1]
@@ -202,4 +204,4 @@ class StateOpers(object):
     def double_mem(self):
         memsw_ret = self.__double_memsw_size()
         mem_ret = self.__double_mem_size()
-        return mem_ret and mem_ret
+        return memsw_ret and mem_ret

@@ -52,7 +52,7 @@ class ContainerCluster_Action_Base(Abstract_Async_Thread):
         zkOper = ZkOpers()
         try:
             cluster_info = zkOper.retrieve_container_cluster_info(self.cluster)
-            use_ip = cluster_info.get('use_ip')
+            use_ip = cluster_info.get('isUseIp')
             if use_ip:
                 container_ip_list = zkOper.retrieve_container_list(self.cluster)
                 logging.info('container_ip_list:%s' % str(container_ip_list) )

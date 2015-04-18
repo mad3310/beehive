@@ -143,7 +143,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         use_ip = True
         if 'bridge' == network_mode:
             use_ip = False
-        _container_cluster_info.setdefault('use_ip', use_ip)
+        _container_cluster_info.setdefault('isUseIp', use_ip)
         
         zkOper = ZkOpers()
         try:
