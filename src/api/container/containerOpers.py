@@ -226,16 +226,6 @@ class Container_Opers(Abstract_Container_Opers):
         finally:
             zkOper.close()
 
-    def get_all_containers_under_oom(self):
-        containers = self.get_all_containers(False)
-        alarm_item = []
-        for container in containers:
-            conl = StateOpers(container)
-            under_oom = conl.get_under_oom_value()
-            if under_oom:
-                alarm_item.append(container)
-        return alarm_item
-
     def _get_containers(self, container_name_list):
         host_cons = self.get_all_containers(False)
         return list ( set(host_cons) & set(container_name_list) )

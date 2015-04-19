@@ -72,8 +72,6 @@ handlers = [
     ##'''  --------------------monitor--------------------------------------- '''
     
     (r"/monitor/status", ContainerStatus),
-    (r"/monitor/serverCluster/containers/under_oom", CheckServersContainersUnderOom),
-    (r"/inner/monitor/server/containers/under_oom", CheckServerContainersUnderOom),
     
     ##'''  --------------------resource--------------------------------------- '''
     (r"/resource/ip", FetchIpHandler),

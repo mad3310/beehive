@@ -174,38 +174,3 @@ class CheckContainersOomKillDisable(CheckContainersKeyValue):
     
     def __init__(self):
         super(CheckContainersOomKillDisable, self).__init__('oom_kill_disable', 1)
-
-
-# class CheckContainersOomKillDisable(CheckStatusBase):
-#     
-#     server_opers = Server_Opers()
-#     
-#     def check(self):
-#         monitor_type, monitor_key, error_record = 'container', 'oom_kill_disable', []
-#         failed_count = 0
-#         
-#         logging.info('do check oom_kill_disable')
-#         zk_opers = ZkOpers()
-#         try:
-#             server_list = zk_opers.retrieve_servers_white_list()
-#             for server in server_list:
-#                 under_oom_info = zk_opers.retrieveDataNodeContainersResource(server, monitor_key)
-#                 container_under_oom_dict = under_oom_info.get(monitor_key)
-#                 for container, under_oom_value in container_under_oom_dict.items():
-#                     if under_oom_value != 0:
-#                         error_record.append(container)
-#                         failed_count = len(error_record)
-#                         
-#         finally:
-#             zk_opers.close()
-#         
-#         alarm_level = self.retrieve_alarm_level(0, 0, failed_count)
-#         super(CheckContainersUnderOom, self).write_status(0, 0, failed_count, 
-#                                                           alarm_level, error_record,
-#                                                           monitor_type, monitor_key)      
-# 
-#     def retrieve_alarm_level(self, total_count, success_count, failed_count):
-#         if failed_count == 0:
-#             return options.alarm_nothing
-#         else:
-#             return options.alarm_serious
