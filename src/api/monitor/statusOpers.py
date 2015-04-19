@@ -141,7 +141,7 @@ class CheckContainersUnderOom(CheckStatusBase):
             for server in server_list:
                 under_oom_info = zk_opers.retrieveDataNodeContainersResource(server, 'under_oom')
                 for container, under_oom_value_dict in under_oom_info.items():
-                    if under_oom_value_dict.get('under_oom') != 0:
+                    if under_oom_value_dict.get('under_oom') != '0':
                         error_record.append(container)
                         failed_count = len(error_record)
                         

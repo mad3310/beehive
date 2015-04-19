@@ -298,7 +298,7 @@ class Container_Opers(Abstract_Container_Opers):
             resource_type: memory, networkio, cpuacct, disk and so on.
         '''
         
-        container_name_list = self.get_all_containers()
+        container_name_list = self.get_all_containers(False)
         if not container_name_list:
             return {}
         
