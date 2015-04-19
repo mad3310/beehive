@@ -309,7 +309,7 @@ class Container_Opers(Abstract_Container_Opers):
                               'under_oom' : 'get_under_oom_value', 
                               'oom_kill_disable' : 'get_oom_kill_disable_value',
                               }
-                
+        
         resource_info, resource_item, container_resource = {}, {}, {}
         current_time = get_current_time()
         for container_name in container_name_list:
