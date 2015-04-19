@@ -44,53 +44,6 @@ class ContainerStatus(APIHandler):
         self.finish(stat_dict)
 
 
-class CheckServerContainersMemLoad(APIHandler):
-    
-    server_opers = Server_Opers()
-    
-    def get(self):
-        
-        logging.info('server: %s' % self.request.remote_ip)
-        cons_mem_load = self.server_opers.get_all_containers_mem_load()
-        
-        logging.info('get server %s containers memory load :%s' % (self.request.remote_ip, str(cons_mem_load) ) )
-        self.finish(cons_mem_load)
-
-
-@require_basic_auth
-class CheckServersContainersMemLoad(APIHandler):
-    
-    @asynchronous
-    @engine
-    def get(self):
-        
-        zkOper = ZkOpers()
-        
-        try:
-            server_list = zkOper.retrieve_servers_white_list()
-        finally:
-            zkOper.close()
-            
-        
-        async_client = AsyncHTTPClient()
-        
-        server_cons_mem_load = {}
-        try:
-            for server in server_list:
-                requesturi = 'http://%s:%s/inner/monitor/server/containers/memory' % (server, options.port)
-                logging.info('server requesturi: %s' % str(requesturi))
-                response = yield Task(async_client.fetch, requesturi)
-                logging.info('mem response body: %s' % str(response.body) )
-                body = json.loads(response.body.strip())
-                con_mem_load = body.get('response')
-                server_cons_mem_load.setdefault(server, con_mem_load)
-        finally:
-            async_client.close()
-            
-        self.finish( server_cons_mem_load )
-
-
-
 class CheckServerContainersUnderOom(APIHandler):
     """
         is invoked by CheckServersContainersUnderOom below

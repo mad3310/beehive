@@ -132,29 +132,21 @@ class CheckContainersUnderOom(CheckStatusBase):
     
     def check(self):
         monitor_type, monitor_key, error_record = 'container', 'under_oom', []
-        failed_count, containers_mem_load = 0, {}
+        failed_count = 0
+
+        logging.info('do check under_oom')
+        zk_opers = ZkOpers()
         try:
-            containers_under_oom = {}
-            logging.info('do check under_oom')
-            containers_under_oom = self._get('/monitor/serverCluster/containers/under_oom')
-            logging.info('containers_under_oom:%s' % str(containers_under_oom) )
-            
-            for host_ip, host_cons_under_oom in containers_under_oom.items():
-                for key, illegal_cons in host_cons_under_oom.items():
-                    if illegal_cons:
-                        each = {}
-                        failed_count += len(illegal_cons)
-                        each.setdefault(host_ip, illegal_cons)
-                        error_record.append(each)
-        
-        except:
-            '''
-            @todo: exception will continue run? the zk will record error message or right message?
-            '''
-            error_msg = str(traceback.format_exc())
-            logging.error(error_msg)
-            failed_count = 1
-            error_record.append(error_msg)
+            server_list = zk_opers.retrieve_servers_white_list()
+            for server in server_list:
+                under_oom_info = zk_opers.retrieveDataNodeContainersResource(server, 'under_oom')
+                for container, under_oom_value_dict in under_oom_info.items():
+                    if under_oom_value_dict.get('under_oom') != 0:
+                        error_record.append(container)
+                        failed_count = len(error_record)
+                        
+        finally:
+            zk_opers.close()
         
         alarm_level = self.retrieve_alarm_level(0, 0, failed_count)
         super(CheckContainersUnderOom, self).write_status(0, 0, failed_count, 
@@ -166,60 +158,3 @@ class CheckContainersUnderOom(CheckStatusBase):
             return options.alarm_nothing
         else:
             return options.alarm_serious
-
-
-
-
-# class CheckContainersMemLoad(CheckStatusBase):
-# 
-#     server_opers = Server_Opers()
-# 
-#     def check(self):
-#         monitor_type, monitor_key, error_record = 'container', 'mem_load', []
-#         failed_count, containers_mem_load = 0, {}
-#         try:
-#             logging.info('do monitor memory load')
-#             containers_mem_load = self._get('/monitor/serverCluster/containers/memory')
-#             logging.info('containers_mem_load result:%s' % str(containers_mem_load) )
-#             overload_containers = self.__get_host_overload_containers(containers_mem_load)
-#             
-#             logging.info('load memory:%s' % str(overload_containers) )
-#             
-#             for host_ip, host_cons_mem_load in overload_containers.items():
-#                 each = {}
-#                 each.setdefault(host_ip, host_cons_mem_load)
-#                 error_record.append(each)
-#                 for container, mem_load_info in host_cons_mem_load.items():
-#                     failed_count += 1
-#         
-#         except:
-#             error_msg = str(traceback.format_exc())
-#             logging.error(error_msg)
-#             error_record.append(error_msg)
-#             
-#         alarm_level = self.retrieve_alarm_level(0, 0, failed_count)
-#         super(CheckContainersMemLoad, self).write_status(0, 0, failed_count, 
-#                                                          alarm_level, error_record,
-#                                                          monitor_type, monitor_key) 
-# 
-#     def __get_host_overload_containers(self, containers_mem_load):
-#         ret = {}
-#         if isinstance(containers_mem_load, dict):
-#             for host_ip, host_cons_mem_load in containers_mem_load.items():
-#                 overload_containers = {}
-#                 for container, mem_load_info in host_cons_mem_load.items():
-#                     mem_load_rate = mem_load_info.get('mem_load_rate')
-#                     memsw_load_rate = mem_load_info.get('memsw_load_rate')
-#                     if mem_load_rate > 0.75 or memsw_load_rate > 0.75:
-#                         logging.info('mem_load_rate or memsw_load_rate bigger than 0.75: %s' % str(mem_load_rate) )
-#                         overload_containers.setdefault(container, mem_load_info)
-#                 ret.setdefault(host_ip, overload_containers)
-#         else:
-#             ret.setdefault('code error', str(containers_mem_load) )
-#         return ret
-# 
-#     def retrieve_alarm_level(self, total_count, success_count, failed_count):
-#         if failed_count == 0:
-#             return options.alarm_nothing
-#         else:
-#             return options.alarm_serious

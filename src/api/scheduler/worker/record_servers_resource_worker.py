@@ -7,13 +7,13 @@ from common.abstractAsyncThread import Abstract_Async_Thread
 from server.serverOpers import Server_Opers
 
 
-class Collect_Servers_Resource_Worker(Abstract_Async_Thread):
+class Record_Servers_Resource_Worker(Abstract_Async_Thread):
     
     server_opers = Server_Opers()
     
     def __init__(self, timeout=55):
         self.timeout = timeout
-        super(Collect_Servers_Resource_Worker,self).__init__()
+        super(Record_Servers_Resource_Worker,self).__init__()
 
     def run(self):
         

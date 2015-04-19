@@ -19,7 +19,7 @@ from zk.zkOpers import ZkOpers
 
 class GatherClusterResourceHandler(APIHandler):
     '''
-        the result is webportal need
+        the result is webportal need, return to webportal
     '''
     
     container_opers = Container_Opers()
@@ -37,20 +37,20 @@ class GatherClusterResourceHandler(APIHandler):
                                     response =  error_message)
             
             container_node_list = zkOper.retrieve_container_list(cluster)
-            container_dict, result  = {}, []
+            host_container_dict, result  = {}, []
             for container_node in container_node_list:
                 container_name = self.container_opers.get_container_name_from_zk(cluster, container_node)
                 host_ip = self.container_opers.get_host_ip_from_zk(cluster, container_node)
-                container_dict.setdefault(host_ip, container_name)
+                host_container_dict.setdefault(host_ip, container_name)
             
-            for host_ip, container_name in container_dict.items():
+            for host_ip, container_name in host_container_dict.items():
                 resource = {}
                 resource_info = zkOper.retrieveDataNodeContainersResource(host_ip, resource_type)
-                resource_detail = resource_info.get(resource_type)
-                resource.setdefault('value', resource_detail)
+                container_resource = resource_info.get(resource_type)
+                _resource = container_resource.get(container_name)
+                resource.setdefault('value', _resource)
                 resource.setdefault('hostIp', host_ip)
-                resource.setdefault('containerName', resource_info.get('containerName'))
-                resource.setdefault('containerIp', resource_info.get('containerIp'))
+                resource.setdefault('containerName', container_name)
                 result.append(resource)
         finally:
             zkOper.close()

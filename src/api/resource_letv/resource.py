@@ -60,22 +60,28 @@ class Resource(object):
         '''
            count servers' scores
         '''
-        score_host_dict = self.__count_score(host_resource_dict, weight_item_score)
-        logging.info('host and score:%s' % str(score_host_dict))
+        host_score_dict = self.__count_score(host_resource_dict, weight_item_score)
+        logging.info('host and score:%s' % str(host_score_dict))
         
         '''
             elect servers by their scores
         '''
-        score_list = sorted(score_host_dict, reverse=True)
-        for score in score_list:
-            _host_ip = score_host_dict.get(score)
-            elect_server_list.append(_host_ip)
+        score_list = sorted(host_score_dict.values(), reverse=True)
+        host_list = self.__host_list(score_list, host_score_dict)
         
         node_count = component_container_cluster_config.nodeCount
-        if len(elect_server_list) < node_count:
+        if len(host_list) < node_count:
             raise CommonException('usable servers are not enough!')
         
-        return elect_server_list
+        return host_list[:node_count]
+
+    def __host_list(self, score_list, host_score_dict):
+        host_list = []
+        for score in score_list:
+            for host, _score in host_score_dict.items():
+                if score == _score:
+                    host_list.append(host)
+        return host_list
 
     def retrieve_usable_host_resource(self, component_container_cluster_config):
         host_resource_dict = {}
@@ -105,14 +111,14 @@ class Resource(object):
         mem_score_dict = self.__get_item_score(mem_list, weight_memory_score)
         disk_score_dict = self.__get_item_score(disk_list, weight_disk_score)
         
-        score_host_dict = {}
+        host_score_dict = {}
         for index, host in enumerate(host_list):
             mem_score = mem_score_dict.get(mem_list[index])
             disk_score = disk_score_dict.get(disk_list[index])
             total_score = mem_score + disk_score
-            score_host_dict.setdefault(total_score, host)
+            host_score_dict.setdefault(host, total_score)
             
-        return score_host_dict
+        return host_score_dict
 
     def __get_item_score(self, item_list, total_score):
         max_value = max(item_list)

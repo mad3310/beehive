@@ -72,9 +72,7 @@ handlers = [
     ##'''  --------------------monitor--------------------------------------- '''
     
     (r"/monitor/status", ContainerStatus),
-    (r"/monitor/serverCluster/containers/memory", CheckServersContainersMemLoad),
     (r"/monitor/serverCluster/containers/under_oom", CheckServersContainersUnderOom),
-    (r"/inner/monitor/server/containers/memory", CheckServerContainersMemLoad),
     (r"/inner/monitor/server/containers/under_oom", CheckServerContainersUnderOom),
     
     ##'''  --------------------resource--------------------------------------- '''

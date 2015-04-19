@@ -226,19 +226,6 @@ class Container_Opers(Abstract_Container_Opers):
         finally:
             zkOper.close()
 
-    def get_all_containers_mem_load(self):
-        load_dict = {}
-        containers = self.get_all_containers(False)
-        for container in containers:
-            load = {}
-            conl = StateOpers(container)
-            mem_load = conl.get_mem_load()
-            memsw_load = conl.get_memsw_load()
-            load.update(mem_load)
-            load.update(memsw_load)
-            load_dict.setdefault(container, load)
-        return load_dict
-
     def get_all_containers_under_oom(self):
         containers = self.get_all_containers(False)
         alarm_item = []
@@ -318,19 +305,21 @@ class Container_Opers(Abstract_Container_Opers):
         resource_func_dict = {'memory' : 'get_memory_stat_item',
                               'cpuacct' : 'get_cpuacct_stat_item',
                               'networkio' : 'get_network_io',
-                              'disk' : 'get_sum_disk_load'
+                              'disk' : 'get_sum_disk_load', 
+                              'under_oom' : 'get_under_oom_value', 
+                              'oom_kill_disable' : 'get_oom_kill_disable_value',
                               }
                 
-        resource_info, resource_item = {}, {}
+        resource_info, resource_item, container_resource = {}, {}, {}
         current_time = get_current_time()
         for container_name in container_name_list:
             state_opers = StateOpers(container_name)
             _method = resource_func_dict.get(resource_type)
             resource_item = getattr(state_opers, _method)()
+            container_resource.setdefault(container_name, resource_item)
             
-        resource_info.setdefault(str(resource_type), resource_item)
+        resource_info.setdefault(str(resource_type), container_resource)
         resource_info.setdefault('time', current_time)
-        resource_info.setdefault('containerName', container_name)
         return resource_info
 
     def write_containers_resource_to_zk(self, resource_type, resource_info):
