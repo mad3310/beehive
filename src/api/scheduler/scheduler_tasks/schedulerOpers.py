@@ -100,7 +100,7 @@ class SchedulerOpers(object):
             monitor_check_worker.start()
         
         if action_timeout > 0:
-            _monitor_async_t = PeriodicCallback(self.__monitor_check_worker, action_timeout * 1000)
+            _monitor_async_t = PeriodicCallback(__monitor_check_worker, action_timeout * 1000)
             _monitor_async_t.start()
 
     def thread_exception_hanlder(self, action_timeout = 5):
