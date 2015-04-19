@@ -6,7 +6,7 @@ Created on 2013-7-21
 @author: asus
 '''
 
-from statusOpers import CheckContainersUnderOom, CheckResIpNum 
+from statusOpers import CheckContainersUnderOom, CheckResIpNum, CheckContainersOomKillDisable
 
 
 class ContainerResCheckHandler:
@@ -14,10 +14,12 @@ class ContainerResCheckHandler:
     
     """
     
+    check_cons_oom_kill_disable = CheckContainersOomKillDisable()
     check_cons_under_oom = CheckContainersUnderOom()
     
     def retrieve_info(self):
         self.check_cons_under_oom.check()
+        self.check_cons_oom_kill_disable.check()
 
 
 class ServerResCheckcHandler:
