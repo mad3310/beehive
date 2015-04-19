@@ -9,7 +9,6 @@ Created on 2013-7-21
 
 from tornado.ioloop import PeriodicCallback
 from scheduler.worker.threading_exception_handle_worker import Thread_Exception_Handler_Worker
-from scheduler.worker.monitor_record_worker import Monitor_Record_Worker
 from scheduler.worker.monitor_check_worker import Monitor_Check_Worker
 from scheduler.worker.record_servers_resource_worker import Record_Servers_Resource_Worker
 from scheduler.worker.sync_server_zk_worker import Sync_Server_Zk_Worker

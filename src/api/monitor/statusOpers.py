@@ -133,7 +133,7 @@ class CheckContainersUnderOom(CheckStatusBase):
     def check(self):
         monitor_type, monitor_key, error_record = 'container', 'under_oom', []
         failed_count = 0
-
+        
         logging.info('do check under_oom')
         zk_opers = ZkOpers()
         try:
