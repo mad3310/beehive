@@ -17,7 +17,7 @@ class CbaseContainerClusterConfig(BaseContainerClusterConfig):
         super(CbaseContainerClusterConfig, self).__init__(params)
         
         nodeCount = params.get('nodeCount')
-        self.nodeCount = int(nodeCount) if nodeCount else 1
+        self.nodeCount = int(nodeCount) if nodeCount else 3
         image = params.get('image')
         self.image = image if image else '10.160.140.32:5000/lihanlin1/cbase:V2'
         self.mount_dir = {'/srv':'/srv/tmp/c1/'}

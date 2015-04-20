@@ -40,7 +40,6 @@ class Resource(object):
             raise CommonException('ips are not enough!')
 
     def elect_servers(self, component_container_cluster_config):
-        elect_server_list  = []
         
         '''
             get usable servers and their resource.
@@ -98,29 +97,33 @@ class Resource(object):
         return host_resource_dict
 
     def __count_score(self, host_resource_dict, weight_item_score):
-        mem_list, disk_list = [], []
+        mem_list, disk_list, container_number_list = [], [], []
         
         host_list = sorted(host_resource_dict)
         for host in host_list:
             resource = host_resource_dict.get(host)
             mem_list.append(resource.get('memory'))
             disk_list.append(resource.get('disk'))
+            container_number_list.append(resource.get('container_number'))
         
         weight_memory_score = weight_item_score.get('memory')
         weight_disk_score = weight_item_score.get('disk')
+        weight_container_number_score = weight_item_score.get('container_number')
         mem_score_dict = self.__get_item_score(mem_list, weight_memory_score)
         disk_score_dict = self.__get_item_score(disk_list, weight_disk_score)
+        container_number_score_dict = self.__get_item_score(container_number_list, weight_container_number_score, reverse=False)
         
         host_score_dict = {}
         for index, host in enumerate(host_list):
             mem_score = mem_score_dict.get(mem_list[index])
             disk_score = disk_score_dict.get(disk_list[index])
-            total_score = mem_score + disk_score
+            container_number_score = container_number_score_dict.get(container_number_list[index])
+            total_score = mem_score + disk_score + container_number_score
             host_score_dict.setdefault(host, total_score)
             
         return host_score_dict
 
-    def __get_item_score(self, item_list, total_score):
+    def __get_item_score(self, item_list, total_score, reverse=True):
         max_value = max(item_list)
         
         result = {}
@@ -128,7 +131,10 @@ class Resource(object):
             '''
             @todo: what means? total_score * item / max_value
             '''
-            item_score = total_score * item / max_value
+            if reverse:
+                item_score = total_score * item / max_value
+            else:
+                item_score = total_score * (max_value - item) / max_value
             result.setdefault(item, int(item_score))
             
         return result

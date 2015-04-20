@@ -13,6 +13,7 @@ import docker
 
 from utils.invokeCommand import InvokeCommand
 from docker_letv.dockerOpers import Docker_Opers
+from container.containerOpers import Container_Opers
 
 
 class Server_Res_Opers():
@@ -25,13 +26,15 @@ class Server_Res_Opers():
     _logger.setLevel(logging.INFO)
     
     docker_opers = Docker_Opers()
+    container_opers = Container_Opers()
 
     def __init__(self ,container_name = ""):
         self.name = container_name
         if self.name != "":
             self.matrix_list = self.get_top_cmd_ret()
             self.id_pid_dict = self.get_container_id_pid_dict(self.name)
-    
+
+
     def retrieve_host_stat(self):
         resource = {}
         
@@ -41,6 +44,9 @@ class Server_Res_Opers():
         server_disk = self.disk_stat()
         resource.setdefault("server_disk", server_disk)
 
+        containers_count = self.container_opers.get_all_containers()
+        resource.setdefault("container_number", containers_count)
+        
         # disk_over_load = self.disk_loadavg()
         # resource.setdefault("disk_over_load", disk_over_load)
         '''
