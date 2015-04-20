@@ -9,25 +9,23 @@ from base import APIHandler
 from tornado.options import options
 
 
-# admin conf
-# eg. curl -d "zkAddress=10.204.8.211" "http://localhost:8888/admin/conf"
 class AdminConf(APIHandler):
     
     confOpers = ConfigFileOpers()
-    
+
     def post(self):
-        requestParam = {}
-        args = self.request.arguments
-        for key in args:
-            requestParam.setdefault(key,args[key][0])
-            
+        '''
+        function: admin conf
+        url example: curl -d "zkAddress=127.0.0.1&zkPort=2181" "http://localhost:8888/admin/conf"
+        '''
+        requestParam = self.get_all_arguments()
         if requestParam != {}:
             self.confOpers.setValue(options.container_manager_property, requestParam)
-        
-        return_message = {}
-        return_message.setdefault("message", "admin conf successful!")
-        self.finish(return_message)
-        
+            
+        result = {}
+        result.setdefault("message", "admin conf successful!")
+        self.finish(result)
+ 
 # admin reset
 # eg. curl --user root:root "http://localhost:8888/admin/reset"
 class AdminReset(APIHandler):
