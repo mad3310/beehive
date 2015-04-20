@@ -5,7 +5,7 @@ import json
 
 from zk.zkOpers import ZkOpers
 from utils.configFileOpers import ConfigFileOpers
-from utils import getHostIp
+from utils import getHostIp, get_zk_address
 from tornado.options import options
 
 
@@ -20,6 +20,11 @@ class CheckSync():
     '''
     
     def sync(self):
+        zk_address, zk_port = get_zk_address()
+        if not (zk_address and zk_port):
+            logging.info('admin zookeeper first!')
+            return
+        
         zkOper = ZkOpers()
         try:
             existed = zkOper.existCluster()
@@ -36,7 +41,7 @@ class CheckSync():
         zkOper = ZkOpers()
         try:
             cluster_uuid = zkOper.getClusterUUID() 
-            uuid_value, stat = zkOper.retrieveClusterProp(cluster_uuid) 
+            uuid_value, _ = zkOper.retrieveClusterProp(cluster_uuid) 
         finally:
             zkOper.close()
         
@@ -59,5 +64,4 @@ class CheckSync():
                 logging.error('server %s should be registered first' % str(server_ip) )
         finally:
             zkOper.close()
-        
         
