@@ -145,6 +145,11 @@ class CheckContainersKeyValue(CheckStatusBase):
             server_list = zk_opers.retrieve_servers_white_list()
             for server in server_list:
                 under_oom_info = zk_opers.retrieveDataNodeContainersResource(server, self.monitor_key)
+                '''
+                    if new server join server cluster,there
+                '''
+                if not under_oom_info:
+                    return
                 container_under_oom_dict = under_oom_info.get(self.monitor_key)
                 for container, under_oom_value in container_under_oom_dict.items():
                     if under_oom_value != self.value:

@@ -141,27 +141,6 @@ class ContainerClusterHandler(APIHandler):
 
 
 @require_basic_auth
-class CheckCreateClusterStatusHandler(APIHandler):
-    '''
-    classdocs
-    '''
-    containerClusterOpers = ContainerCluster_Opers()
-
-    # eg. curl --user root:root -X GET http://localhost:8888/containerCluster/createStatus/dh
-    def get(self, containerClusterName):
-        result =  self.containerClusterOpers.check(containerClusterName)
-        
-        logging.info('check_result : %s, type: %s' % (str(result), type(result)))
-        if result.get('code') == '000002':
-            error_message = result.get('error_msg')
-            raise HTTPAPIError(status_code=417, error_detail=error_message,\
-                                notification = "direct", \
-                                log_message= error_message)
-        
-        self.finish(result)
-
-
-@require_basic_auth
 class CheckContainerClusterStatusHandler(APIHandler):
     '''
     classdocs
