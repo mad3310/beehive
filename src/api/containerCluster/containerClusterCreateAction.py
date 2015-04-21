@@ -72,9 +72,6 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         
         is_res_verify = _component_container_cluster_config.is_res_verify
         if is_res_verify:
-            '''
-            @todo: why remove the self.res_verify.get_create_containers_hostip_list(usable_hostip_num_list, _component_container_cluster_config)
-            '''
             self.resource.validateResource(_component_container_cluster_config)
         
         host_ip_list = self.resource.elect_servers(_component_container_cluster_config)

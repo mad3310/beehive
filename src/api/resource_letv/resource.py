@@ -43,21 +43,14 @@ class Resource(object):
             get usable servers and their resource.
         '''
         host_resource_dict = self.retrieve_usable_host_resource(component_container_cluster_config)
-            
-
-        weight_item_score = {
-            'memory': 20, 
-            'disk': 20, 
-            'load5': 20, 
-            'load10': 10, 
-            'load15': 5, 
-            'container_number': 15
-        }
-
+        
         '''
            count servers' scores
         '''
-        host_score_dict = self.__count_score(host_resource_dict, weight_item_score)
+        
+        resource_weight__score = component_container_cluster_config.resource_weight__score
+        
+        host_score_dict = self.__count_score(host_resource_dict, resource_weight__score)
         logging.info('host and score:%s' % str(host_score_dict))
         
         '''

@@ -31,11 +31,6 @@ def get_zk_address():
     zk_port = ret_dict['zkPort']
     return zk_address, zk_port
 
-def getClusterUUID():
-    ret_dict = confOpers.getValue(options.cluster_property, ['clusterUUID'])
-    clusterUUID = ret_dict['clusterUUID']
-    return clusterUUID
-
 def get_random_password():
     a = list(string.letters+string.digits)
     random.shuffle(a)

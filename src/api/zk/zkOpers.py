@@ -12,7 +12,6 @@ import threading
 
 from kazoo.client import KazooClient
 from utils import ping_ip_available, nc_ip_port_available, get_zk_address
-from utils.decorators import singleton
 from kazoo.retry import KazooRetry
 
 
@@ -102,19 +101,19 @@ class ZkOpers(object):
         _path = "%s/%s/dataNode/%s/containersResource/%s" % (self.rootPath, _clusterUUID, ip_address, resource_type)
         resultValue = self._retrieveSpecialPathProp(_path)
         return resultValue
-    
+
     def writeDataNodeServerResource(self, ip_address, resource_info):
         _clusterUUID = self.getClusterUUID()
-        _path = "%s/%s/DataNode/%s/serverResource" % (self.rootPath, _clusterUUID, ip_address)
+        _path = "%s/%s/dataNode/%s/serverResource" % (self.rootPath, _clusterUUID, ip_address)
         self.zk.ensure_path(_path)
         self.zk.set(_path, str(resource_info))
-        
+
     def retrieveDataNodeServerResource(self, ip_address):
         _clusterUUID = self.getClusterUUID()
-        _path = "%s/%s/DataNode/%s/serverResource" % (self.rootPath, _clusterUUID, ip_address)
+        _path = "%s/%s/dataNode/%s/serverResource" % (self.rootPath, _clusterUUID, ip_address)
         resultValue = self._retrieveSpecialPathProp(_path)
         return resultValue
-    
+
     
     '''
     *************************************container cluster****************************************
@@ -200,9 +199,7 @@ class ZkOpers(object):
     '''
     **************************************monitor status**************************************************
     '''
-    '''
-    @todo: every container_node has status item, what is the monitor_status?
-    '''
+
     def retrieve_monitor_status_list(self, monitor_type):
         clusterUUID = self.getClusterUUID()
         path = self.rootPath + "/" + clusterUUID + "/monitor/" + monitor_type
@@ -227,8 +224,6 @@ class ZkOpers(object):
         logging.debug("monitor status:" + path)
         self.zk.ensure_path(path)
         self.zk.set(path, str(monitor_value))#version need to write
-
-
 
 
 

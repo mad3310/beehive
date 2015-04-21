@@ -43,6 +43,13 @@ class BaseContainerClusterConfig(object):
         lxc_conf = params.get('LxcConf')
         self.lxc_conf = dict(lxc_conf) if lxc_conf else {'lxc.cgroup.memory.oom_control':1}
         
+        """
+            if component need config itself, put self.resource_weight__score 
+            in its config file
+        """
+        self.resource_weight__score = { 'memory': 20, 'disk': 20, 'load5': 20, 'load10': 10, 
+                                        'load15': 5, 'container_number': 15 }
+        
         
         '''
             ---------------------params  must be supplied------------------------------
