@@ -33,9 +33,7 @@ class Resource(object):
             zkOper.close()
         
         nodeCount = component_container_cluster_config.nodeCount
-        """
-            ip or port to diff
-        """
+        
         if len(ip_list) < nodeCount:
             raise CommonException('ips are not enough!')
 
@@ -143,7 +141,7 @@ class Resource(object):
         resource_result = {}
         zkOper = ZkOpers()
         try:
-            server_res = zkOper.retrieveServersWhiteListResource(host_ip)
+            server_res = zkOper.retrieveDataNodeServerResource(host_ip)
         finally:
             zkOper.close()
         

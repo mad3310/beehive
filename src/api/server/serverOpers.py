@@ -42,7 +42,7 @@ class Server_Opers(object):
         zkOper = ZkOpers()
         try:
             host_ip = getHostIp()
-            zkOper.writeServersWhiteListResource(host_ip, server_res)
+            zkOper.writeDataNodeServerResource(host_ip, server_res)
         finally:
             zkOper.close()
 

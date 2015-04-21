@@ -103,7 +103,18 @@ class ZkOpers(object):
         resultValue = self._retrieveSpecialPathProp(_path)
         return resultValue
     
-
+    def writeDataNodeServerResource(self, ip_address, resource_info):
+        _clusterUUID = self.getClusterUUID()
+        _path = "%s/%s/DataNode/%s/serverResource" % (self.rootPath, _clusterUUID, ip_address)
+        self.zk.ensure_path(_path)
+        self.zk.set(_path, str(resource_info))
+        
+    def retrieveDataNodeServerResource(self, ip_address):
+        _clusterUUID = self.getClusterUUID()
+        _path = "%s/%s/DataNode/%s/serverResource" % (self.rootPath, _clusterUUID, ip_address)
+        resultValue = self._retrieveSpecialPathProp(_path)
+        return resultValue
+    
     
     '''
     *************************************container cluster****************************************
@@ -225,18 +236,7 @@ class ZkOpers(object):
     '''
     ***************************************config********************************************
     '''
-
-    def writeServersWhiteListResource(self, ip_address, resource_info):
-        _clusterUUID = self.getClusterUUID()
-        _path = "%s/%s/config/serversWhiteList/%s/resource" % (self.rootPath, _clusterUUID, ip_address)
-        self.zk.ensure_path(_path)
-        self.zk.set(_path, str(resource_info))
-        
-    def retrieveServersWhiteListResource(self, ip_address):
-        _clusterUUID = self.getClusterUUID()
-        _path = "%s/%s/config/serversWhiteList/%s/resource" % (self.rootPath, _clusterUUID, ip_address)
-        resultValue = self._retrieveSpecialPathProp(_path)
-        return resultValue
+    
 
     def retrieve_servers_white_list(self):
         clusterUUID = self.getClusterUUID()
@@ -255,25 +255,6 @@ class ZkOpers(object):
         path = self.rootPath + "/" + clusterUUID + "/config/serversWhiteList/" + server_ip
         self.zk.ensure_path(path) 
         self.zk.delete(path)
-        
-    def retrieve_available_item(self):
-        clusterUUID = self.getClusterUUID()
-        path = "%s/%s/config/serversOrderByResource" % (self.rootPath, clusterUUID)
-        result = self._retrieveSpecialPathProp(path)
-        return result
-    
-    def retrieve_servers_order_by_resource(self, available_item):
-        clusterUUID = self.getClusterUUID()
-        path = "%s/%s/config/serversOrderByResource/%s" % (self.rootPath, clusterUUID, available_item)
-        self.zk.ensure_path(path)
-        data_node_ip_list = self._return_children_to_list(path)
-        return data_node_ip_list
-    
-    def write_servers_order_by_resource(self, available_item, data_node_ip_list):
-        clusterUUID = self.getClusterUUID()
-        path = "%s/%s/config/serversOrderByResource/%s" % (self.rootPath, clusterUUID, available_item)
-        self.zk.ensure_path(path)
-        self.zk.set(path, data_node_ip_list)
 
 
 

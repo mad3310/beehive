@@ -154,7 +154,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
     def __dispatch_create_container_task(self, container_model_list):
         
         ip_port_params_list = []
-        for index, container_model in enumerate(container_model_list):
+        for container_model in container_model_list:
             property_dict = _get_property_dict(container_model)
             host_ip = property_dict.get('host_ip')
             ip_port_params_list.append((host_ip, options.port, property_dict))
