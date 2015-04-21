@@ -23,11 +23,6 @@ class Server_Opers(object):
     '''
     classdocs
     '''
-    
-    '''
-    @todo: please notice that:Server opers don't reference docker opers.
-    whether associated method should be move them into container opers?
-    '''
         
     server_res_opers = Server_Res_Opers()
     

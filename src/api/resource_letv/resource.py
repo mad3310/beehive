@@ -102,7 +102,7 @@ class Resource(object):
         weight_container_number_score = weight_item_score.get('container_number')
         mem_score_dict = self.__get_item_score(mem_list, weight_memory_score)
         disk_score_dict = self.__get_item_score(disk_list, weight_disk_score)
-        container_number_score_dict = self.__get_item_score(container_number_list, weight_container_number_score, reverse=False)
+        container_number_score_dict = self.__get_item_score(container_number_list, weight_container_number_score, reverse=True)
         
         host_score_dict = {}
         for index, host in enumerate(host_list):
@@ -114,7 +114,7 @@ class Resource(object):
             
         return host_score_dict
 
-    def __get_item_score(self, item_list, total_score, reverse=True):
+    def __get_item_score(self, item_list, total_score, reverse=False):
         max_value = max(item_list)
         
         result = {}
@@ -123,9 +123,9 @@ class Resource(object):
             @todo: what means? total_score * item / max_value
             '''
             if reverse:
-                item_score = total_score * item / max_value
-            else:
                 item_score = total_score * (max_value - item) / max_value
+            else:
+                item_score = total_score * item / max_value
             result.setdefault(item, int(item_score))
             
         return result

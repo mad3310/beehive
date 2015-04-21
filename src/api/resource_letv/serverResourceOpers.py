@@ -44,8 +44,8 @@ class Server_Res_Opers():
         server_disk = self.disk_stat()
         resource.setdefault("server_disk", server_disk)
 
-        containers_count = self.container_opers.get_all_containers()
-        resource.setdefault("container_number", containers_count)
+        containers = self.container_opers.get_all_containers()
+        resource.setdefault("container_number", len(containers))
         
         # disk_over_load = self.disk_loadavg()
         # resource.setdefault("disk_over_load", disk_over_load)
