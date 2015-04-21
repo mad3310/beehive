@@ -61,8 +61,8 @@ class CheckResIpNum(CheckStatusBase):
             error_record = 'the number of ips in ip Pool is %s, please add ips!' % success_count
         alarm_level = self.retrieve_alarm_level(0, success_count, 0)
         super(CheckResIpNum, self).write_status(0, success_count, 0, \
-                                                    alarm_level, error_record, 
-                                                    monitor_type, monitor_key)
+                                                alarm_level, error_record, 
+                                                monitor_type, monitor_key)
         
 
     def retrieve_alarm_level(self, total_count, success_count, failed_count):
@@ -92,9 +92,9 @@ class CheckServerPortNum(CheckStatusBase):
                     error_record += 'the number of port in port Pool is %s on server :%s, please add ips!\n' % (success_count, host_ip)
         
         alarm_level = self.retrieve_alarm_level(0, success_count, 0)
-        super(CheckServerPortNum, self).write_status(0, success_count, 0, \
-                                                    alarm_level, error_record, 
-                                                    monitor_type, monitor_key)
+        super(CheckServerPortNum, self).write_status(0, 0, 0, \
+                                                     alarm_level, error_record, 
+                                                     monitor_type, monitor_key)
     
     def retrieve_alarm_level(self, total_count, success_count, failed_count):
         if 30 < success_count:
