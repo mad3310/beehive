@@ -49,7 +49,7 @@ class PortOpers(object):
     def get_port_num(self, host_ip):
         zkOper = ZkOpers()
         try:
-            port_list = zkOper.get_ports_from_portPool()
+            port_list = zkOper.get_ports_from_portPool(host_ip)
         finally:
             zkOper.close()
         
