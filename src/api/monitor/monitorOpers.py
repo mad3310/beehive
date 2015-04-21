@@ -6,7 +6,7 @@ Created on 2013-7-21
 @author: asus
 '''
 
-from statusOpers import CheckContainersUnderOom, CheckResIpNum, CheckContainersOomKillDisable
+from statusOpers import CheckContainersUnderOom, CheckResIpNum, CheckContainersOomKillDisable, CheckServerPortNum
 
 
 class ContainerResCheckHandler:
