@@ -49,7 +49,6 @@ class CheckSync():
         uuid_value = json.loads(uuid_value)
         self.config_file_obj.setValue(options.server_cluster_property, uuid_value) 
 
-
     def sync_data_node(self):
         server_ip = getHostIp()
         

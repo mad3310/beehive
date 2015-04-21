@@ -99,7 +99,3 @@ class SchedulerOpers(object):
         if action_timeout > 0:
             _exception_async_t = PeriodicCallback(__create_worker_exception_handler, action_timeout * 1000)
             _exception_async_t.start()
-
-#     def __create_worker_exception_handler(self):
-#         exception_hanlder_worker = Thread_Exception_Handler_Worker()
-#         exception_hanlder_worker.start()

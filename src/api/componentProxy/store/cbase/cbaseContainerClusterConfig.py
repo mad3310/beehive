@@ -20,4 +20,6 @@ class CbaseContainerClusterConfig(BaseContainerClusterConfig):
         self.nodeCount = int(nodeCount) if nodeCount else 3
         image = params.get('image')
         self.image = image if image else '10.160.140.32:5000/lihanlin1/cbase:V2'
-        self.mount_dir = {'/srv':'/srv/tmp/c1/'}
+        
+        mount_dir = params.get('mountDir')
+        self.mount_dir = eval(mount_dir) if mount_dir else {'/srv':'/srv/tmp/c1/'}

@@ -89,7 +89,7 @@ class CheckServerPortNum(CheckStatusBase):
             for host_ip in host_ip_list:
                 success_count = self.port_opers.get_port_num(host_ip)
                 if success_count < 30:
-                    error_record += 'the number of port in port Pool is %s on server :%s, please add ips!\n' % (success_count, host_ip)
+                    error_record += 'the number of port in port Pool is %s on server :%s, please add ports!\n' % (success_count, host_ip)
         
         alarm_level = self.retrieve_alarm_level(0, success_count, 0)
         super(CheckServerPortNum, self).write_status(0, 0, 0, \

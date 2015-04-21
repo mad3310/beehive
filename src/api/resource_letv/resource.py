@@ -119,10 +119,14 @@ class Resource(object):
         
         result = {}
         for item in item_list:
-            '''
-            @todo: what means? total_score * item / max_value
-            '''
+            
             if reverse:
+                '''
+                    eg. if no container on server No.1 , then container_num load item 
+                        No.1 server get top score
+                '''
+                if max_value == 0:
+                    item_score = total_score
                 item_score = total_score * (max_value - item) / max_value
             else:
                 item_score = total_score * item / max_value
