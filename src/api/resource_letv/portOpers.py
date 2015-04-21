@@ -46,6 +46,14 @@ class PortOpers(object):
         finally:
             zkOper.close()
         
+    def get_port_num(self, host_ip):
+        zkOper = ZkOpers()
+        try:
+            port_list = zkOper.get_ports_from_portPool()
+        finally:
+            zkOper.close()
+        
+        return len(port_list)
 
     def __get_needed_ports(self, host_ip, start_port, port_count):
         port_list = []

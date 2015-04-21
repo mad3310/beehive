@@ -2,14 +2,13 @@
 
 import logging
 import datetime
-import traceback
 
 from tornado.options import options
 from abc import abstractmethod
 from zk.zkOpers import ZkOpers
 from resource_letv.ipOpers import IpOpers
+from resource_letv.portOpers import PortOpers
 from server.serverOpers import Server_Opers
-from utils import _retrieve_userName_passwd, getHostIp, http_get
 
 TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 
@@ -49,35 +48,22 @@ class CheckStatusBase(object):
             zkOper.write_monitor_status(monitor_type, monitor_key, result_dict)
         finally:
             zkOper.close()
-        
 
-    def _get(self, uri):
-        rst = {}
-        host_ip = getHostIp()
-        logging.info('host ip :%s' % host_ip)
-        adminUser, adminPasswd = _retrieve_userName_passwd()
-        url = 'http://%s:%s%s' % (host_ip, options.port, uri)
-        logging.info('get url :%s' % url)
-        ret = http_get(url, _connect_timeout=40.0, _request_timeout=40.0, auth_username = adminUser, auth_password = adminPasswd)
-        return ret.get('response')
 
 class CheckResIpNum(CheckStatusBase):
     ip_opers = IpOpers()
 
     def check(self):
-        try:
-            monitor_type, monitor_key, error_record = 'res', 'ip_num', ''
-            success_count = 0
-            success_count = self.ip_opers.get_ip_num()
-            if success_count < 20:
-                error_record = 'the number of ips in ip Pool is %s, please add ips!' % success_count
-            alarm_level = self.retrieve_alarm_level(0, success_count, 0)
-            super(CheckResIpNum, self).write_status(0, success_count, 0, \
-                                                        alarm_level, error_record, 
-                                                        monitor_type, monitor_key)
+
+        monitor_type, monitor_key, error_record = 'res', 'ip_num', ''
+        success_count = self.ip_opers.get_ip_num()
+        if success_count < 20:
+            error_record = 'the number of ips in ip Pool is %s, please add ips!' % success_count
+        alarm_level = self.retrieve_alarm_level(0, success_count, 0)
+        super(CheckResIpNum, self).write_status(0, success_count, 0, \
+                                                    alarm_level, error_record, 
+                                                    monitor_type, monitor_key)
         
-        except:
-            logging.error( str(traceback.format_exc()) )
 
     def retrieve_alarm_level(self, total_count, success_count, failed_count):
         if 20 < success_count:
@@ -88,31 +74,49 @@ class CheckResIpNum(CheckStatusBase):
             return options.alarm_serious
 
 
+class CheckServerPortNum(CheckStatusBase):
+    port_opers = PortOpers()
+
+    def check(self):
+
+        monitor_type, monitor_key, error_record = 'res', 'port_num', ''
+        
+        zk_opers = ZkOpers()
+        try:
+            host_ip_list = zk_opers.retrieve_data_node_list()
+        finally:
+            zk_opers.close()
+            for host_ip in host_ip_list:
+                success_count = self.port_opers.get_port_num(host_ip)
+                if success_count < 30:
+                    error_record += 'the number of port in port Pool is %s on server :%s, please add ips!\n' % (success_count, host_ip)
+        
+        alarm_level = self.retrieve_alarm_level(0, success_count, 0)
+        super(CheckServerPortNum, self).write_status(0, success_count, 0, \
+                                                    alarm_level, error_record, 
+                                                    monitor_type, monitor_key)
+    
+    def retrieve_alarm_level(self, total_count, success_count, failed_count):
+        if 30 < success_count:
+            return options.alarm_nothing
+        elif 20 < success_count <= 30:
+            return options.alarm_general
+        else:
+            return options.alarm_serious
+
+
 class CheckResIpLegality(CheckStatusBase):
     
     ip_opers = IpOpers()
     
     def check(self):
-        monitor_type, monitor_key, error_record = 'res', 'ip_usable', []
-        failed_count = 0
-        try:
-            logging.info('do get_illegal_ips')
-            error_record = self.ip_opers.get_illegal_ips(20)
-            failed_count = len(error_record)
-#            if failed_count:
-#                 for ip in unusable_ip_list:
-#                     error_record += 'ip: %s,' % str(ip)
-            logging.info('check ip res resutl failed_count : %s' % failed_count)
-        except:
-            '''
-            @todo: if occurs exception, the code will be continue run?
-            '''
-            error_msg = str(traceback.format_exc())
-            logging.error(error_msg)
-            failed_count = 1
-            error_record.append(error_msg)
-            
-            
+        monitor_type, monitor_key = 'res', 'ip_usable'
+
+        logging.info('do get_illegal_ips')
+        error_record = self.ip_opers.get_illegal_ips(20)
+        failed_count = len(error_record)
+        logging.info('check ip res resutl failed_count : %s' % failed_count)
+        
         alarm_level = self.retrieve_alarm_level(0, 0, failed_count)
         super(CheckResIpLegality, self).write_status(0, 0, \
                                                     failed_count, \

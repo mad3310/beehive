@@ -28,6 +28,7 @@ class ServerResCheckcHandler:
     """
     
     check_res_ip_num = CheckResIpNum()
+    check_server_port_num = CheckServerPortNum()
     
     '''
     @todo:
@@ -37,3 +38,4 @@ class ServerResCheckcHandler:
     
     def retrieve_info(self):
         self.check_res_ip_num.check()
+        self.check_server_port_num.check()
