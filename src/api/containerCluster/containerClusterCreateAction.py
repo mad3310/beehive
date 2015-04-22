@@ -45,8 +45,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
             logging.debug('begin create')
             __action_result = self.__issue_create_action(self._arg_dict)
         except:
-            __error_message = str(sys.exc_info())
-            self.threading_exception_queue.put(__error_message)
+            self.threading_exception_queue.put(sys.exc_info())
         finally:
             '''
             set the action result to zk, if throw exception, the process will be shut and set 'failed' to zk. 

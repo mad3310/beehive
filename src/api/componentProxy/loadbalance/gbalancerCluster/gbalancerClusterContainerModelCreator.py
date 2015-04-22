@@ -57,9 +57,11 @@ class GbalancerclusterContainerModelCreator(AbstractContainerModelCreator):
         
         return create_container_arg_list
 
-    def __inspect_volumes_args(self, mount_dir, ro=True):
+    def __inspect_volumes_args(self, mount_dir):
         volumes, binds = {}, {}
-        for k,v in mount_dir.items():
-            volumes.setdefault(k, v)
-            binds.setdefault(v, {'bind': k, 'ro' : ro})
+        for _dir in mount_dir:
+            ro = _dir.pop('ro')
+            for k,v in _dir.items():
+                volumes.setdefault(k, v)
+                binds.setdefault(v, {'bind': k, 'ro' : ro})
         return volumes, binds

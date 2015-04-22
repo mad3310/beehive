@@ -29,7 +29,10 @@ class NginxContainerModelCreator(AbstractContainerModelCreator):
         containerCount = component_container_cluster_config.nodeCount
         network_mode = component_container_cluster_config.network_mode
         create_container_arg_list = []
-        
+
+        mount_dir = component_container_cluster_config.mount_dir
+        volumes, binds = self.__inspect_volumes_args(mount_dir)
+
         for i in range(int(containerCount)):
             container_model = Container_Model()
             container_model.container_cluster_name = containerClusterName
@@ -43,6 +46,8 @@ class NginxContainerModelCreator(AbstractContainerModelCreator):
             ports = component_container_cluster_config.ports
             container_model.ports = ports
             container_model.mem_limit = component_container_cluster_config.mem_limit
+            container_model.volumes = volumes
+            container_model.binds = binds
             
             if 'bridge' == network_mode:
                 port_list = ip_port_resource.get(host_ip)
@@ -60,4 +65,13 @@ class NginxContainerModelCreator(AbstractContainerModelCreator):
             create_container_arg_list.append(container_model)
         
         return create_container_arg_list
+
+    def __inspect_volumes_args(self, mount_dir):
+        volumes, binds = {}, {}
+        for _dir in mount_dir:
+            ro = _dir.pop('ro')
+            for k,v in _dir.items():
+                volumes.setdefault(k, v)
+                binds.setdefault(v, {'bind': k, 'ro' : ro})
+        return volumes, binds
         
