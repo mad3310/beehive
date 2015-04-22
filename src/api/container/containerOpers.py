@@ -651,7 +651,7 @@ class Container_destroy_action(Abstract_Async_Thread):
             os.system('rm -rf %s' % mount_dir)
 
     def __get_delete_mount_dir(self):
-        mount_dir_list  = []
+        delete_dir_list  = []
         _inspect = self.docker_opers.inspect_container(self.container_name)
         con = Container_Model(_inspect)
         volume_list = con.volumes_permissions()
@@ -660,7 +660,7 @@ class Container_destroy_action(Abstract_Async_Thread):
             items = volume.split(':')
             server_dir = items[0]
             permission = items[-1]
-        if permission == 'rw':
-            mount_dir_list.append(server_dir)
-        return mount_dir_list
+            if permission == 'rw':
+                delete_dir_list.append(server_dir)
+        return delete_dir_list
         
