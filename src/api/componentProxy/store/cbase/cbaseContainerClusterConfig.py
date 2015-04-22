@@ -21,5 +21,7 @@ class CbaseContainerClusterConfig(BaseContainerClusterConfig):
         image = params.get('image')
         self.image = image if image else '10.160.140.32:5000/lihanlin1/cbase:V2'
         
+        default_mount_dir =  [{'/srv':'/srv/tmp/c1/'}]
+        
         mount_dir = params.get('mountDir')
-        self.mount_dir = eval(mount_dir) if mount_dir else {'/srv':'/srv/tmp/c1/'}
+        self.mount_dir = eval(mount_dir) if mount_dir else default_mount_dir

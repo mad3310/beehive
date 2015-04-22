@@ -654,8 +654,13 @@ class Container_destroy_action(Abstract_Async_Thread):
         mount_dir_list  = []
         _inspect = self.docker_opers.inspect_container(self.container_name)
         con = Container_Model(_inspect)
-        volumes = con.inspect_volumes()
-        for _, mount_dir in volumes.items():
-            mount_dir_list.append(mount_dir)
+        volume_list = con.volumes_permissions()
+        
+        for volume in volume_list:
+            items = volume.split(':')
+            server_dir = items[0]
+            permission = items[-1]
+        if permission == 'rw':
+            mount_dir_list.append(server_dir)
         return mount_dir_list
         

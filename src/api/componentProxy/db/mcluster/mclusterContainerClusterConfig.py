@@ -24,6 +24,6 @@ class MclusterContainerClusterConfig(BaseContainerClusterConfig):
         
         data_bind = '/data/mcluster_data/d-mcl-%s' % self.container_cluster_name
         self.mount_dir = {'/srv/mcluster':'', '/data/mcluster_data':data_bind}
-        self.ports = [2181,2888,3306,3888,4567,4568,4569]
+        self.ports = [2181, 2888, 3306, 3888, 4567, 4568, 4569]
         
         self.resource_weight__score = { 'memory': 20, 'disk': 20, 'load5': 20, 'load10': 10, 'load15': 5, 'container_number': 15 }

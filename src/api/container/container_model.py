@@ -157,6 +157,9 @@ class Container_Model(object):
     def inspect_volumes(self):
         return self.inspect.get('Volumes')
 
+    def volumes_permissions(self):
+        return self.inspect.get('HostConfig').get('Binds')
+
     def cluster(self, container_name):
         return get_containerClusterName_from_containerName(container_name)
 
