@@ -28,14 +28,14 @@ class BaseContainerClusterConfig(object):
             server rest minimum memory 
         """       
         mem_free_limit = params.get('memFree')                          
-        self.mem_free_limit = mem_free_limit if mem_free_limit else 1*1024*1024*1024
+        self.mem_free_limit = eval(mem_free_limit) if mem_free_limit else 1*1024*1024*1024
         
         """
             default value stand for 512M
             container memory limit
         """
         mem_limit = params.get('memory')                           
-        self.mem_limit = mem_limit if mem_limit else 512*1024*1024
+        self.mem_limit = eval(mem_limit) if mem_limit else 512*1024*1024
         
         disk_usage = params.get('diskUsage')
         self.disk_usage = float(disk_usage) if disk_usage else 0.8
