@@ -12,6 +12,7 @@ import logging
 import docker
 
 from utils.invokeCommand import InvokeCommand
+from utils import getHostIp
 from docker_letv.dockerOpers import Docker_Opers
 from container.containerOpers import Container_Opers
 from zk.zkOpers import ZkOpers
@@ -50,7 +51,8 @@ class Server_Res_Opers():
         
         try:
             zk_opers = ZkOpers()
-            ports = zk_opers.get_ports_from_portPool()
+            host_ip = getHostIp()
+            ports = zk_opers.get_ports_from_portPool(host_ip)
             resource.setdefault("port_number", len(ports))
         finally:
             zk_opers.close()
