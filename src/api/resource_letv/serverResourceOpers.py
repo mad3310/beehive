@@ -14,6 +14,7 @@ import docker
 from utils.invokeCommand import InvokeCommand
 from docker_letv.dockerOpers import Docker_Opers
 from container.containerOpers import Container_Opers
+from zk.zkOpers import ZkOpers
 
 
 class Server_Res_Opers():
@@ -46,6 +47,13 @@ class Server_Res_Opers():
 
         containers = self.container_opers.get_all_containers()
         resource.setdefault("container_number", len(containers))
+        
+        try:
+            zk_opers = ZkOpers()
+            ports = zk_opers.get_ports_from_portPool()
+            resource.setdefault("port_number", len(ports))
+        finally:
+            zk_opers.close()
         
         # disk_over_load = self.disk_loadavg()
         # resource.setdefault("disk_over_load", disk_over_load)

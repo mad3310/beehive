@@ -22,4 +22,7 @@ class GbalancerclusterContainerClusterConfig(BaseContainerClusterConfig):
         self.image = image if image else '10.160.140.32:5000/letv/gbalancer-cluster:0.0.9'
         #lib_modules_bind = '/lib/modules/2.6.32-925.431.23.3.letv.el6.x86_64'
         lib_modules_bind = '/lib/modules/2.6.32-925.431.29.2.letv.el6.x86_64'
-        self.mount_dir = {lib_modules_bind:lib_modules_bind}
+        logs_bind = '/var/log/%s' % self.container_cluster_name
+        
+        mount_dir = params.get('mountDir')
+        self.mount_dir = eval(mount_dir) if mount_dir else {'/var/log': logs_bind, lib_modules_bind:lib_modules_bind}

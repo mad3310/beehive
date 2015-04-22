@@ -14,7 +14,7 @@ class BaseContainerClusterConfig(object):
         Constructor
         '''
         
-        self.is_res_verify = False
+        self.is_res_verify = True
         self.need_validate_manager_status = True
         
 
@@ -28,7 +28,7 @@ class BaseContainerClusterConfig(object):
             server rest minimum memory 
         """       
         mem_free_limit = params.get('memFree')                          
-        self.mem_free_limit = eval(mem_free_limit) if mem_free_limit else 1*1024*1024*1024
+        self.mem_free_limit = eval(mem_free_limit) if mem_free_limit else 10*1024*1024*1024
         
         """
             default value stand for 512M
