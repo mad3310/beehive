@@ -44,6 +44,7 @@ class GbalancerclusterContainerModelCreator(AbstractContainerModelCreator):
             container_model.component_type = component_type
             container_model.image = component_container_cluster_config.image
             container_model.mem_limit = component_container_cluster_config.mem_limit
+            container_model.set_network = component_container_cluster_config.set_network
             gateway = _get_gateway_from_ip(container_ip_list[0])
             
             env = {}

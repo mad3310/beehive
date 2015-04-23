@@ -53,6 +53,5 @@ class GbalancerContainerModelCreator(AbstractContainerModelCreator):
             
             container_model.env = env
             create_container_arg_list.append(container_model)
-            container_model.set_network = component_container_cluster_config.set_network
         
         return create_container_arg_list

@@ -445,7 +445,7 @@ class Container_create_action(Abstract_Async_Thread):
         ip = con.ip()
         mask = con.netmask()
         default_container_ip = con.default_container_ip()
-        default_gateway = con.__default_geteway(default_container_ip)
+        default_gateway = self.__default_geteway(default_container_ip)
         
         real_route = ''
         for i in range(0,4):
