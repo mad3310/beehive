@@ -16,9 +16,9 @@ from utils.exceptions import CommonException
 from componentProxy.componentManagerValidator import ComponentManagerStatusValidator
 from componentProxy.componentContainerModelFactory import ComponentContainerModelFactory
 from componentProxy.componentContainerClusterConfigFactory import ComponentContainerClusterConfigFactory
+from componentProxy.componentContainerClusterValidator import ComponentContainerClusterValidator
 from status.status_enum import Status
 from zk.zkOpers import ZkOpers
-from containerCluster.containerClusterOpers import ContainerCluster_Opers
 
 
 class ContainerCluster_create_Action(Abstract_Async_Thread): 
@@ -34,8 +34,8 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
     
     component_container_cluster_config_factory = ComponentContainerClusterConfigFactory()
     
-    container_cluster_opers = ContainerCluster_Opers()
-
+    component_container_cluster_validator = ComponentContainerClusterValidator()
+    
     def __init__(self, arg_dict={}):
         super(ContainerCluster_create_Action, self).__init__()
         self._arg_dict = arg_dict
@@ -111,7 +111,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         return handleTimeout(self.__is_cluster_started, (250, 1), container_cluster_name, nodeCount)
 
     def __is_cluster_started(self, container_cluster_name, nodeCount):
-        status = self.container_cluster_opers.check(container_cluster_name)
+        status = self.component_container_cluster_validator.container_cluster_status_validator(container_cluster_name)
         return status.get('status') == Status.started
 #         zkOper = ZkOpers()
 #         try:
