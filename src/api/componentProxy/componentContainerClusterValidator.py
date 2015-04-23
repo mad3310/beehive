@@ -30,7 +30,7 @@ class ComponentContainerClusterValidator(object):
             raise UserVisiableException('containerCluster %s not existed' % containerClusterName)
         
         create_successful = {'code':"000000"}
-        creating = {'code':"000001", 'status': Status.creating}
+        creating = {'code':"000001"}
         create_failed = {'code':"000002", 'status': Status.create_failed}
         
         result = {}
@@ -42,20 +42,19 @@ class ComponentContainerClusterValidator(object):
             zkOper.close()
         
         start_flag = container_cluster_info.get('start_flag')
+
+        if start_flag == Status.failed:
+            result.update(create_failed)
+            result.setdefault('error_msg', 'create containers failed!')
         
-        if not start_flag:
-            return creating
+        elif start_flag == Status.succeed:
+            cluster_status_info = self.cluster_status_info(containerClusterName)
+            result.update(create_successful)
+            result.update(cluster_status_info)
         else:
-            if start_flag == Status.failed:
-                result.update(create_failed)
-                result.setdefault('error_msg', 'create containers failed!')
-            
-            elif start_flag == Status.succeed:
-                cluster_status_info = self.cluster_status_info(containerClusterName)
-                result.update(create_successful)
-                result.update(cluster_status_info)
-            
-            return result
+            result.update(creating)
+        
+        return result
 
     def __get_cluster_status(self, status_list):
         

@@ -111,7 +111,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         return handleTimeout(self.__is_cluster_started, (250, 1), container_cluster_name, nodeCount)
 
     def __is_cluster_started(self, container_cluster_name, nodeCount):
-        status = self.component_container_cluster_validator.container_cluster_status_validator(container_cluster_name)
+        status = self.component_container_cluster_validator.cluster_status_info(container_cluster_name)
         return status.get('status') == Status.started
 #         zkOper = ZkOpers()
 #         try:
