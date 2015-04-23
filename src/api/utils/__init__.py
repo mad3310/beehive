@@ -139,6 +139,17 @@ def _get_property_dict(class_model_obj):
         result.setdefault(__property, value)
     return result
 
+def _set_dict_property(args_dict, cls):
+    cls_obj = cls
+    for key, value in args_dict.items():
+        _key = '_' + key
+        cls_obj.__setattr__(_key, value)
+    return cls_obj
+
+def has_property(class_model_obj, _property):
+    _property = '_' + _property
+    return _property in class_model_obj.__dict__
+
 def __isExcept(e, eType = Exception):
     return isinstance(e, eType)
 

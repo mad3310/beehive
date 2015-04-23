@@ -150,4 +150,12 @@ class Docker_Model(object):
     @lxc_conf.setter
     def lxc_conf(self, lxc_conf):
         self._lxc_conf = lxc_conf
+
+    @property
+    def set_network(self):
+        return self._set_network
+    
+    @set_network.setter
+    def set_network(self, set_network):
+        self.set_network = set_network
         

@@ -112,7 +112,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
 
     def __is_cluster_started(self, container_cluster_name, nodeCount):
         status = self.component_container_cluster_validator.cluster_status_info(container_cluster_name)
-        return status.get('status') == Status.starte
+        return status.get('status') == Status.started
 
     def __update_zk_info_when_process_complete(self, _containerClusterName, create_result='failed', error_msg=''):
         if _containerClusterName is None or '' == _containerClusterName:

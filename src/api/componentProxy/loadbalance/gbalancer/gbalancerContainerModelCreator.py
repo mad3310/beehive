@@ -28,6 +28,7 @@ class GbalancerContainerModelCreator(AbstractContainerModelCreator):
         host_ip_list = args.get('host_ip_list')
         component_type = args.get('componentType')
         containerCount = component_container_cluster_config.nodeCount
+        
         create_container_arg_list = []
 
         for i in range(int(containerCount)):
@@ -52,5 +53,6 @@ class GbalancerContainerModelCreator(AbstractContainerModelCreator):
             
             container_model.env = env
             create_container_arg_list.append(container_model)
+            container_model.set_network = component_container_cluster_config.set_network
         
         return create_container_arg_list

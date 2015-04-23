@@ -20,7 +20,7 @@ from docker_letv.dockerOpers import Docker_Opers
 from container.container_model import Container_Model
 from utils.exceptions import CommonException, RetryException, UserVisiableException
 from utils.log import _log_docker_run_command
-from utils import _mask_to_num, get_current_time, getHostIp
+from utils import _mask_to_num, get_current_time, getHostIp, has_property
 from zk.zkOpers import ZkOpers
 from docker import Client
 from status.status_enum import Status
@@ -444,6 +444,8 @@ class Container_create_action(Abstract_Async_Thread):
         con = Container_Model(_inspect)
         ip = con.ip()
         mask = con.netmask()
+        default_container_ip = con.default_container_ip()
+        default_gateway = con.__default_geteway(default_container_ip)
         
         real_route = ''
         for i in range(0,4):
@@ -470,6 +472,11 @@ class Container_create_action(Abstract_Async_Thread):
             if len(r_list) == 0:
                 child.sendline(r"route add default gw %s" % (real_route))
                 child.expect(["#", pexpect.EOF, pexpect.TIMEOUT], timeout)
+                
+                if has_property(self.docker_model, 'set_network'):
+                    child.sendline("route add -net 172.16.0.0 netmask 255.255.0.0 gw %s dev eth0" % default_gateway)
+                    child.expect(["bash", pexpect.EOF, pexpect.TIMEOUT], timeout)
+                
                 child.sendline(r"")
             elif len(r_list) > 1 or r_list[0]['route_ip'] != real_route:
                 raise RetryException("error")
@@ -477,6 +484,11 @@ class Container_create_action(Abstract_Async_Thread):
                 pass
         finally:
             child.close()
+
+    def __default_geteway(self, ip):
+        items = ip.split('.')
+        items[-1] = 1
+        return '.'.join(items)
 
     def __retrieve_route_list(self, child, timeout=5):
         get_route_cmd = r"route -n|grep -w 'UG'"

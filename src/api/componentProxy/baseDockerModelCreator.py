@@ -24,6 +24,7 @@ class BaseDockerModelCreator(object):
         _volumes = arg_dict.get('volumes')
         _binds = arg_dict.get('binds')
         _ports = arg_dict.get('ports')
+        _set_network = arg_dict.get('set_network')
         _port_bindings = arg_dict.get('port_bindings')
         _lxc_conf = eval(arg_dict.get('lxc_conf'))
 
@@ -37,6 +38,9 @@ class BaseDockerModelCreator(object):
         _docker_model.network_mode = 'bridge'
         _docker_model.name = _container_name
         _docker_model.hostname = _container_name
+        
+        if _set_network:
+            _docker_model.set_network = _set_network
         
         if _binds:
             _docker_model.binds = eval(_binds)
