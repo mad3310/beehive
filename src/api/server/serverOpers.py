@@ -85,6 +85,7 @@ class ServerUpdateAction(Abstract_Async_Thread):
             self.container_opers.write_container_status_by_containerName(container_name, status)
 
     def update_add_node(self, container_name):
+        logging.info('update add node : %s' % container_name )
         create_info = self._get_container_info_as_zk(container_name)
         self.container_opers.write_container_node_value_by_containerName(container_name, create_info)
         container_stat = self.container_opers.get_container_stat(container_name)

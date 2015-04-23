@@ -364,24 +364,27 @@ class Container_create_action(Abstract_Async_Thread):
             binds=_binds
         '''
         self.docker_opers.start(self.docker_model)
+
+        container_node_info = self._get_container_info()
+        logging.info('get container info: %s' % str(container_node_info))
+        self.container_opers.write_container_node_info_to_zk(Status.starting, container_node_info)
         
         if self.docker_model.use_ip:
             init_con_ret = self.set_ip_add_route_retry(3)
             if not init_con_ret:
-                error_message = 'set_ip_add_route_retry container failed'
+                error_message = 'set container route failed'
                 logging.error(error_message)
+                failed_flag = {'status':Status.failed, 'message':error_message}
+                self.container_opers.write_container_status_by_containerName(self.container_name, failed_flag)
                 raise CommonException(error_message)
         
         result = self.__check_create_status()
         if not result:
-            error_message = 'the exception of creating container'
+            error_message = 'container created exited'
             logging.error(error_message)
+            failed_flag = {'status':Status.failed, 'message':error_message}
+            self.container_opers.write_container_status_by_containerName(self.container_name, failed_flag)
             raise CommonException(error_message)
-        
-        container_node_info = self._get_container_info()
-        logging.info('get container info: %s' % str(container_node_info))
-        
-        self.container_opers.write_container_node_info_to_zk(Status.started, container_node_info)
 
     def issue_image(self):
         image = self.docker_model.image
@@ -397,10 +400,6 @@ class Container_create_action(Abstract_Async_Thread):
             for server_dir,_ in binds.items():
                 if not os.path.exists(server_dir):
                     os.makedirs(server_dir)
-            
-            """other component_type have different logic, use elif and else to diff 
-               
-            """
 
     def __check_create_status(self):
         container_name = self.docker_model.name
@@ -543,7 +542,7 @@ class Container_start_action(Abstract_Async_Thread):
             self.threading_exception_queue.put(sys.exc_info())
 
     def __issue_start_action(self):
-        start_rst, start_flag = {}, {}
+        start_rst = {}
         logging.info('write start flag')
         start_flag = {'status': Status.starting, 'message':''}
         self.container_opers.write_container_status_by_containerName(self.container_name, start_flag)
@@ -578,7 +577,7 @@ class Container_stop_action(Abstract_Async_Thread):
             self.threading_exception_queue.put(sys.exc_info())
 
     def __issue_stop_action(self):
-        stop_rst, stop_flag = {}, {}
+        stop_rst = {}
         logging.info('write stop flag')
         stop_flag = {'status':Status.stopping, 'message':''}
         self.container_opers.write_container_status_by_containerName(self.container_name, stop_flag)

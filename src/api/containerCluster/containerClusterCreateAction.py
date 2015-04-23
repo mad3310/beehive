@@ -18,6 +18,7 @@ from componentProxy.componentContainerModelFactory import ComponentContainerMode
 from componentProxy.componentContainerClusterConfigFactory import ComponentContainerClusterConfigFactory
 from status.status_enum import Status
 from zk.zkOpers import ZkOpers
+from containerCluster.containerClusterOpers import ContainerCluster_Opers
 
 
 class ContainerCluster_create_Action(Abstract_Async_Thread): 
@@ -32,6 +33,8 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
     component_container_model_factory = ComponentContainerModelFactory()
     
     component_container_cluster_config_factory = ComponentContainerClusterConfigFactory()
+    
+    container_cluster_opers = ContainerCluster_Opers()
 
     def __init__(self, arg_dict={}):
         super(ContainerCluster_create_Action, self).__init__()
@@ -89,7 +92,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         '''
         @todo: what means use below logic? __dispatch_create_container_task don't confirm the container start status?
         '''
-        created = self.__check_cluster_created(_component_container_cluster_config)
+        created = self.__check_cluster_started(_component_container_cluster_config)
         if not created:
             raise CommonException('cluster started failed, maybe part of nodes started, other failed!')
         
@@ -101,19 +104,21 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         _action_result = Status.failed if not _action_flag else Status.succeed
         return _action_result
 
-    def __check_cluster_created(self, component_container_cluster_config):
+    def __check_cluster_started(self, component_container_cluster_config):
         
         container_cluster_name = component_container_cluster_config.container_cluster_name
         nodeCount = component_container_cluster_config.nodeCount
-        return handleTimeout(self.__is_cluster_created, (200, 1), container_cluster_name, nodeCount)
+        return handleTimeout(self.__is_cluster_started, (250, 1), container_cluster_name, nodeCount)
 
-    def __is_cluster_created(self, container_cluster_name, nodeCount):
-        zkOper = ZkOpers()
-        try:
-            container_list = zkOper.retrieve_container_list(container_cluster_name)
-            return len(container_list) == nodeCount
-        finally:
-            zkOper.close()
+    def __is_cluster_started(self, container_cluster_name, nodeCount):
+        status = self.container_cluster_opers.check(container_cluster_name)
+        return status.get('status') == Status.started
+#         zkOper = ZkOpers()
+#         try:
+#             container_list = zkOper.retrieve_container_list(container_cluster_name)
+#             return len(container_list) == nodeCount
+#         finally:
+#             zkOper.close()
 
     def __update_zk_info_when_process_complete(self, _containerClusterName, create_result='failed', error_msg=''):
         if _containerClusterName is None or '' == _containerClusterName:

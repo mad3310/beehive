@@ -162,12 +162,12 @@ class ZkOpers(object):
         self.zk.ensure_path(path)
         self.zk.set(path, str(cluster_info_before))
 
-    def write_container_node_value(self, cluster, container_ip, containerProps):
+    def write_container_node_value(self, cluster, container_node, containerProps):
         """write container node value not write status value
         
         """
         clusterUUID = self.getClusterUUID()
-        path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + cluster + "/" + container_ip
+        path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + cluster + "/" + container_node
         self.zk.ensure_path(path)
         self.zk.set(path, str(containerProps))
 
@@ -192,9 +192,9 @@ class ZkOpers(object):
             return True
         return False
     
-    def write_container_status(self, cluster, container_ip, record):
+    def write_container_status(self, cluster, container_node, record):
         clusterUUID = self.getClusterUUID()
-        path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + cluster + "/" + container_ip +"/status"
+        path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + cluster + "/" + container_node +"/status"
         self.zk.ensure_path(path)
         self.zk.set(path, str(record))
         
