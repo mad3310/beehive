@@ -20,5 +20,3 @@ class GbalancerContainerClusterConfig(BaseContainerClusterConfig):
         self.nodeCount = int(nodeCount) if nodeCount else 1
         image = params.get('image')
         self.image = image if image else 'letv/mcluster_vip_gbalancer:0.0.3'
-        
-        self.set_network = True

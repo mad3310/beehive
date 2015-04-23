@@ -29,3 +29,5 @@ class GbalancerclusterContainerClusterConfig(BaseContainerClusterConfig):
         
         mount_dir = params.get('mountDir')
         self.mount_dir = eval(mount_dir) if mount_dir else default_mount_dir
+        
+        self.set_network = True

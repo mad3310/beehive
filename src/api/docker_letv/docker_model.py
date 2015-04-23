@@ -157,5 +157,5 @@ class Docker_Model(object):
     
     @set_network.setter
     def set_network(self, set_network):
-        self.set_network = set_network
+        self._set_network = set_network
         

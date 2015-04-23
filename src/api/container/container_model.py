@@ -157,7 +157,7 @@ class Container_Model(object):
 
     @set_network.setter
     def set_network(self, set_network):
-        self.set_network = set_network
+        self._set_network = set_network
 
     def memory(self):
         return self.inspect.get('Config').get('Memory')
