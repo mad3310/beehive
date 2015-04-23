@@ -139,27 +139,15 @@ class ServerUpdateAction(Abstract_Async_Thread):
         both = list( set(host_container_list) & set( zk_container_list) )
         return add, delete, both
 
-
-    '''
-        @todo
-        need get 'type' and 'useIp'
-    '''
     def _get_container_info_as_zk(self, container_name):
         create_info = {}
         _inspect = self.docker_opers.inspect_container(container_name)
         con = Container_Model(_inspect)
-        
-        create_info.setdefault('hostIp', self.host_ip)
-        image = con.inspect_image()
-        
-        '''
-        @todo: what means?
-        '''
-        if 'gbalancer' in image:
-            create_info.setdefault('type', 'mclustervip')
-        else:
-            create_info.setdefault('type', 'mclusternode')
+        _type = con.inspect_component_type()
+        create_info.setdefault('type', _type)
         create_info.setdefault('inspect', con.inspect)
+        create_info.setdefault('isUseIp', con.use_ip())
+        create_info.setdefault('hostIp', self.host_ip)
         create_info.setdefault('containerName', container_name)
         return create_info
 

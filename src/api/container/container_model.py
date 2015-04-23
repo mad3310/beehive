@@ -169,11 +169,20 @@ class Container_Model(object):
             if 'ZKID' in item:
                 return self.__get_value(item)
 
+    """
+        ip supplied when container created
+    """
     def ip(self):
         Env = self.inspect.get('Config').get('Env')
         for item in Env:
             if item.startswith('IP'):
                 return self.__get_value(item)
+
+    """
+        ip default when container created
+    """
+    def default_container_ip(self):
+        return self.inspect.get('NetworkSettings').get('IPAddress')
         
     def gateway(self):
         
@@ -227,8 +236,7 @@ class Container_Model(object):
                 result.append(_info)
         return result
 
-    def default_container_ip(self):
-        return self.inspect.get('NetworkSettings').get('IPAddress')
+
 
     def create_info(self, container_node_value):
         create_info = {}
@@ -250,3 +258,18 @@ class Container_Model(object):
                 create_info.setdefault('port_bindings', self.inspect_port_bindings())
                 create_info.setdefault('ipAddr', self.default_container_ip())
         return create_info
+
+    def use_ip(self):
+        is_use_ip = False
+        _ip = self.ip()
+        if _ip:
+            is_use_ip = True
+        return is_use_ip
+
+    def inspect_component_type(self):
+        type_list = ['nginx', 'jetty', 'mcluster', 'gbalancer', 'gbalancerCluster', 'cbase']
+        _image = self.inspect_image()
+        for _type in type_list:
+            if _type in _image:
+                return _type
+        return 'unknow_type'
