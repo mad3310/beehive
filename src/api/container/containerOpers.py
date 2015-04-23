@@ -369,22 +369,32 @@ class Container_create_action(Abstract_Async_Thread):
         logging.info('get container info: %s' % str(container_node_info))
         self.container_opers.write_container_node_info_to_zk(Status.starting, container_node_info)
         
+        '''
+            set route if use ip to create containers
+        '''
+        container_name = self.docker_model.name
         if self.docker_model.use_ip:
             init_con_ret = self.set_ip_add_route_retry(3)
             if not init_con_ret:
                 error_message = 'set container route failed'
                 logging.error(error_message)
                 failed_flag = {'status':Status.failed, 'message':error_message}
-                self.container_opers.write_container_status_by_containerName(self.container_name, failed_flag)
+                self.container_opers.write_container_status_by_containerName(container_name, failed_flag)
                 raise CommonException(error_message)
         
+        '''
+            check if create successful
+        '''
         result = self.__check_create_status()
         if not result:
             error_message = 'container created exited'
             logging.error(error_message)
             failed_flag = {'status':Status.failed, 'message':error_message}
-            self.container_opers.write_container_status_by_containerName(self.container_name, failed_flag)
+            self.container_opers.write_container_status_by_containerName(container_name, failed_flag)
             raise CommonException(error_message)
+
+        started_flag = {'status':Status.started, 'message':''}
+        self.container_opers.write_container_status_by_containerName(container_name, started_flag)
 
     def issue_image(self):
         image = self.docker_model.image
