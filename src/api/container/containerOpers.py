@@ -487,7 +487,7 @@ class Container_create_action(Abstract_Async_Thread):
 
     def __default_geteway(self, ip):
         items = ip.split('.')
-        items[-1] = 1
+        items[-1] = '1'
         return '.'.join(items)
 
     def __retrieve_route_list(self, child, timeout=5):
