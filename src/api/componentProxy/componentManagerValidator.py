@@ -19,6 +19,9 @@ class ComponentManagerStatusValidator(object):
     classdocs
     '''
 
+    global executor
+    executor = ThreadPoolExecutor(max_workers=10)
+
     def __init__(self):
         '''
         Constructor
@@ -65,25 +68,21 @@ class ComponentManagerStatusValidator(object):
     def __executor(self, post_arg_list):
         succ_list = []
         
-        '''
-        @todo: ThreadPool is globel resource, don't every request init a threadpool.
-        '''
-        with ThreadPoolExecutor(max_workers=len(post_arg_list)) as executor:
-            fs = dict( (executor.submit(http_post, _url, _body),  (_url,_body)) for (_url,_body) in post_arg_list )
-            logging.info('future dict :%s' % str(fs) )
-            
-            for future in futures.as_completed(fs):
-                if future.exception() is not None:
-                    logging.info('expection:%s' % future.exception() )
-                else:
-                    fetch_ret = future.result()
-                    logging.info('fetch_ret:%s' % str(fetch_ret))
-                    ret = fetch_ret.get('response').get('message')
-                    logging.debug('fetch_ret.get response :%s' % type(fetch_ret.get('response')))
-                    logging.debug('get reslut: %s, type: %s' % ( str(ret), type(ret) ))
-                    if ret:
-                        (_url,_body) = fs[future]
-                        succ_list.append((_url,_body))
+        fs = dict( (self.executor.submit(http_post, _url, _body),  (_url,_body)) for (_url,_body) in post_arg_list )
+        logging.info('future dict :%s' % str(fs) )
+        
+        for future in futures.as_completed(fs):
+            if future.exception() is not None:
+                logging.info('expection:%s' % future.exception() )
+            else:
+                fetch_ret = future.result()
+                logging.info('fetch_ret:%s' % str(fetch_ret))
+                ret = fetch_ret.get('response').get('message')
+                logging.debug('fetch_ret.get response :%s' % type(fetch_ret.get('response')))
+                logging.debug('get reslut: %s, type: %s' % ( str(ret), type(ret) ))
+                if ret:
+                    (_url,_body) = fs[future]
+                    succ_list.append((_url,_body))
                         
         for succ in succ_list:
             post_arg_list.remove(succ)
