@@ -68,7 +68,7 @@ class ComponentManagerStatusValidator(object):
     def __executor(self, post_arg_list):
         succ_list = []
         
-        fs = dict( (self.executor.submit(http_post, _url, _body),  (_url,_body)) for (_url,_body) in post_arg_list )
+        fs = dict( (executor.submit(http_post, _url, _body),  (_url,_body)) for (_url,_body) in post_arg_list )
         logging.info('future dict :%s' % str(fs) )
         
         for future in futures.as_completed(fs):
