@@ -275,6 +275,10 @@ class Container_Model(object):
         return is_use_ip
 
     def inspect_component_type(self):
+        '''
+            need image name contain container component type
+        '''
+        
         type_list = ['nginx', 'jetty', 'mcluster', 'gbalancer', 'gbalancerCluster', 'cbase']
         _image = self.inspect_image()
         for _type in type_list:

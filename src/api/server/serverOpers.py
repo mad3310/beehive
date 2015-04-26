@@ -77,6 +77,13 @@ class ServerUpdateAction(Abstract_Async_Thread):
             container node info in zookeeper (not status) will not be changed, no need to update.
         '''
         status = {}
+
+        server_info = self._get_container_info_as_zk(container_name)
+        zk_con_info = self.container_opers.retrieve_container_node_value_from_containerName(container_name)
+        if server_info != zk_con_info:
+            logging.info('update both node zookeeper info, container name :%s' % container_name)
+            self.container_opers.write_container_node_value_by_containerName(container_name, server_info)
+        
         server_con_stat = self.container_opers.get_container_stat(container_name)
         zk_con_stat = self.container_opers.retrieve_container_status_from_containerName(container_name)
         if server_con_stat != zk_con_stat:
