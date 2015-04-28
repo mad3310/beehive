@@ -6,4 +6,5 @@ _path = {
     "jetty":"componentProxy.webcontainer",
     "gbalancerCluster":"componentProxy.loadbalance",
     "cbase":"componentProxy.store",
+    "logstash":"componentProxy.webcontainer",
 }
