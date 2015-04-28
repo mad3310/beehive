@@ -43,6 +43,8 @@ class Resource(object):
             get usable servers and their resource.
         '''
         host_resource_dict = self.retrieve_usable_host_resource(component_container_cluster_config)
+        if not host_resource_dict:
+            raise CommonException('there is no usable servers!')
         
         '''
            count servers' scores
@@ -61,7 +63,7 @@ class Resource(object):
         
         node_count = component_container_cluster_config.nodeCount
         if len(host_list) < node_count:
-            raise CommonException('usable servers are not enough!')
+            raise CommonException('the number of usable servers are not enough!')
         
         return host_list[:node_count]
 

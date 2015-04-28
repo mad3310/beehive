@@ -169,7 +169,13 @@ def handleTimeout(func, timeout, *params, **kwargs):
         timeout -= time.time() - t
     return rst
 
-def getHostIp(NIC = 'bond0'):
+def getNIC():
+    cmd = "route -n|grep UG|awk '{print $NF}'"
+    _nic = os.popen(cmd).read()
+    return _nic.split('\n')[0]
+
+def getHostIp():
+    NIC = getNIC()
     cmd = "ifconfig %s|grep 'inet addr'|awk '{print $2}'" % NIC
     out_ip = os.popen(cmd).read()
     ip = out_ip.split('\n')[0]
