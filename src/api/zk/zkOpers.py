@@ -10,13 +10,13 @@ Created on 2013-7-11
 import logging
 import threading
 
-from kazoo.client import KazooClient, KazooState
+from kazoo.client import KazooClient
 from utils import ping_ip_available, nc_ip_port_available, get_zk_address
 from kazoo.retry import KazooRetry
-#from utils.decorators import singleton
+from utils.decorators import singleton
 
 
-#@singleton
+@singleton
 class ZkOpers(object):
     
     zk = None
@@ -26,59 +26,24 @@ class ZkOpers(object):
     '''
     classdocs
     '''
-#     def __init__(self):
-#         '''
-#         Constructor
-#         '''
-#         
-#         self.zkaddress, self.zkport = get_zk_address()
-#         self.retry = KazooRetry(max_tries=3, delay=0.5)
-#         self.zk = KazooClient(hosts=self.zkaddress+':'+str(self.zkport), connection_retry=self.retry)
-#         self.zk.start()
-
-#     def close(self):
-#         pass
-# #         try:
-# #             self.zk.stop()
-# #             self.zk.close()
-# #         except Exception, e:
-# #             logging.error(e)
-    
     def __init__(self):
         '''
         Constructor
         '''
+        
         self.zkaddress, self.zkport = get_zk_address()
-        
-        self.zk = KazooClient(
-            hosts=self.zkaddress+':'+str(self.zkport),
-            connection_retry = KazooRetry(delay=1, max_tries=5, max_delay=30)
-        )
+        self.retry = KazooRetry(max_tries=3, delay=0.5)
+        self.zk = KazooClient(hosts=self.zkaddress+':'+str(self.zkport), connection_retry=self.retry)
         self.zk.start()
-        self.zk.add_listener(self.listener)
-        
-    def listener(self, state):
-        if state == KazooState.LOST:
-            self.zk.start()
-        elif state == KazooState.SUSPENDED:
-            logging.info( "*******listener saw KazooState.LOST")
-        else:
-            logging.info( "*******listener saw KazooState.CONNECT")
 
     def close(self):
-        try:
-            self.zk.stop()
-            self.zk.close()
-        except Exception, e:
-            logging.error(e)
+        pass
+#         try:
+#             self.zk.stop()
+#             self.zk.close()
+#         except Exception, e:
+#             logging.error(e)
     
-
-
-    '''
-    *****************************************************connect*****************************************
-    '''
-    
-
     def writeClusterInfo(self, clusterUUID, clusterProps):
         path = self.rootPath + "/" + clusterUUID
         self.zk.ensure_path(path)
@@ -92,7 +57,11 @@ class ZkOpers(object):
             resultValue = self.zk.get(path)
             
         return resultValue
-
+    
+    
+    
+    
+    
     
     '''
     *****************************************************data node*****************************************
