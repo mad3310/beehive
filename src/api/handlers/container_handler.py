@@ -31,7 +31,6 @@ class ContainerHandler(APIHandler):
 
     def __create_docker_module(self, arg_dict):
         logging.info('get create container args : %s, type:%s' % (str(arg_dict), type(arg_dict)) )
-        #component_type = arg_dict.get('component_type')
         docker_model = self.component_docker_model_factory.create(arg_dict)
         return docker_model
 
