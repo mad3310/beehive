@@ -31,6 +31,6 @@ class ComponentDockerModelFactory(object):
 #         docker_py_model = creator.create(arg_dict)
 #         return docker_py_model
 
-    def create(self, component_type, arg_dict):
+    def create(self, arg_dict):
         docker_py_model = self.base_docker_model_creator.create(arg_dict)
         return docker_py_model
