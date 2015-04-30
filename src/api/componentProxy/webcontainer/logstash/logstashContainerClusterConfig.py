@@ -21,4 +21,7 @@ class LogstashContainerClusterConfig(BaseContainerClusterConfig):
         image = params.get('image')
         self.image = image if image else '10.160.140.32:5000/letv/base-jetty:logstash-0.0.1'
         ports = params.get('ports')
-        self.ports = eval(ports) if ports else [5601]
+        self.ports = eval(ports) if ports else [5601, 8888]
+        
+        data_bind = '/data/openssl_keys/%s' % self.container_cluster_name
+        self.mount_dir = {'/data/openssl_keys':data_bind}

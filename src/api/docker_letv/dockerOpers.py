@@ -70,7 +70,7 @@ class Docker_Opers(client):
         #self.docker_start(docker_model)
         
         return container['Id']
-           
+
     def start(self, docker_model):
         
         container = docker_model.name
