@@ -279,7 +279,7 @@ class Container_Model(object):
             need image name contain container component type
         '''
         
-        type_list = ['nginx', 'jetty', 'mcluster', 'gbalancer', 'gbalancerCluster', 'cbase']
+        type_list = ['logstash', 'nginx', 'jetty', 'mcluster', 'gbalancer', 'gbalancerCluster', 'cbase']
         _image = self.inspect_image()
         for _type in type_list:
             if _type in _image:

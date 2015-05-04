@@ -34,7 +34,7 @@ class LogstashContainerModelCreator(AbstractContainerModelCreator):
         for i in range(int(containerCount)):
             container_model = Container_Model()
             container_model.container_cluster_name = containerClusterName
-            container_name = 'd-ngx-%s-n-%s' % (containerClusterName, str(i+1))
+            container_name = 'd-lgs-%s-n-%s' % (containerClusterName, str(i+1))
             container_model.container_name = container_name
             host_ip = host_ip_list[i]
             container_model.host_ip = host_ip
