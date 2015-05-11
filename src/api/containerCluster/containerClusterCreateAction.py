@@ -62,10 +62,14 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         logging.info('args:%s' % str(args))
         _component_type = args.get('componentType')
         _network_mode = args.get('networkMode')
+        _containerClusterName = args.get('containerClusterName')
         
-        logging.info('containerClusterName : %s' % str(args.get('containerClusterName')))
+        logging.info('containerClusterName : %s' % str(_containerClusterName))
         logging.info('component_type : %s' % str(_component_type))
         logging.info('network_mode : %s' % str(_network_mode))
+        
+        if not (_component_type and _network_mode and _containerClusterName):
+            raise CommonException('params may not be given correct, please check the params!')
         
         _component_container_cluster_config = self.component_container_cluster_config_factory.retrieve_config(args)
         args.setdefault('component_config', _component_container_cluster_config)
