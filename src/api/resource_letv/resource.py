@@ -59,7 +59,9 @@ class Resource(object):
             elect servers by their scores
         '''
         score_list = sorted(host_score_dict.values(), reverse=True)
+        logging.info('score list :%s' % str(score_list))
         host_list = self.__host_list(score_list, host_score_dict)
+        logging.info('select host list :%s' % str(host_list))
         
         node_count = component_container_cluster_config.nodeCount
         if len(host_list) < node_count:
@@ -71,7 +73,7 @@ class Resource(object):
         host_list = []
         for score in score_list:
             for host, _score in host_score_dict.items():
-                if score == _score:
+                if score == _score and host not in host_list:
                     host_list.append(host)
         return host_list
 

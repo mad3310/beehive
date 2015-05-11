@@ -19,7 +19,7 @@ class GbalancerclusterContainerClusterConfig(BaseContainerClusterConfig):
         nodeCount = params.get('nodeCount')
         self.nodeCount = int(nodeCount) if nodeCount else 2
         image = params.get('image')
-        self.image = image if image else '10.160.140.32:5000/letv/gbalancer-cluster:0.0.9'
+        self.image = image if image else '10.160.140.32:5000/letv/gbalancer-cluster:0.0.9'  #0.0.9 for yizhuang, 0.10 for 150 cluster
         
         
         #lib_modules_bind = '/lib/modules/2.6.32-925.431.23.3.letv.el6.x86_64'
