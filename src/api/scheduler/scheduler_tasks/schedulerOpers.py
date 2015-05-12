@@ -23,7 +23,7 @@ class SchedulerOpers(object):
 
     def __init__(self):
         '''PeriodicCallback class init  callback has no params
-           so add monitor_timrout  
+           so add monitor_timeout  
         
         '''
         
