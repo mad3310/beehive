@@ -359,10 +359,17 @@ class ZkOpers(object):
         return self._lock_base_action(lock_name)
     
     def unLock_sync_server_zk_action(self, lock):
-        self._unLock_base_action(lock)    
-        
-        
-        
+        self._unLock_base_action(lock)
+
+    def lock_check_ip_usable_action(self):
+        lock_name = "ip_usable"
+        return self._lock_base_action(lock_name)
+    
+    def unLock_check_ip_usable_action(self, lock):
+        self._unLock_base_action(lock)
+
+
+
     '''
     *********************************************Base method*******************************************
     '''

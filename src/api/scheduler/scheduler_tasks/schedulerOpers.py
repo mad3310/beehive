@@ -28,7 +28,7 @@ class SchedulerOpers(object):
         '''
         
         self.thread_exception_hanlder(5)
-        self.check_ip_legality_handler(600)
+        self.check_ip_legality_handler(120)
         self.sync_server_zk_handler(240)
         
 

@@ -23,7 +23,7 @@ class Check_Ip_Legality_Worker(Abstract_Async_Thread):
         
         zkOper = ZkOpers()
         try:
-            isLock, lock = zkOper.lock_async_monitor_action()
+            isLock, lock = zkOper.lock_check_ip_usable_action()
         except kazoo.exceptions.LockTimeout:
             logging.info("a thread is running the monitor async, give up this oper on this machine!")
             return
@@ -37,6 +37,6 @@ class Check_Ip_Legality_Worker(Abstract_Async_Thread):
             self.threading_exception_queue.put(sys.exc_info())
         finally:
             if isLock:
-                zkOper.unLock_aysnc_monitor_action(lock)
+                zkOper.unLock_check_ip_usable_action(lock)
                 
             zkOper.close()
