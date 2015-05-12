@@ -28,6 +28,13 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         super(ContainerCluster_Opers, self).__init__()
     
     def create(self, arg_dict):
+        if not arg_dict.has_key('containerClusterName'):
+            raise UserVisiableException('params containerClusterName not be given, please check the params!')
+        if not arg_dict.has_key('networkMode'):
+            raise UserVisiableException('params networkMode not be given, please check the params!')
+        if not arg_dict.has_key('componentType'):
+            raise UserVisiableException('params componentType not be given, please check the params!')
+        
         _containerClusterName = arg_dict.get('containerClusterName')
         
         zkOper = ZkOpers()

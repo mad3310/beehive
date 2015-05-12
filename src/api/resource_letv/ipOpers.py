@@ -10,6 +10,7 @@ Created on Sep 17, 2014
 import time
 import Queue
 import logging
+import re
 
 from zk.zkOpers import ZkOpers
 from utils import ping_ip_available
@@ -45,8 +46,7 @@ class IpOpers(object):
                 zkOper.write_ip_into_ipPool(ip)
         finally:
             zkOper.close()
-        
-    
+
     def _get_needed_ips(self, ip_segment, ip_count):
         choosed_ip = []
         
@@ -79,6 +79,10 @@ class IpOpers(object):
         return all_ips       
 
     def __ip_legal(self, ip):
+        ip_pattern = '((2[0-4]\d|25[0-5]|[01]?\d\d?)\.){3}(2[0-4]\d|25[0-5]|[01]?\d\d?)'
+        if not re.match(ip_pattern, ip):
+            logging.info('ip :%s not legal in pool' % ip)
+            return False
         
         ret = ping_ip_available(ip)
         if ret:

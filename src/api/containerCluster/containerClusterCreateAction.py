@@ -68,9 +68,6 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         logging.info('component_type : %s' % str(_component_type))
         logging.info('network_mode : %s' % str(_network_mode))
         
-        if not (_component_type and _network_mode and _containerClusterName):
-            raise CommonException('params may not be given correct, please check the params!')
-        
         _component_container_cluster_config = self.component_container_cluster_config_factory.retrieve_config(args)
         args.setdefault('component_config', _component_container_cluster_config)
         
@@ -115,9 +112,15 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         return handleTimeout(self.__is_cluster_started, (250, 1), container_cluster_name, nodeCount)
 
     def __is_cluster_started(self, container_cluster_name, nodeCount):
-        '''
-            @todo: need to check node number and nodeCount if the same.
-        '''
+        
+        zkOper = ZkOpers()
+        try:
+            container_list = zkOper.retrieve_container_list(container_cluster_name)
+        finally:
+            zkOper.close()
+        if len(container_list) != nodeCount:
+            logging.info('container length:%s, nodeCount :%s' % (len(container_list), nodeCount) )
+            return False
         status = self.component_container_cluster_validator.cluster_status_info(container_cluster_name)
         return status.get('status') == Status.started
 

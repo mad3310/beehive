@@ -99,14 +99,8 @@ class ContainerClusterHandler(APIHandler):
     def post(self):
         args = self.get_all_arguments()
         
-        try:
-            self.containerClusterOpers.create(args)
-        except kazoo.exceptions.LockTimeout:
-            raise HTTPAPIError(status_code=578, error_detail="lock by other thread on assign ip processing",\
-                                notification = "direct", \
-                                log_message= "lock by other thread on assign ip processing",\
-                                response =  "current operation is using by other people, please wait a moment to try again!")
-        result = {} 
+        self.containerClusterOpers.create(args)
+        result = {}
         result.setdefault("message", "due to create container cluster need a little more times, please wait to finished and email to you, when cluster have started!")
         self.finish(result)
 
