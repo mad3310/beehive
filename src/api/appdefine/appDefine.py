@@ -14,7 +14,7 @@ define('sitename', default = "container manager", help = 'site name')
 define('domain', default = "letv.com", help = 'domain name')
 
 define('send_email_switch', default = True, type = bool, help = 'the flag of if send error email')
-define('admins', default = ("zhangzeng <zhangzeng@letv.com>", ), help = 'admin email address')
+define('admins', default = ("zhangzeng <zhangzeng@letv.com>", "zhoubingzheng <zhoubingzheng@letv.com>", ), help = 'admin email address')
 define('smtp_host', default = "mail.letv.com", help = 'smtp host')
 define('smtp_port', default = 587, help = 'smtp port')
 define('smtp_user', default = "mcluster", help = 'smtp user')
