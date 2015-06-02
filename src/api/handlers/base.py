@@ -7,6 +7,8 @@ from tornado.options import options
 
 from utils.exceptions import HTTPAPIError, UserVisiableException
 from utils.mail import send_email
+from utils.invokeCommand import InvokeCommand
+from utils import getHostIp
 
 import logging
 import traceback
@@ -84,17 +86,25 @@ class APIHandler(BaseHandler):
             return super(APIHandler, self).write_error(status_code, **kwargs)
 
     def _send_error_email(self, exception):
+
         try:
+            local_ip = getHostIp()
+            invokeCommand = InvokeCommand()
+            cmd_str = "rpm -qa nginx-manager"
+            version_str = invokeCommand._runSysCmd(cmd_str)
+            logging.info("version_str :" + str(version_str)) 
             # send email
-            subject = "[%s]Internal Server Error" % options.sitename
+            subject = "[%s]Internal Server Error " % options.sitename
             body = self.render_string("errors/500_email.html",
                                       exception=exception)
+            
+            body += "\n" + version_str[0] + "\nip:" + local_ip
             
 #            email_from = "%s <noreply@%s>" % (options.sitename, options.domain)
             if options.send_email_switch:
                 send_email(options.admins, subject, body)
         except Exception:
-            self.logger.error(traceback.format_exc())
+            logging.error(traceback.format_exc())
 
 
 class ErrorHandler(RequestHandler):

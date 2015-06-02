@@ -19,7 +19,7 @@ class JettyContainerClusterConfig(BaseContainerClusterConfig):
         nodeCount = params.get('nodeCount')                          
         self.nodeCount = int(nodeCount) if nodeCount else 2
         image = params.get('image')
-        self.image = image if image else '10.160.140.32:5000/letv/base-jetty:0.0.3'
+        self.image = image if image else '10.160.140.32:5000/letv/base-jetty:logstash-forwarder-0.0.7'
         ports = params.get('ports')
         self.ports = eval(ports) if ports else [8888, 9888, 9999]
 

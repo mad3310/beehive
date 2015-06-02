@@ -19,7 +19,7 @@ class LogstashContainerClusterConfig(BaseContainerClusterConfig):
         nodeCount = params.get('nodeCount')                          
         self.nodeCount = int(nodeCount) if nodeCount else 1
         image = params.get('image')
-        self.image = image if image else '10.160.140.32:5000/letv/base-jetty:logstash-0.0.1'
+        self.image = image if image else '10.160.140.32:5000/letv/base-jetty:logstash-0.0.3'
         ports = params.get('ports')
         self.ports = eval(ports) if ports else [5601, 9999]
         

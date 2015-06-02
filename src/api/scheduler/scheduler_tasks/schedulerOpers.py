@@ -56,8 +56,8 @@ class SchedulerOpers(object):
     def check_ip_legality_handler(self, action_timeout):
         
         def __check_ip_legality_woker():
-            sync_server_zk_woker = Check_Ip_Legality_Worker(action_timeout)
-            sync_server_zk_woker.start()
+            check_ip_legality_worker = Check_Ip_Legality_Worker(action_timeout)
+            check_ip_legality_worker.start()
             
         _worker = PeriodicCallback(__check_ip_legality_woker, action_timeout * 1000)
         _worker.start()

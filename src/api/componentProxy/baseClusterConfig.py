@@ -35,7 +35,7 @@ class BaseContainerClusterConfig(object):
             container memory limit
         """
         mem_limit = params.get('memory')                           
-        self.mem_limit = eval(mem_limit) if mem_limit else 512*1024*1024
+        self.mem_limit = eval(mem_limit) if mem_limit else 1024*1024*1024
         
         disk_usage = params.get('diskUsage')
         self.disk_usage = float(disk_usage) if disk_usage else 0.8

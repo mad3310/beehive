@@ -69,8 +69,8 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         finally:
             zkOper.close()
             
-        if exists:
-            raise UserVisiableException('containerCluster %s has existed, choose another containerCluster name' % containerClusterName)
+        if not exists:
+            raise UserVisiableException('containerCluster %s not existed, choose another containerCluster name' % containerClusterName)
         
         containerCluster_stop_action = ContainerCluster_stop_Action(containerClusterName)
         containerCluster_stop_action.start()
