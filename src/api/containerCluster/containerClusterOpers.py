@@ -13,7 +13,7 @@ import logging
 from common.abstractContainerOpers import Abstract_Container_Opers
 from utils.exceptions import UserVisiableException
 from container.container_model import Container_Model
-from zk.zkOpers import ZkOpers
+from zk.zkOpers import Container_ZkOpers, Requests_ZkOpers
 from containerCluster.baseContainerAction import ContainerCluster_Action_Base
 from containerCluster.containerClusterCreateAction import ContainerCluster_create_Action
 from componentProxy.componentContainerClusterValidator import ComponentContainerClusterValidator
@@ -37,12 +37,8 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         
         _containerClusterName = arg_dict.get('containerClusterName')
         
-        zkOper = ZkOpers()
-        try:
-            exists = zkOper.check_containerCluster_exists(_containerClusterName)
-        finally:
-            zkOper.close()
-            
+        zkOper = Container_ZkOpers()
+        exists = zkOper.check_containerCluster_exists(_containerClusterName)
         if exists:
             raise UserVisiableException('containerCluster %s has existed, choose another containerCluster name' % _containerClusterName)
         
@@ -50,12 +46,8 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         containerCluster_create_action.start()
     
     def start(self, containerClusterName):
-        zkOper = ZkOpers()
-        try:
-            exists = zkOper.check_containerCluster_exists(containerClusterName)
-        finally:
-            zkOper.close()
-            
+        zkOper = Container_ZkOpers()
+        exists = zkOper.check_containerCluster_exists(containerClusterName)
         if not exists:
             raise UserVisiableException('containerCluster %s not exist, choose another containerCluster name' % containerClusterName)
         
@@ -63,12 +55,8 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         containerCluster_start_action.start()
         
     def stop(self, containerClusterName):
-        zkOper = ZkOpers()
-        try:
-            exists = zkOper.check_containerCluster_exists(containerClusterName)
-        finally:
-            zkOper.close()
-            
+        zkOper = Container_ZkOpers()
+        exists = zkOper.check_containerCluster_exists(containerClusterName)
         if not exists:
             raise UserVisiableException('containerCluster %s not existed, choose another containerCluster name' % containerClusterName)
         
@@ -79,12 +67,8 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         if not containerClusterName:
             raise UserVisiableException('no containerClusterName param')
         
-        zkOper = ZkOpers()
-        try:
-            exists = zkOper.check_containerCluster_exists(containerClusterName)
-        finally:
-            zkOper.close()
-        
+        zkOper = Container_ZkOpers()
+        exists = zkOper.check_containerCluster_exists(containerClusterName)
         if not exists:
             raise UserVisiableException('containerCluster %s not existed, no need to remove' % containerClusterName)
         
@@ -92,12 +76,8 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         containerCluster_destroy_action.start()
 
     def check(self, containerClusterName):
-        zkOper = ZkOpers()
-        try:
-            exists = zkOper.check_containerCluster_exists(containerClusterName)
-        finally:
-            zkOper.close()
-        
+        zkOper = Requests_ZkOpers()
+        exists = zkOper.check_containerCluster_exists(containerClusterName)
         if not exists:
             raise UserVisiableException('containerCluster %s not existed' % containerClusterName)
         
@@ -140,12 +120,8 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         return exist
 
     def __check_cluster_in_zk(self, containerClusterName):
-        zkOper = ZkOpers()
-        try:
-            container_ip_list = zkOper.retrieve_container_list(containerClusterName)
-        finally:
-            zkOper.close()
-        
+        zkOper = Requests_ZkOpers()
+        container_ip_list = zkOper.retrieve_container_list(containerClusterName)
         return len(container_ip_list) != 0
 
     def config(self, conf_dict={}):
@@ -167,30 +143,22 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
             logging.error(error_msg)
             return error_msg
         
-        zkOper = ZkOpers()
-        try:
-            conf_white_list = conf_white_str.split(',')
-            privs_white_list = zkOper.retrieve_servers_white_list()
-            add = list( set(conf_white_list) - set(privs_white_list) )
-            delete = list( set(privs_white_list) - set(conf_white_list) )
-            both = list( set(privs_white_list) & set(conf_white_list) )
-            for item in add:
-                zkOper.add_server_into_white_list(item)
-                
-            for item in delete:
-                zkOper.del_server_from_white_list(item)
-        finally:
-            zkOper.close()
+        zkOper = Requests_ZkOpers()
+        conf_white_list = conf_white_str.split(',')
+        privs_white_list = zkOper.retrieve_servers_white_list()
+        add = list( set(conf_white_list) - set(privs_white_list) )
+        delete = list( set(privs_white_list) - set(conf_white_list) )
+        both = list( set(privs_white_list) & set(conf_white_list) )
+        for item in add:
+            zkOper.add_server_into_white_list(item)
             
+        for item in delete:
+            zkOper.del_server_from_white_list(item)
         return error_msg
 
     def get_clusters_zk(self):
-        zkOper = ZkOpers()
-        try:
-            cluster_name_list = zkOper.retrieve_cluster_list()
-        finally:
-            zkOper.close()
-        
+        zkOper = Requests_ZkOpers()
+        cluster_name_list = zkOper.retrieve_cluster_list()
         clusters_zk_info = {}
         for cluster_name in cluster_name_list:
             cluster_info_dict = self.get_cluster_zk(cluster_name)
@@ -200,21 +168,15 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
 
     def get_cluster_zk(self, cluster_name):
         cluster_zk_info = {}
-        
-        zkOper = ZkOpers()
-        try:
-            container_ip_list = zkOper.retrieve_container_list(cluster_name)
-        
-            for container_ip in container_ip_list:
-                container_node = {}
-                create_info = zkOper.retrieve_container_node_value(cluster_name, container_ip)
-                status = zkOper.retrieve_container_status_value(cluster_name, container_ip)
-                container_node.setdefault('container_info', create_info)
-                container_node.setdefault('status', status)
-                cluster_zk_info.setdefault(container_ip, container_node)
-        finally:
-            zkOper.close()
-        
+        zkOper = Requests_ZkOpers()
+        container_ip_list = zkOper.retrieve_container_list(cluster_name)
+        for container_ip in container_ip_list:
+            container_node = {}
+            create_info = zkOper.retrieve_container_node_value(cluster_name, container_ip)
+            status = zkOper.retrieve_container_status_value(cluster_name, container_ip)
+            container_node.setdefault('container_info', create_info)
+            container_node.setdefault('status', status)
+            cluster_zk_info.setdefault(container_ip, container_node)
         return cluster_zk_info
 
 

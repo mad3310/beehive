@@ -18,7 +18,7 @@ from componentProxy.componentContainerModelFactory import ComponentContainerMode
 from componentProxy.componentContainerClusterConfigFactory import ComponentContainerClusterConfigFactory
 from componentProxy.componentContainerClusterValidator import ComponentContainerClusterValidator
 from status.status_enum import Status
-from zk.zkOpers import ZkOpers
+from zk.zkOpers import Container_ZkOpers
 
 
 class ContainerCluster_create_Action(Abstract_Async_Thread): 
@@ -113,11 +113,8 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
 
     def __is_cluster_started(self, container_cluster_name, nodeCount):
         
-        zkOper = ZkOpers()
-        try:
-            container_list = zkOper.retrieve_container_list(container_cluster_name)
-        finally:
-            zkOper.close()
+        zkOper = Container_ZkOpers()
+        container_list = zkOper.retrieve_container_list(container_cluster_name)
         if len(container_list) != nodeCount:
             logging.info('container length:%s, nodeCount :%s' % (len(container_list), nodeCount) )
             return False
@@ -128,15 +125,12 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         if _containerClusterName is None or '' == _containerClusterName:
             raise CommonException('_containerClusterName should be not null,in __updatez_zk_info_when_process_complete')
         
-        zkOper = ZkOpers()
-        try:
-            _container_cluster_info = zkOper.retrieve_container_cluster_info(_containerClusterName)
-            _container_cluster_info.setdefault('start_flag', create_result)
-            _container_cluster_info.setdefault('error_msg', error_msg)
-            _container_cluster_info.setdefault('containerClusterName', _containerClusterName)
-            zkOper.write_container_cluster_info(_container_cluster_info)
-        finally:
-            zkOper.close()
+        zkOper = Container_ZkOpers()
+        _container_cluster_info = zkOper.retrieve_container_cluster_info(_containerClusterName)
+        _container_cluster_info.setdefault('start_flag', create_result)
+        _container_cluster_info.setdefault('error_msg', error_msg)
+        _container_cluster_info.setdefault('containerClusterName', _containerClusterName)
+        zkOper.write_container_cluster_info(_container_cluster_info)
 
     def __create_container_cluser_info_to_zk(self, network_mode, component_container_cluster_config):
         containerCount = component_container_cluster_config.nodeCount
@@ -149,12 +143,8 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         if 'bridge' == network_mode:
             use_ip = False
         _container_cluster_info.setdefault('isUseIp', use_ip)
-        
-        zkOper = ZkOpers()
-        try:
-            zkOper.write_container_cluster_info(_container_cluster_info)
-        finally:
-            zkOper.close()
+        zkOper = Container_ZkOpers()
+        zkOper.write_container_cluster_info(_container_cluster_info)
 
     def __dispatch_create_container_task(self, container_model_list):
         

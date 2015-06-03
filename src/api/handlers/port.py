@@ -3,7 +3,7 @@ import logging
 
 from handlers.base import APIHandler
 from resource_letv.portOpers import PortOpers
-from zk.zkOpers import ZkOpers
+from zk.zkOpers import Requests_ZkOpers
 from tornado_letv.tornado_basic_auth import require_basic_auth
 
 
@@ -27,11 +27,8 @@ class PortHandler(APIHandler):
         host_ip = args.get('hostIp')
         logging.info('get server %s ports' % host_ip)
         
-        zkOper = ZkOpers()
-        try:
-            ports = zkOper.get_ports_from_portPool(host_ip)
-        finally:
-            zkOper.close()
+        zkOper = Requests_ZkOpers()
+        ports = zkOper.get_ports_from_portPool(host_ip)
         
         result = {}
         result.setdefault('ports', ports)

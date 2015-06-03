@@ -6,7 +6,7 @@ import logging
 from tornado.options import options
 from tornado.gen import Callback, Wait, engine
 from tornado.httpclient import AsyncHTTPClient
-from zk.zkOpers import ZkOpers
+from zk.zkOpers import Common_ZkOpers
 from utils import dispatch_mutil_task
 
 
@@ -28,12 +28,9 @@ class ServerCluster_Opers(object):
         succ, fail, return_result  = [], [], ''
         key_sets = set()
         
-        zkOper = ZkOpers()
-        try:
-            server_list = zkOper.retrieve_data_node_list()
-        finally:
-            zkOper.close()
-        
+        zkOper = Common_ZkOpers()
+        server_list = zkOper.retrieve_data_node_list()
+
         try: 
             for server in server_list:
                 requesturi = 'http://%s:%s/inner/server/update' % (server, options.port)

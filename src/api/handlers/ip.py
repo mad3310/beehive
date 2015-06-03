@@ -1,7 +1,7 @@
 #-*- coding: utf-8 -*-
 from handlers.base import APIHandler
 from resource_letv.ipOpers import IpOpers
-from zk.zkOpers import ZkOpers
+from zk.zkOpers import Requests_ZkOpers
 from tornado_letv.tornado_basic_auth import require_basic_auth
 
 
@@ -20,12 +20,8 @@ class IPHandler(APIHandler):
         self.finish(result)
         
     def get(self):
-        zkOper = ZkOpers()
-        try:
-            ips = zkOper.get_ips_from_ipPool()
-        finally:
-            zkOper.close()
-        
+        zkOper = Requests_ZkOpers()
+        ips = zkOper.get_ips_from_ipPool()
         result = {}
         result.setdefault('ips', ips)
         self.finish(result)

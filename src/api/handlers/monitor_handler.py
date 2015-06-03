@@ -6,17 +6,8 @@ Created on 2013-7-21
 @author: asus
 '''
 
-import logging
-import json
-
 from base import APIHandler
-from tornado.web import asynchronous
-from tornado.gen import Task, engine
-from tornado.httpclient import AsyncHTTPClient
-from tornado.options import options
-from tornado_letv.tornado_basic_auth import require_basic_auth
-from server.serverOpers import Server_Opers
-from zk.zkOpers import ZkOpers
+from zk.zkOpers import Requests_ZkOpers
 
 
 # retrieve the status value of all monitor type 
@@ -24,21 +15,17 @@ from zk.zkOpers import ZkOpers
 class ContainerStatus(APIHandler):
     
     def get(self):
-        zkOper = ZkOpers()
-        
-        try:
-            monitor_types = zkOper.retrieve_monitor_type()
-            stat_dict = {}
-            for monitor_type in monitor_types:
-                monitor_status_list = zkOper.retrieve_monitor_status_list(monitor_type)
+        zkOper = Requests_ZkOpers()
+        monitor_types = zkOper.retrieve_monitor_type()
+        stat_dict = {}
+        for monitor_type in monitor_types:
+            monitor_status_list = zkOper.retrieve_monitor_status_list(monitor_type)
+            
+            monitor_type_sub_dict = {}
+            for monitor_status_key in monitor_status_list:
+                monitor_status_value = zkOper.retrieve_monitor_status_value(monitor_type, monitor_status_key)
+                monitor_type_sub_dict.setdefault(monitor_status_key, monitor_status_value)
                 
-                monitor_type_sub_dict = {}
-                for monitor_status_key in monitor_status_list:
-                    monitor_status_value = zkOper.retrieve_monitor_status_value(monitor_type, monitor_status_key)
-                    monitor_type_sub_dict.setdefault(monitor_status_key, monitor_status_value)
-                    
-                stat_dict.setdefault(monitor_type, monitor_type_sub_dict)
-        finally:
-            zkOper.close()
+            stat_dict.setdefault(monitor_type, monitor_type_sub_dict)
 
         self.finish(stat_dict)

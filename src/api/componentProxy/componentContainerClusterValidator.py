@@ -4,7 +4,7 @@ Created on 2015-2-4
 @author: asus
 '''
 import logging
-from zk.zkOpers import ZkOpers
+from zk.zkOpers import Container_ZkOpers
 from status.status_enum import Status
 from utils.exceptions import UserVisiableException
 from container.container_model import Container_Model
@@ -20,12 +20,9 @@ class ComponentContainerClusterValidator(object):
         '''
     
     def container_cluster_status_validator(self, containerClusterName):
-        zkOper = ZkOpers()
-        try:
-            exists = zkOper.check_containerCluster_exists(containerClusterName)
-        finally:
-            zkOper.close()
-        
+        zkOper = Container_ZkOpers()
+        exists = zkOper.check_containerCluster_exists(containerClusterName)
+
         if not exists:
             raise UserVisiableException('containerCluster %s not existed' % containerClusterName)
         
@@ -34,13 +31,8 @@ class ComponentContainerClusterValidator(object):
         create_failed = {'code':"000002", 'status': Status.create_failed}
         
         result = {}
-        
-        zkOper = ZkOpers()
-        try:
-            container_cluster_info = zkOper.retrieve_container_cluster_info(containerClusterName)
-        finally:
-            zkOper.close()
-        
+
+        container_cluster_info = zkOper.retrieve_container_cluster_info(containerClusterName)
         start_flag = container_cluster_info.get('start_flag')
 
         if start_flag == Status.failed:
@@ -82,36 +74,31 @@ class ComponentContainerClusterValidator(object):
         return cluster_stat
 
     def cluster_status_info(self, cluster):
-        zkOper = ZkOpers()
+        zkOper = Container_ZkOpers()
         message_list = []
-        try:
-            container_node_list = zkOper.retrieve_container_list(cluster)
-            status_list, result = [], {}
-            for container_node in container_node_list:
-                container_node_value = self.__get_create_info(cluster, container_node)
-                message_list.append(container_node_value)
-                status_node_value = zkOper.retrieve_container_status_value(cluster, container_node)
-                status_list.append(status_node_value.get('status'))
-            
-            status = self.__get_cluster_status(status_list)
-            result.setdefault('containers', message_list)
-            result.setdefault('status', status)
-            
-            if status == Status.destroyed:
-                logging.info('delete containerCluster: %s record in zookeeper' % cluster)
-                zkOper.delete_container_cluster(cluster)
-        finally:
-            zkOper.close()
+        
+        container_node_list = zkOper.retrieve_container_list(cluster)
+        status_list, result = [], {}
+        for container_node in container_node_list:
+            container_node_value = self.__get_create_info(cluster, container_node)
+            message_list.append(container_node_value)
+            status_node_value = zkOper.retrieve_container_status_value(cluster, container_node)
+            status_list.append(status_node_value.get('status'))
+        
+        status = self.__get_cluster_status(status_list)
+        result.setdefault('containers', message_list)
+        result.setdefault('status', status)
+        
+        if status == Status.destroyed:
+            logging.info('delete containerCluster: %s record in zookeeper' % cluster)
+            zkOper.delete_container_cluster(cluster)
+
             
         return result
 
     def __get_create_info(self, containerClusterName, container_node):
-        zkOper = ZkOpers()
-        try:
-            container_node_value = zkOper.retrieve_container_node_value(containerClusterName, container_node)
-        finally:
-            zkOper.close()
-        
+        zkOper = Container_ZkOpers()
+        container_node_value = zkOper.retrieve_container_node_value(containerClusterName, container_node)
         con = Container_Model()
         create_info = con.create_info(container_node_value)
         return create_info

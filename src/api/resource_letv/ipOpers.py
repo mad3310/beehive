@@ -12,19 +12,18 @@ import Queue
 import logging
 import re
 
-from zk.zkOpers import ZkOpers
 from utils import ping_ip_available
 from utils.threadUtil import doInThread
 from utils.exceptions import CommonException
 from docker_letv.dockerOpers import Docker_Opers
+from zk.zkOpers import Common_ZkOpers
+
 
 class IpOpers(object):
     '''
     classdocs
     '''
-    '''
-    @todo: why use Queue? List? use thread pool to issue this action
-    '''
+    
     store_illegal_ips_queue = Queue.Queue()
     store_all_ips_queue = Queue.Queue()
 
@@ -40,21 +39,16 @@ class IpOpers(object):
         ip_count = int(args_dict.get('ipCount'))
         choosed_ip = self._get_needed_ips(ip_segment, ip_count)
         
-        zkOper = ZkOpers()
-        try:
-            for ip in choosed_ip:
-                zkOper.write_ip_into_ipPool(ip)
-        finally:
-            zkOper.close()
+        zkOper = Common_ZkOpers()
+        
+        for ip in choosed_ip:
+            zkOper.write_ip_into_ipPool(ip)
 
     def _get_needed_ips(self, ip_segment, ip_count):
         choosed_ip = []
         
-        zkOper = ZkOpers()
-        try:
-            ip_list = zkOper.get_ips_from_ipPool()
-        finally:
-            zkOper.close()
+        zkOper = Common_ZkOpers()
+        ip_list = zkOper.get_ips_from_ipPool()
         
         all_ips = self._get_all_ips(ip_segment)
         ips = list( set(all_ips) - set(ip_list) )
@@ -114,13 +108,9 @@ class IpOpers(object):
         """
         
         illegal_ips, thread_obj_list = [], []
-        zkOper = ZkOpers()
-        try:
-            ip_list = zkOper.get_ips_from_ipPool()
-        finally:
-            zkOper.close()
+        zkOper = Common_ZkOpers()
+        ip_list = zkOper.get_ips_from_ipPool()
         logging.info('ips in ip pool:%s' % str(ip_list) )
-        
         logging.info('put all ips in ip pools into store_all_ips_queue')
         
         self.store_all_ips_queue._init(0)
@@ -151,18 +141,14 @@ class IpOpers(object):
         """
             monitor item: get ip num from ip Pool
         """
-        zkOper = ZkOpers()
-        try:
-            ip_list = zkOper.get_ips_from_ipPool()
-        finally:
-            zkOper.close()
-        
+        zkOper = Common_ZkOpers()
+        ip_list = zkOper.get_ips_from_ipPool()
         return len(ip_list)
     
     def retrieve_ip_resource(self, ip_count):
         ip_list = None
         
-        zkOper = ZkOpers()
+        zkOper = Common_ZkOpers()
         
         try:
             isLock,lock = zkOper.lock_assign_ip()
@@ -171,8 +157,6 @@ class IpOpers(object):
         finally:
             if isLock:
                 zkOper.unLock_assign_ip(lock)
-                
-            zkOper.close()
             
         return ip_list
 

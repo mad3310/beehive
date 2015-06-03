@@ -3,7 +3,7 @@ Created on 2015-2-8
 
 @author: asus
 '''
-from zk.zkOpers import ZkOpers
+from zk.zkOpers import Common_ZkOpers
 from utils.exceptions import CommonException
 from utils import nc_ip_port_available
 
@@ -15,9 +15,7 @@ class PortOpers(object):
     def retrieve_port_resource(self, host_ip_list, every_host_port_count=1):
 
         port_dict = {}
-        
-        zkOper = ZkOpers()
-        
+        zkOper = Common_ZkOpers()
         try:
             isLock,lock = zkOper.lock_assign_port()
             if isLock:
@@ -27,8 +25,6 @@ class PortOpers(object):
         finally:
             if isLock:
                 zkOper.unLock_assign_port(lock)
-                
-            zkOper.close()
             
         return port_dict
 
@@ -39,20 +35,14 @@ class PortOpers(object):
 
         choosed_ports = self.__get_needed_ports(host_ip, start_port, port_count)
         
-        zkOper = ZkOpers()
-        try:
-            for port in choosed_ports:
-                zkOper.write_port_into_portPool(host_ip, str(port) )
-        finally:
-            zkOper.close()
+        zkOper = Common_ZkOpers()
+
+        for port in choosed_ports:
+            zkOper.write_port_into_portPool(host_ip, str(port) )
         
     def get_port_num(self, host_ip):
-        zkOper = ZkOpers()
-        try:
-            port_list = zkOper.get_ports_from_portPool(host_ip)
-        finally:
-            zkOper.close()
-        
+        zkOper = Common_ZkOpers()
+        port_list = zkOper.get_ports_from_portPool(host_ip)
         return len(port_list)
 
     def __get_needed_ports(self, host_ip, start_port, port_count):

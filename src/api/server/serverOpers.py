@@ -10,7 +10,7 @@ import logging
 import sys
 
 from docker_letv.dockerOpers import Docker_Opers
-from zk.zkOpers import ZkOpers
+from zk.zkOpers import Common_ZkOpers
 from container.container_model import Container_Model
 from container.containerOpers import Container_Opers
 from common.abstractAsyncThread import Abstract_Async_Thread
@@ -33,13 +33,9 @@ class Server_Opers(object):
 
     def write_host_resource_to_zk(self):
         server_res = self.server_res_opers.retrieve_host_stat()
-        
-        zkOper = ZkOpers()
-        try:
-            host_ip = getHostIp()
-            zkOper.writeDataNodeServerResource(host_ip, server_res)
-        finally:
-            zkOper.close()
+        zkOper = Common_ZkOpers()
+        host_ip = getHostIp()
+        zkOper.writeDataNodeServerResource(host_ip, server_res)
 
 
 class ServerUpdateAction(Abstract_Async_Thread):
@@ -119,25 +115,23 @@ class ServerUpdateAction(Abstract_Async_Thread):
         """
         container_name_list, container_info= [], {}
         
-        zkOper = ZkOpers()
-        try:
-            clusters = zkOper.retrieve_cluster_list()
-            for cluster in clusters:
-                container_ip_list = zkOper.retrieve_container_list(cluster)
-                for container_ip in container_ip_list:
-                    container_info = zkOper.retrieve_container_node_value(cluster, container_ip)
-                    host_ip = container_info.get('hostIp')
-                    if self.host_ip == host_ip:
-                        if container_info.has_key('containerName'):
-                            container_name = container_info.get('containerName')
-                        else:
-                            inspect = container_info.get('inspect')
-                            con = Container_Model(inspect=inspect)
-                            container_name = con.name()
-                        container_name_list.append(container_name)
-        finally:
-            zkOper.close()
-        
+        zkOper = Common_ZkOpers()
+
+        clusters = zkOper.retrieve_cluster_list()
+        for cluster in clusters:
+            container_ip_list = zkOper.retrieve_container_list(cluster)
+            for container_ip in container_ip_list:
+                container_info = zkOper.retrieve_container_node_value(cluster, container_ip)
+                host_ip = container_info.get('hostIp')
+                if self.host_ip == host_ip:
+                    if container_info.has_key('containerName'):
+                        container_name = container_info.get('containerName')
+                    else:
+                        inspect = container_info.get('inspect')
+                        con = Container_Model(inspect=inspect)
+                        container_name = con.name()
+                    container_name_list.append(container_name)
+
         return container_name_list
 
     def _compare(self, host_container_list, zk_container_list):

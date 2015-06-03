@@ -11,7 +11,7 @@ from tornado.httpclient import AsyncHTTPClient
 from common.abstractAsyncThread import Abstract_Async_Thread
 from utils import _retrieve_userName_passwd
 from utils import async_http_post
-from zk.zkOpers import ZkOpers
+from zk.zkOpers import Container_ZkOpers
 
 
 
@@ -49,16 +49,13 @@ class ContainerCluster_Action_Base(Abstract_Async_Thread):
             self.__do_when_remove_cluster()
 
     def __do_when_remove_cluster(self):
-        zkOper = ZkOpers()
-        try:
-            cluster_info = zkOper.retrieve_container_cluster_info(self.cluster)
-            use_ip = cluster_info.get('isUseIp')
-            if use_ip:
-                container_ip_list = zkOper.retrieve_container_list(self.cluster)
-                logging.info('container_ip_list:%s' % str(container_ip_list) )
-                zkOper.recover_ips_to_pool(container_ip_list)
-        finally:
-            zkOper.close()
+        zkOper = Container_ZkOpers()
+        cluster_info = zkOper.retrieve_container_cluster_info(self.cluster)
+        use_ip = cluster_info.get('isUseIp')
+        if use_ip:
+            container_ip_list = zkOper.retrieve_container_list(self.cluster)
+            logging.info('container_ip_list:%s' % str(container_ip_list) )
+            zkOper.recover_ips_to_pool(container_ip_list)
 
     def __get_params(self):
         """
@@ -67,20 +64,14 @@ class ContainerCluster_Action_Base(Abstract_Async_Thread):
         
         params, container_info = {}, {}
         
-        zkOper = ZkOpers()
-        
-        try:
-            container_ip_list = zkOper.retrieve_container_list(self.cluster)
-        
-            for contaier_ip in container_ip_list:
-                container_name_list = []
-                container_info = zkOper.retrieve_container_node_value(self.cluster, contaier_ip)
-                container_name = container_info.get('containerName')
-                host_ip = container_info.get('hostIp')
-                container_name_list.append(container_name)
-                params[host_ip] = container_name_list
-        finally:
-            zkOper.close()
-        
+        zkOper = Container_ZkOpers()
+        container_ip_list = zkOper.retrieve_container_list(self.cluster)
+        for contaier_ip in container_ip_list:
+            container_name_list = []
+            container_info = zkOper.retrieve_container_node_value(self.cluster, contaier_ip)
+            container_name = container_info.get('containerName')
+            host_ip = container_info.get('hostIp')
+            container_name_list.append(container_name)
+            params[host_ip] = container_name_list
         return params
         

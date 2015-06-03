@@ -5,7 +5,7 @@ import datetime
 
 from tornado.options import options
 from abc import abstractmethod
-from zk.zkOpers import ZkOpers
+from zk.zkOpers import Scheduler_ZkOpers
 from resource_letv.ipOpers import IpOpers
 from resource_letv.portOpers import PortOpers
 from server.serverOpers import Server_Opers
@@ -43,11 +43,8 @@ class CheckStatusBase(object):
         logging.info("monitor_type:" + monitor_type + " monitor_key:" + \
                      monitor_key + " monitor_value:" + str(result_dict))
         
-        zkOper = ZkOpers()
-        try:
-            zkOper.write_monitor_status(monitor_type, monitor_key, result_dict)
-        finally:
-            zkOper.close()
+        zkOper = Scheduler_ZkOpers()
+        zkOper.write_monitor_status(monitor_type, monitor_key, result_dict)
 
 
 class CheckResIpNum(CheckStatusBase):
@@ -81,15 +78,12 @@ class CheckServerPortNum(CheckStatusBase):
 
         monitor_type, monitor_key, error_record = 'res', 'port_num', ''
         
-        zk_opers = ZkOpers()
-        try:
-            host_ip_list = zk_opers.retrieve_data_node_list()
-        finally:
-            zk_opers.close()
-            for host_ip in host_ip_list:
-                success_count = self.port_opers.get_port_num(host_ip)
-                if success_count < 30:
-                    error_record += 'the number of port in port Pool is %s on server :%s, please add ports!\n' % (success_count, host_ip)
+        zk_opers = Scheduler_ZkOpers()
+        host_ip_list = zk_opers.retrieve_data_node_list()
+        for host_ip in host_ip_list:
+            success_count = self.port_opers.get_port_num(host_ip)
+            if success_count < 30:
+                error_record += 'the number of port in port Pool is %s on server :%s, please add ports!\n' % (success_count, host_ip)
         
         alarm_level = self.retrieve_alarm_level(0, success_count, 0)
         super(CheckServerPortNum, self).write_status(0, 0, 0, \
@@ -115,7 +109,7 @@ class CheckResIpLegality(CheckStatusBase):
         logging.info('do get_illegal_ips')
         error_record = self.ip_opers.get_illegal_ips(20)
         failed_count = len(error_record)
-        logging.info('check ip res resutl failed_count : %s' % failed_count)
+        logging.info('check ip res result, such ips can be pingable : %s' % failed_count)
         
         alarm_level = self.retrieve_alarm_level(0, 0, failed_count)
         super(CheckResIpLegality, self).write_status(0, 0, \
@@ -144,25 +138,22 @@ class CheckContainersKeyValue(CheckStatusBase):
         failed_count = 0
         
         logging.info('do check under_oom')
-        zk_opers = ZkOpers()
-        try:
-            server_list = zk_opers.retrieve_servers_white_list()
-            for server in server_list:
-                under_oom_info = zk_opers.retrieveDataNodeContainersResource(server, self.monitor_key)
-                '''
-                    if new server join server cluster,there
-                '''
-                if not under_oom_info:
-                    return
-                container_under_oom_dict = under_oom_info.get(self.monitor_key)
-                for container, under_oom_value in container_under_oom_dict.items():
-                    if under_oom_value != self.value:
-                        error_record.append(container)
-                        failed_count = len(error_record)
-                        
-        finally:
-            zk_opers.close()
-        
+        zk_opers = Scheduler_ZkOpers()
+
+        server_list = zk_opers.retrieve_servers_white_list()
+        for server in server_list:
+            under_oom_info = zk_opers.retrieveDataNodeContainersResource(server, self.monitor_key)
+            '''
+                if new server join server cluster,there
+            '''
+            if not under_oom_info:
+                return
+            container_under_oom_dict = under_oom_info.get(self.monitor_key)
+            for container, under_oom_value in container_under_oom_dict.items():
+                if under_oom_value != self.value:
+                    error_record.append(container)
+                    failed_count = len(error_record)
+
         alarm_level = self.retrieve_alarm_level(0, 0, failed_count)
         self.write_status(0, 0, failed_count, alarm_level, error_record, monitor_type, self.monitor_key)      
 
