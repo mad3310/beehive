@@ -1,7 +1,7 @@
 #!/usr/bin/env python 2.6.6
 #coding:utf-8
 
-from common.utils import get_zk_address
+from utils import get_zk_address
 from exceptions import CommonException
 
 def singleton(cls):
