@@ -18,7 +18,7 @@ class PortHandler(APIHandler):
         self.port_opers.write_into_portPool(args)
         
         result = {}
-        result.setdefault("message", "write port to ip pools successfully!")
+        result.setdefault("message", "ports have already been added, please check!")
         self.finish(result)
 
     #curl --user root:root -X GET http://localhost:8888/admin/ports?hostIp=10.154.156.150

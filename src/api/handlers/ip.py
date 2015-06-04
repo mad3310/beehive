@@ -16,7 +16,7 @@ class IPHandler(APIHandler):
         self.ip_opers.write_into_ipPool(args)
         
         result = {}
-        result.setdefault("message", "write ip to ip pools successfully!")
+        result.setdefault("message", "ips have already been added, please check!")
         self.finish(result)
         
     def get(self):

@@ -124,6 +124,37 @@ class CheckResIpLegality(CheckStatusBase):
             return options.alarm_serious
 
 
+class CheckResPortLegality(CheckStatusBase):
+    
+    port_opers = PortOpers()
+    
+    def check(self):
+        monitor_type, monitor_key = 'res', 'port_usable'
+        zk_opers = ZkOpers()
+        host_ip_list = zk_opers.retrieve_data_node_list()
+        if not host_ip_list:
+            return
+        error_record, host_illegal_ports = [], {}
+        for host_ip in host_ip_list:
+            illegal_ports = self.port_opers.get_illegal_ports(host_ip)
+            if illegal_ports:
+                host_illegal_ports.setdefault(host_ip, illegal_ports)
+        
+        if host_illegal_ports:
+            error_record.append(host_illegal_ports) 
+        
+        alarm_level = self.retrieve_alarm_level(0, 0, len(error_record))
+        
+        super(CheckResPortLegality, self).write_status(0, 0, len(error_record), alarm_level,
+                                                       error_record, monitor_type, monitor_key)
+        
+    def retrieve_alarm_level(self, total_count, success_count, failed_count):
+        if failed_count == 0:
+            return options.alarm_nothing
+        else:
+            return options.alarm_serious
+
+
 class CheckContainersKeyValue(CheckStatusBase):
     
     server_opers = Server_Opers()

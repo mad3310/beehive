@@ -54,7 +54,9 @@ class IpOpers(object):
         ips = list( set(all_ips) - set(ip_list) )
         num = 0
         if len(ips) < ip_count:
-            raise CommonException('the ips of this segment is less the the number you need, please apply less ips')
+            logging.info('ips usable are not enough, just add %s ips' % len(ips))
+            ip_count = len(ips)
+
         for ip in ips:
             if self.__ip_legal(ip):
                 choosed_ip.append(ip)

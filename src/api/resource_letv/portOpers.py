@@ -6,6 +6,8 @@ Created on 2015-2-8
 from zk.zkOpers import Common_ZkOpers
 from utils.exceptions import CommonException
 from utils import nc_ip_port_available
+from utils.threadUtil import doInThread
+
 
 class PortOpers(object):
     '''
@@ -29,6 +31,9 @@ class PortOpers(object):
         return port_dict
 
     def write_into_portPool(self, args):
+        doInThread(self._write_into_portPool, args)
+
+    def _write_into_portPool(self, args):
         host_ip = args.get('hostIp')
         port_count = int(args.get('portCount'))
         start_port = int(args.get('startPort'))
@@ -57,3 +62,23 @@ class PortOpers(object):
                 break
         return port_list
         
+    def get_illegal_ports(self, host_ip):
+        
+        illegal_ports = []
+        
+        zkOper = ZkOpers()
+        port_list = zkOper.get_ports_from_portPool(host_ip)
+        logging.info('port in host: %s, in ports pool:%s ' % (host_ip, str(port_list) ))
+        for port in port_list:
+            ret = self.__port_legal(host_ip, port)
+            if not ret:
+                illegal_ports.append(port)
+        return illegal_ports
+                
+    def __port_legal(self, ip, port):
+        ret = nc_ip_port_available(ip, port)
+        if ret:
+            logging.info('port: %s  is used :%s' % (port, str(ret)))
+            return False
+        else:
+            return True

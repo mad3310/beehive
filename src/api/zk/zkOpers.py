@@ -408,7 +408,12 @@ class ZkOpers(object):
     def unLock_check_ip_usable_action(self, lock):
         self._unLock_base_action(lock)
 
-
+    def lock_check_port_usable_action(self):
+        lock_name = "port_usable"
+        return self._lock_base_action(lock_name)
+    
+    def unLock_check_port_usable_action(self, lock):
+        self._unLock_base_action(lock)
 
     '''
     *********************************************Base method*******************************************
