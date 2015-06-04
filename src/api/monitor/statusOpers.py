@@ -130,7 +130,7 @@ class CheckResPortLegality(CheckStatusBase):
     
     def check(self):
         monitor_type, monitor_key = 'res', 'port_usable'
-        zk_opers = ZkOpers()
+        zk_opers = Scheduler_ZkOpers()
         host_ip_list = zk_opers.retrieve_data_node_list()
         if not host_ip_list:
             return

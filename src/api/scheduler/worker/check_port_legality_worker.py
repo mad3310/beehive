@@ -6,7 +6,7 @@ import kazoo
 import sys
 
 from common.abstractAsyncThread import Abstract_Async_Thread
-from zk.zkOpers import ZkOpers
+from zk.zkOpers import Scheduler_ZkOpers
 from monitor.statusOpers import CheckResPortLegality
 
 
@@ -21,7 +21,7 @@ class Check_Port_Legality_Worker(Abstract_Async_Thread):
     def run(self):
         isLock, lock = False, None
         
-        zkOper = ZkOpers()
+        zkOper = Scheduler_ZkOpers()
         try:
             isLock, lock = zkOper.lock_check_port_usable_action()
         except kazoo.exceptions.LockTimeout:
@@ -38,5 +38,3 @@ class Check_Port_Legality_Worker(Abstract_Async_Thread):
         finally:
             if isLock:
                 zkOper.unLock_check_port_usable_action(lock)
-                
-            zkOper.close()

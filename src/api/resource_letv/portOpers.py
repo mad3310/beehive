@@ -3,6 +3,8 @@ Created on 2015-2-8
 
 @author: asus
 '''
+import logging
+
 from zk.zkOpers import Common_ZkOpers
 from utils.exceptions import CommonException
 from utils import nc_ip_port_available
@@ -66,7 +68,7 @@ class PortOpers(object):
         
         illegal_ports = []
         
-        zkOper = ZkOpers()
+        zkOper = Common_ZkOpers()
         port_list = zkOper.get_ports_from_portPool(host_ip)
         logging.info('port in host: %s, in ports pool:%s ' % (host_ip, str(port_list) ))
         for port in port_list:
