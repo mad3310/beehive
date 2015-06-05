@@ -35,6 +35,9 @@ class IpOpers(object):
         '''
     
     def write_into_ipPool(self, args_dict):
+        doInThread(self._write_into_ipPool, args_dict)
+
+    def _write_into_ipPool(self, args_dict):
         ip_segment = args_dict.get('ipSegment')
         ip_count = int(args_dict.get('ipCount'))
         choosed_ip = self._get_needed_ips(ip_segment, ip_count)
