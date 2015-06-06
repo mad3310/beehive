@@ -14,7 +14,6 @@ import re
 
 from utils import ping_ip_available
 from utils.threadUtil import doInThread
-from utils.exceptions import CommonException
 from docker_letv.dockerOpers import Docker_Opers
 from zk.zkOpers import Common_ZkOpers
 
