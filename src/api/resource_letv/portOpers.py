@@ -80,7 +80,7 @@ class PortOpers(object):
     def __port_legal(self, ip, port):
         ret = nc_ip_port_available(ip, port)
         if ret:
-            logging.info('port: %s  is used :%s' % (port, str(ret)))
+            #logging.info('port: %s  is used :%s' % (port, str(ret)))
             return False
         else:
             return True
