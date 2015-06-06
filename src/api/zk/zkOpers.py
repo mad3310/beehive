@@ -10,16 +10,20 @@ Created on 2013-7-11
 import logging
 import threading
 
-from kazoo.client import KazooClient
+from kazoo.client import KazooClient, KazooState
 from utils import ping_ip_available, nc_ip_port_available, get_zk_address
 from kazoo.retry import KazooRetry
-from utils.decorators import singleton
+from utils.decorators import zk_singleton
 
 
-@singleton
 class ZkOpers(object):
     
     zk = None
+    
+    DEFAULT_RETRY_POLICY = KazooRetry(
+        max_tries=None,
+        max_delay=10000,
+    )
     
     rootPath = "/letv/docker"
     
@@ -30,31 +34,67 @@ class ZkOpers(object):
         '''
         Constructor
         '''
-        
         self.zkaddress, self.zkport = get_zk_address()
-        self.retry = KazooRetry(max_tries=3, delay=0.5)
-        self.zk = KazooClient(hosts=self.zkaddress+':'+str(self.zkport), connection_retry=self.retry)
-        self.zk.start()
+        if "" != self.zkaddress and "" != self.zkport:
+            self.zk = KazooClient(
+                                  hosts=self.zkaddress+':'+str(self.zkport), 
+                                  connection_retry=self.DEFAULT_RETRY_POLICY,
+                                  timeout=20)
+            self.zk.add_listener(self.listener)
+            self.zk.start()
+            logging.info("instance zk client (%s:%s)" % (self.zkaddress, self.zkport))
+
 
     def close(self):
-        pass
-#         try:
-#             self.zk.stop()
-#             self.zk.close()
-#         except Exception, e:
-#             logging.error(e)
+        try:
+            self.zk.stop()
+            self.zk.close()
+        except Exception, e:
+            logging.error(e)
+   
+    def stop(self):
+        try:
+            self.zk.stop()
+        except Exception, e:
+            logging.error(e)
+            raise
+
+    def listener(self, state):
+        if state == KazooState.LOST:
+            logging.info("zk connect lost, stop this connection and then start new one!")
+            
+        elif state == KazooState.SUSPENDED:
+            logging.info("zk connect suspended, stop this connection and then start new one!")
+            self.re_connect()
+        else:
+            pass
+
+    def is_connected(self):
+        return self.zk.state == KazooState.CONNECTED
+
+    def re_connect(self):
+        zk = KazooClient(hosts=self.zkaddress+':'+str(self.zkport), connection_retry=self.DEFAULT_RETRY_POLICY)
+        zk.start()
+        self.zk = zk
+        return self.zk
+
+
+    '''
+    *****************************************************  uuid  *****************************************
+    '''
+      
     
     def writeClusterInfo(self, clusterUUID, clusterProps):
         path = self.rootPath + "/" + clusterUUID
-        self.zk.ensure_path(path)
-        self.zk.set(path, str(clusterProps))
+        self.DEFAULT_RETRY_POLICY(self.zk.ensure_path, path)
+        self.DEFAULT_RETRY_POLICY(self.zk.set, path, str(clusterProps))
         
     def retrieveClusterProp(self, clusterUUID):
         resultValue = {}
         #clusterUUID = self.getClusterUUID()
         path = self.rootPath + "/" + clusterUUID
-        if self.zk.exists(path):
-            resultValue = self.zk.get(path)
+        if self.DEFAULT_RETRY_POLICY(self.zk.exists, path):
+            resultValue = self.DEFAULT_RETRY_POLICY(self.zk.get, path)
             
         return resultValue
     
@@ -82,8 +122,8 @@ class ZkOpers(object):
     def writeDataNodeInfo(self, clusterUUID, dataNodeProps):
         dataNodeIp = dataNodeProps['dataNodeIp']
         path = self.rootPath + "/" + clusterUUID + "/dataNode/" + dataNodeIp
-        self.zk.ensure_path(path)
-        self.zk.set(path, str(dataNodeProps))
+        self.DEFAULT_RETRY_POLICY(self.zk.ensure_path, path)
+        self.DEFAULT_RETRY_POLICY(self.zk.set, path, str(dataNodeProps))
     
     def existDataNode(self, clusterUUID, dataNodeIp):
         path = self.rootPath + "/" + clusterUUID + "/dataNode/" + dataNodeIp
@@ -97,7 +137,7 @@ class ZkOpers(object):
         _clusterUUID = self.getClusterUUID()
         _path = "%s/%s/dataNode/%s/containersResource/%s" % (self.rootPath, _clusterUUID, ip_address, resource_type)
         self.zk.ensure_path(_path)
-        self.zk.set(_path, str(resource_info))
+        self.DEFAULT_RETRY_POLICY(self.zk.set, _path, str(resource_info))
 
     def retrieveDataNodeContainersResource(self, ip_address, resource_type):
         _clusterUUID = self.getClusterUUID()
@@ -109,7 +149,7 @@ class ZkOpers(object):
         _clusterUUID = self.getClusterUUID()
         _path = "%s/%s/dataNode/%s/serverResource" % (self.rootPath, _clusterUUID, ip_address)
         self.zk.ensure_path(_path)
-        self.zk.set(_path, str(resource_info))
+        self.DEFAULT_RETRY_POLICY(self.zk.set, _path, str(resource_info))
 
     def retrieveDataNodeServerResource(self, ip_address):
         _clusterUUID = self.getClusterUUID()
@@ -151,7 +191,7 @@ class ZkOpers(object):
         clusterUUID = self.getClusterUUID()
         path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + containerClusterName
         self.zk.ensure_path(path)
-        self.zk.delete(path, recursive=True)
+        self.DEFAULT_RETRY_POLICY(self.zk.delete, path, recursive=True)
         
     def write_container_cluster_info(self, containerClusterProps):
         containerClusterName = containerClusterProps['containerClusterName']
@@ -160,7 +200,7 @@ class ZkOpers(object):
         clusterUUID = self.getClusterUUID()
         path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + containerClusterName
         self.zk.ensure_path(path)
-        self.zk.set(path, str(cluster_info_before))
+        self.DEFAULT_RETRY_POLICY(self.zk.set, path, str(cluster_info_before))
 
     def write_container_node_value(self, cluster, container_node, containerProps):
         """write container node value not write status value
@@ -169,7 +209,7 @@ class ZkOpers(object):
         clusterUUID = self.getClusterUUID()
         path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + cluster + "/" + container_node
         self.zk.ensure_path(path)
-        self.zk.set(path, str(containerProps))
+        self.DEFAULT_RETRY_POLICY(self.zk.set, path, str(containerProps))
 
     def write_container_node_info(self, cluster, container_node, status, containerProps):
         """write container value and status value
@@ -178,7 +218,7 @@ class ZkOpers(object):
         clusterUUID = self.getClusterUUID()
         path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + cluster + "/" + container_node
         self.zk.ensure_path(path)
-        self.zk.set(path, str(containerProps))
+        self.DEFAULT_RETRY_POLICY(self.zk.set, path, str(containerProps))
         
         stat = {}
         stat.setdefault('status', status)
@@ -196,7 +236,7 @@ class ZkOpers(object):
         clusterUUID = self.getClusterUUID()
         path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + cluster + "/" + container_node +"/status"
         self.zk.ensure_path(path)
-        self.zk.set(path, str(record))
+        self.DEFAULT_RETRY_POLICY(self.zk.set, path, str(record))
         
         
     '''
@@ -226,7 +266,7 @@ class ZkOpers(object):
         path = self.rootPath + "/" + clusterUUID + "/monitor/" + monitor_type +"/"+ monitor_key
         logging.debug("monitor status:" + path)
         self.zk.ensure_path(path)
-        self.zk.set(path, str(monitor_value))#version need to write
+        self.DEFAULT_RETRY_POLICY(self.zk.set, path, str(monitor_value))#version need to write
 
 
 
@@ -252,7 +292,7 @@ class ZkOpers(object):
         clusterUUID = self.getClusterUUID()
         path = self.rootPath + "/" + clusterUUID + "/config/serversWhiteList/" + server_ip
         self.zk.ensure_path(path) 
-        self.zk.delete(path)
+        self.DEFAULT_RETRY_POLICY(self.zk.delete, path)
 
 
 
@@ -307,7 +347,7 @@ class ZkOpers(object):
 
         for port in rest_port_list:
             port_path = path + "/" + port
-            self.zk.delete(port_path)
+            self.DEFAULT_RETRY_POLICY(self.zk.delete, port_path)
             
             if not nc_ip_port_available(host_ip, port):
                 assign_port_list.append(port)
@@ -368,7 +408,12 @@ class ZkOpers(object):
     def unLock_check_ip_usable_action(self, lock):
         self._unLock_base_action(lock)
 
-
+    def lock_check_port_usable_action(self):
+        lock_name = "port_usable"
+        return self._lock_base_action(lock_name)
+    
+    def unLock_check_port_usable_action(self, lock):
+        self._unLock_base_action(lock)
 
     '''
     *********************************************Base method*******************************************
@@ -377,7 +422,7 @@ class ZkOpers(object):
     def _lock_base_action(self, lock_name):
         clusterUUID = self.getClusterUUID()
         path = "%s/%s/lock/%s" % (self.rootPath, clusterUUID, lock_name) 
-        lock = self.zk.Lock(path, threading.current_thread())
+        lock = self.DEFAULT_RETRY_POLICY(self.zk.Lock, path, threading.current_thread())
         isLock = lock.acquire(True, 1)
         return (isLock, lock)
         
@@ -388,7 +433,7 @@ class ZkOpers(object):
     def _return_children_to_list(self, path):
         logging.debug("check children:" + path)
         self.zk.ensure_path(path)
-        children = self.zk.get_children(path)
+        children = self.DEFAULT_RETRY_POLICY(self.zk.get_children, path)
         
         children_to_list = []
         if len(children) != 0:
@@ -401,7 +446,7 @@ class ZkOpers(object):
         
         if self.zk.exists(path):
             logging.debug(path+" existed")
-            data,_ = self.zk.get(path)
+            data,_ = self.DEFAULT_RETRY_POLICY(self.zk.get, path)
             
         logging.debug(data)
         
@@ -412,13 +457,53 @@ class ZkOpers(object):
     
     def getClusterUUID(self):
         logging.debug(self.rootPath)
-        dataNodeName = self.zk.get_children(self.rootPath)
+        dataNodeName = self.DEFAULT_RETRY_POLICY(self.zk.get_children, self.rootPath)
         logging.debug(dataNodeName)
         return dataNodeName[0]
     
     def existCluster(self):
         self.zk.ensure_path(self.rootPath)
-        clusters = self.zk.get_children(self.rootPath)
+        clusters = self.DEFAULT_RETRY_POLICY(self.zk.get_children, self.rootPath)
         if len(clusters) != 0:
             return True
         return False
+
+
+@zk_singleton
+class Scheduler_ZkOpers(ZkOpers):
+    
+    def __init__(self):
+        '''
+        Constructor
+        '''
+        ZkOpers.__init__(self)
+
+
+@zk_singleton
+class Requests_ZkOpers(ZkOpers):
+    
+    def __init__(self):
+        '''
+        Constructor
+        '''
+        ZkOpers.__init__(self)
+
+
+@zk_singleton
+class Common_ZkOpers(ZkOpers):
+    
+    def __init__(self):
+        '''
+        Constructor
+        '''
+        ZkOpers.__init__(self) 
+
+
+@zk_singleton
+class Container_ZkOpers(ZkOpers):
+    
+    def __init__(self):
+        '''
+        Constructor
+        '''
+        ZkOpers.__init__(self)

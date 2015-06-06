@@ -5,7 +5,7 @@ import sys
 import logging
 import kazoo
 
-from zk.zkOpers import ZkOpers
+from zk.zkOpers import Scheduler_ZkOpers
 from common.abstractAsyncThread import Abstract_Async_Thread
 from serverCluster.serverClusterOpers import ServerCluster_Opers
 
@@ -20,7 +20,7 @@ class Sync_Server_Zk_Worker(Abstract_Async_Thread):
     def run(self):
         isLock, lock = False, None
         logging.info('do sync server')
-        zkOper = ZkOpers()
+        zkOper = Scheduler_ZkOpers()
         try:
             isLock, lock = zkOper.lock_sync_server_zk_action()
         except kazoo.exceptions.LockTimeout:
@@ -31,11 +31,13 @@ class Sync_Server_Zk_Worker(Abstract_Async_Thread):
             return
         
         try:
+            cluster_list = zkOper.retrieve_cluster_list()
+            if not cluster_list:
+                logging.info('no cluster is created, no need to update such infomation!')
+                return
             self.serverCluster_opers.update()
         except Exception:
             self.threading_exception_queue.put(sys.exc_info())
         finally:
             if isLock:
                 zkOper.unLock_sync_server_zk_action(lock)
-                  
-            zkOper.close()

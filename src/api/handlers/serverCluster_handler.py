@@ -21,7 +21,8 @@ from utils import _retrieve_userName_passwd, async_http_post
 from serverCluster.serverClusterOpers import ServerCluster_Opers
 from utils.exceptions import HTTPAPIError
 from base import APIHandler
-from zk.zkOpers import ZkOpers
+from zk.zkOpers import Requests_ZkOpers
+
 
 @require_basic_auth
 class ServerClusterHandler(APIHandler):
@@ -35,40 +36,33 @@ class ServerClusterHandler(APIHandler):
     def post(self):
         requestParam = self.get_all_arguments()
         
-        zkOper = ZkOpers()
+        zkOper = Requests_ZkOpers()
         
-        try:
-            existCluster = zkOper.existCluster()
-            if existCluster:
-                clusterUUID = zkOper.getClusterUUID()
-            else:
-                clusterUUID = str(uuid.uuid1())
-                requestParam.setdefault("clusterUUID", clusterUUID)
-            
-            if requestParam != {}:
-                self.confOpers.setValue(options.server_cluster_property, requestParam)
-                self.confOpers.setValue(options.data_node_property, requestParam)
-              
-            clusterProps = self.confOpers.getValue(options.server_cluster_property)
-            dataNodeProprs = self.confOpers.getValue(options.data_node_property)
-            zkOper.writeClusterInfo(clusterUUID, clusterProps)
-            zkOper.writeDataNodeInfo(clusterUUID, dataNodeProprs)
-        finally:
-            zkOper.close()
+        existCluster = zkOper.existCluster()
+        if existCluster:
+            clusterUUID = zkOper.getClusterUUID()
+        else:
+            clusterUUID = str(uuid.uuid1())
+            requestParam.setdefault("clusterUUID", clusterUUID)
+        
+        if requestParam != {}:
+            self.confOpers.setValue(options.server_cluster_property, requestParam)
+            self.confOpers.setValue(options.data_node_property, requestParam)
+          
+        clusterProps = self.confOpers.getValue(options.server_cluster_property)
+        dataNodeProprs = self.confOpers.getValue(options.data_node_property)
+        zkOper.writeClusterInfo(clusterUUID, clusterProps)
+        zkOper.writeDataNodeInfo(clusterUUID, dataNodeProprs)
 
         return_message = {}
         return_message.setdefault("message", "creating server cluster successful!")
         self.finish(return_message)
         
     def get(self):
-        zkOper = ZkOpers()
-        
-        try:
-            clusterUUID = zkOper.getClusterUUID()
-            data, _ = zkOper.retrieveClusterProp(clusterUUID)
-        finally:
-            zkOper.close()
-        
+        zkOper = Requests_ZkOpers()
+
+        clusterUUID = zkOper.getClusterUUID()
+        data, _ = zkOper.retrieveClusterProp(clusterUUID)
         self.confOpers.setValue(options.server_cluster_property, eval(data))
         
         result = {}
@@ -119,12 +113,8 @@ class SwitchServersUnderoomHandler(APIHandler):
                                 log_message= "containerNameList params not given correct!",\
                                 response =  "please check params!")
         
-        zkOper = ZkOpers()
-        try:
-            server_list = zkOper.retrieve_servers_white_list()
-        finally:
-            zkOper.close()
-        
+        zkOper = Requests_ZkOpers()
+        server_list = zkOper.retrieve_servers_white_list()
         auth_username, auth_password = _retrieve_userName_passwd()
         async_client = AsyncHTTPClient()
         
@@ -162,13 +152,8 @@ class GatherServersContainersDiskLoadHandler(APIHandler):
                                 log_message= "containerNameList is illegal!",\
                                 response =  "please check params!")
         
-        zkOper = ZkOpers()
-        
-        try:
-            server_list = zkOper.retrieve_servers_white_list()
-        finally:
-            zkOper.close()
-            
+        zkOper = Requests_ZkOpers()
+        server_list = zkOper.retrieve_servers_white_list()
         auth_username, auth_password = _retrieve_userName_passwd()
         async_client = AsyncHTTPClient()
         servers_cons_disk_load, cons_disk_load = {}, {}
@@ -209,13 +194,8 @@ class AddServersMemoryHandler(APIHandler):
                                 log_message= "containerNameList is illegal!",\
                                 response =  "please check params!")
             
-        zkOper = ZkOpers()
-        
-        try:
-            server_list = zkOper.retrieve_servers_white_list()
-        finally:
-            zkOper.close()
-        
+        zkOper = Requests_ZkOpers()
+        server_list = zkOper.retrieve_servers_white_list()
         auth_username, auth_password = _retrieve_userName_passwd()
         async_client = AsyncHTTPClient()
         

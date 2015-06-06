@@ -3,9 +3,13 @@ Created on 2015-2-8
 
 @author: asus
 '''
-from zk.zkOpers import ZkOpers
+import logging
+
+from zk.zkOpers import Common_ZkOpers
 from utils.exceptions import CommonException
 from utils import nc_ip_port_available
+from utils.threadUtil import doInThread
+
 
 class PortOpers(object):
     '''
@@ -15,9 +19,7 @@ class PortOpers(object):
     def retrieve_port_resource(self, host_ip_list, every_host_port_count=1):
 
         port_dict = {}
-        
-        zkOper = ZkOpers()
-        
+        zkOper = Common_ZkOpers()
         try:
             isLock,lock = zkOper.lock_assign_port()
             if isLock:
@@ -27,32 +29,27 @@ class PortOpers(object):
         finally:
             if isLock:
                 zkOper.unLock_assign_port(lock)
-                
-            zkOper.close()
             
         return port_dict
 
     def write_into_portPool(self, args):
+        doInThread(self._write_into_portPool, args)
+
+    def _write_into_portPool(self, args):
         host_ip = args.get('hostIp')
         port_count = int(args.get('portCount'))
         start_port = int(args.get('startPort'))
 
         choosed_ports = self.__get_needed_ports(host_ip, start_port, port_count)
         
-        zkOper = ZkOpers()
-        try:
-            for port in choosed_ports:
-                zkOper.write_port_into_portPool(host_ip, str(port) )
-        finally:
-            zkOper.close()
+        zkOper = Common_ZkOpers()
+
+        for port in choosed_ports:
+            zkOper.write_port_into_portPool(host_ip, str(port) )
         
     def get_port_num(self, host_ip):
-        zkOper = ZkOpers()
-        try:
-            port_list = zkOper.get_ports_from_portPool(host_ip)
-        finally:
-            zkOper.close()
-        
+        zkOper = Common_ZkOpers()
+        port_list = zkOper.get_ports_from_portPool(host_ip)
         return len(port_list)
 
     def __get_needed_ports(self, host_ip, start_port, port_count):
@@ -67,3 +64,23 @@ class PortOpers(object):
                 break
         return port_list
         
+    def get_illegal_ports(self, host_ip):
+        
+        illegal_ports = []
+        
+        zkOper = Common_ZkOpers()
+        port_list = zkOper.get_ports_from_portPool(host_ip)
+        logging.info('port in host: %s, in ports pool:%s ' % (host_ip, str(port_list) ))
+        for port in port_list:
+            ret = self.__port_legal(host_ip, port)
+            if not ret:
+                illegal_ports.append(port)
+        return illegal_ports
+                
+    def __port_legal(self, ip, port):
+        ret = nc_ip_port_available(ip, port)
+        if ret:
+            #logging.info('port: %s  is used :%s' % (port, str(ret)))
+            return False
+        else:
+            return True

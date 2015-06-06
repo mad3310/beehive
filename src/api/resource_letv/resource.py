@@ -8,7 +8,7 @@ Created on Sep 8, 2014
 '''
 import logging
 
-from zk.zkOpers import ZkOpers
+from zk.zkOpers import Common_ZkOpers
 from utils.exceptions import CommonException
 from resource_letv.ipOpers import IpOpers
 from resource_letv.portOpers import PortOpers
@@ -26,12 +26,8 @@ class Resource(object):
         '''
 
     def validateResource(self, component_container_cluster_config):
-        zkOper = ZkOpers()
-        try:
-            ip_list = zkOper.get_ips_from_ipPool()
-        finally:
-            zkOper.close()
-        
+        zkOper = Common_ZkOpers()
+        ip_list = zkOper.get_ips_from_ipPool()
         nodeCount = component_container_cluster_config.nodeCount
         
         if len(ip_list) < nodeCount:
@@ -79,12 +75,8 @@ class Resource(object):
 
     def retrieve_usable_host_resource(self, component_container_cluster_config):
         host_resource_dict = {}
-        zkOper = ZkOpers()
-        try:
-            host_ip_list = zkOper.retrieve_servers_white_list()
-        finally:
-            zkOper.close()
-
+        zkOper = Common_ZkOpers()
+        host_ip_list = zkOper.retrieve_servers_white_list()
         for host_ip in host_ip_list:
             host_resource = self.__get_usable_host_resource(host_ip, component_container_cluster_config)
             if host_resource != {}:
@@ -140,12 +132,8 @@ class Resource(object):
 
     def __get_usable_host_resource(self, host_ip, component_container_cluster_config):
         resource_result = {}
-        zkOper = ZkOpers()
-        try:
-            server_res = zkOper.retrieveDataNodeServerResource(host_ip)
-        finally:
-            zkOper.close()
-        
+        zkOper = Common_ZkOpers()
+        server_res = zkOper.retrieveDataNodeServerResource(host_ip)
         '''
             get host usable memory and the condition to create containers
         '''

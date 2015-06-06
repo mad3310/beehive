@@ -6,6 +6,7 @@ import logging
 
 from common.abstractAsyncThread import Abstract_Async_Thread
 from container.containerOpers import Container_Opers
+from zk.zkOpers import Scheduler_ZkOpers
 
 
 class Record_Containers_Resource_Worker(Abstract_Async_Thread):
@@ -19,6 +20,11 @@ class Record_Containers_Resource_Worker(Abstract_Async_Thread):
     def run(self):
         
         try:
+            zk_opers = Scheduler_ZkOpers()
+            cluster_list = zk_opers.retrieve_cluster_list()
+            if not cluster_list:
+                logging.info('no cluster is created, no need to do this!')
+                return
             self.__action_record_containers_resource()
         except Exception:
             self.threading_exception_queue.put(sys.exc_info())

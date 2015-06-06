@@ -3,7 +3,7 @@ import logging
 
 from handlers.base import APIHandler
 from resource_letv.portOpers import PortOpers
-from zk.zkOpers import ZkOpers
+from zk.zkOpers import Requests_ZkOpers
 from tornado_letv.tornado_basic_auth import require_basic_auth
 
 
@@ -18,7 +18,7 @@ class PortHandler(APIHandler):
         self.port_opers.write_into_portPool(args)
         
         result = {}
-        result.setdefault("message", "write port to ip pools successfully!")
+        result.setdefault("message", "ports have already been added, please check!")
         self.finish(result)
 
     #curl --user root:root -X GET http://localhost:8888/admin/ports?hostIp=10.154.156.150
@@ -27,11 +27,8 @@ class PortHandler(APIHandler):
         host_ip = args.get('hostIp')
         logging.info('get server %s ports' % host_ip)
         
-        zkOper = ZkOpers()
-        try:
-            ports = zkOper.get_ports_from_portPool(host_ip)
-        finally:
-            zkOper.close()
+        zkOper = Requests_ZkOpers()
+        ports = zkOper.get_ports_from_portPool(host_ip)
         
         result = {}
         result.setdefault('ports', ports)

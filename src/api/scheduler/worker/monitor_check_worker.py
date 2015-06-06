@@ -8,7 +8,7 @@ import sys
 
 from monitor.monitorOpers import ServerResCheckcHandler, ContainerResCheckHandler
 from common.abstractAsyncThread import Abstract_Async_Thread
-from zk.zkOpers import ZkOpers
+from zk.zkOpers import Scheduler_ZkOpers
 
 
 class Monitor_Check_Worker(Abstract_Async_Thread):
@@ -23,7 +23,7 @@ class Monitor_Check_Worker(Abstract_Async_Thread):
     def run(self):
         isLock, lock = False, None
         
-        zkOper = ZkOpers()
+        zkOper = Scheduler_ZkOpers()
         try:
             isLock, lock = zkOper.lock_async_monitor_action()
         except kazoo.exceptions.LockTimeout:
@@ -47,9 +47,6 @@ class Monitor_Check_Worker(Abstract_Async_Thread):
         finally:
             if isLock:
                 zkOper.unLock_aysnc_monitor_action(lock)
-            
-            zkOper.close()
-
 
     def __action_monitor_check(self):
         self.server_res_handler.retrieve_info()

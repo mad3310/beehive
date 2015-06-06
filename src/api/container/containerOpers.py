@@ -21,7 +21,7 @@ from container.container_model import Container_Model
 from utils.exceptions import CommonException, RetryException, UserVisiableException
 from utils.log import _log_docker_run_command
 from utils import _mask_to_num, get_current_time, getHostIp, has_property
-from zk.zkOpers import ZkOpers
+from zk.zkOpers import Container_ZkOpers
 from docker import Client
 from status.status_enum import Status
 from componentProxy.componentManagerValidator import ComponentManagerStatusValidator
@@ -112,25 +112,21 @@ class Container_Opers(Abstract_Container_Opers):
 
     def get_container_node_from_container_name(self, cluster, container_name):
         con_node = ''
-        
-        zkOper = ZkOpers()
-        try:
-            cluster_info = zkOper.retrieve_container_cluster_info(cluster)
-            use_ip = cluster_info.get('isUseIp')
-            if use_ip:
-                container_node_list = zkOper.retrieve_container_list(cluster)
-                for container_node in container_node_list:
-                    container_info = zkOper.retrieve_container_node_value(cluster, container_node)
-                    inspect = container_info.get('inspect')
-                    con = Container_Model(inspect=inspect)
-                    con_name = con.name()
-                    if container_name == con_name:
-                        con_node = container_node
-                        break
-            else:
-                con_node = container_name
-        finally:
-            zkOper.close()
+        zkOper = Container_ZkOpers()
+        cluster_info = zkOper.retrieve_container_cluster_info(cluster)
+        use_ip = cluster_info.get('isUseIp')
+        if use_ip:
+            container_node_list = zkOper.retrieve_container_list(cluster)
+            for container_node in container_node_list:
+                container_info = zkOper.retrieve_container_node_value(cluster, container_node)
+                inspect = container_info.get('inspect')
+                con = Container_Model(inspect=inspect)
+                con_name = con.name()
+                if container_name == con_name:
+                    con_node = container_node
+                    break
+        else:
+            con_node = container_name
         
         return con_node
 
@@ -138,24 +134,16 @@ class Container_Opers(Abstract_Container_Opers):
         cluster = get_containerClusterName_from_containerName(container_name)
         container_node = self.get_container_node_from_container_name(cluster, container_name)
         
-        zkOper = ZkOpers()
-        try:
-            node_value = zkOper.retrieve_container_node_value(cluster, container_node)
-        finally:
-            zkOper.close()
-            
+        zkOper = Container_ZkOpers()
+        node_value = zkOper.retrieve_container_node_value(cluster, container_node)
         return node_value
 
     def retrieve_container_status_from_containerName(self, container_name):
         cluster = get_containerClusterName_from_containerName(container_name)
         container_node = self.get_container_node_from_container_name(cluster, container_name)
         
-        zkOper = ZkOpers()
-        try:
-            status_value = zkOper.retrieve_container_status_value(cluster, container_node)
-        finally:
-            zkOper.close()
-            
+        zkOper = Container_ZkOpers()
+        status_value = zkOper.retrieve_container_status_value(cluster, container_node)
         return status_value
 
     def write_container_node_value_by_containerName(self, container_name, container_props):
@@ -165,41 +153,26 @@ class Container_Opers(Abstract_Container_Opers):
         cluster = get_containerClusterName_from_containerName(container_name)
         container_node = self.get_container_node_from_container_name(cluster, container_name)
         
-        zkOper = ZkOpers()
-        try:
-            zkOper.write_container_node_value(cluster, container_node, container_props)
-        finally:
-            zkOper.close()
+        zkOper = Container_ZkOpers()
+        zkOper.write_container_node_value(cluster, container_node, container_props)
         
     def write_container_status_by_containerName(self, container_name, record):
         containerClusterName = get_containerClusterName_from_containerName(container_name)
         container_node = self.get_container_node_from_container_name(containerClusterName, container_name)
         
-        zkOper = ZkOpers()
-        try:
-            zkOper.write_container_status(containerClusterName, container_node, record)
-        finally:
-            zkOper.close()
-        
+        zkOper = Container_ZkOpers()
+        zkOper.write_container_status(containerClusterName, container_node, record)
 
     def get_container_name_from_zk(self, cluster, container_node):
-        zkOper = ZkOpers()
-        try:
-            container_info = zkOper.retrieve_container_node_value(cluster, container_node)
-        finally:
-            zkOper.close()
-        
+        zkOper = Container_ZkOpers()
+        container_info = zkOper.retrieve_container_node_value(cluster, container_node)
         inspect = container_info.get('inspect')
         con = Container_Model(inspect=inspect)
         return con.name()
 
     def get_host_ip_from_zk(self, cluster, container_node):
-        zkOper = ZkOpers()
-        try:
-            container_info = zkOper.retrieve_container_node_value(cluster, container_node)
-        finally:
-            zkOper.close()
-        
+        zkOper = Container_ZkOpers()
+        container_info = zkOper.retrieve_container_node_value(cluster, container_node)
         return container_info.get('hostIp')
     
     def write_container_node_info_to_zk(self, container_stat, containerProps):
@@ -220,11 +193,9 @@ class Container_Opers(Abstract_Container_Opers):
         else:
             container_node = container_name
             
-        zkOper = ZkOpers()
-        try:
-            zkOper.write_container_node_info(cluster, container_node, container_stat, containerProps)
-        finally:
-            zkOper.close()
+        zkOper = Container_ZkOpers()
+        zkOper.write_container_node_info(cluster, container_node, container_stat, containerProps)
+
 
     def _get_containers(self, container_name_list):
         host_cons = self.get_all_containers(False)
@@ -314,12 +285,9 @@ class Container_Opers(Abstract_Container_Opers):
         return resource_info
 
     def write_containers_resource_to_zk(self, resource_type, resource_info):
-        zkOper = ZkOpers()
-        try:
-            host_ip = getHostIp()
-            zkOper.writeDataNodeContainersResource(host_ip, resource_type, resource_info)
-        finally:
-            zkOper.close()
+        zkOper = Container_ZkOpers()
+        host_ip = getHostIp()
+        zkOper.writeDataNodeContainersResource(host_ip, resource_type, resource_info)
 
 
 class Container_create_action(Abstract_Async_Thread):
