@@ -28,11 +28,11 @@ class CheckStatusBase(object):
     def retrieve_alarm_level(self, total_count, success_count, failed_count):
         raise NotImplementedError, "Cannot call abstract method"
 
-    def write_status(self, total_count, success_count, failed_count, alarm_level, error_record, monitor_type, monitor_key):
+    def write_status(self, total_count, success_count, failed_count, alarm_level, error_record, monitor_type, monitor_key, error_message=''):
         logging.info('write status!')
         result_dict = {}
-        format_str = "total=%s, success count=%s, failed count=%s"
-        format_values = (total_count, success_count, failed_count)
+        format_str = "total=%s, success count=%s, failed count=%s, %s"
+        format_values = (total_count, success_count, failed_count, error_message)
         message = format_str % format_values
         dt = datetime.datetime.now()
         result_dict.setdefault("message", message)
@@ -150,6 +150,68 @@ class CheckResPortLegality(CheckStatusBase):
         
     def retrieve_alarm_level(self, total_count, success_count, failed_count):
         if failed_count == 0:
+            return options.alarm_nothing
+        else:
+            return options.alarm_serious
+
+
+class CheckServerDisk(CheckStatusBase):
+
+    def check(self):
+        monitor_type, monitor_key = 'server', 'disk'        
+        zk_opers = Scheduler_ZkOpers()        
+        try:
+            host_ip_list = zk_opers.retrieve_data_node_list()        
+            if not host_ip_list:
+                return
+            
+            error_record, host_disk = [], {}
+        
+            for host_ip in host_ip_list:                
+                host_disk = zk_opers.retrieveDataNodeServerResource(host_ip)           
+                if host_disk["server_disk"]["used"] > host_disk["server_disk"]["total"]*0.7:                    
+                    error_record.append('%s' % host_ip)
+        finally:
+            zk_opers.close()
+
+        alarm_level = self.retrieve_alarm_level(len(host_ip_list), len(host_ip_list)-len(error_record), len(error_record))
+        error_message = "disk capacity utilization rate is greater than 70% !"
+        super(CheckServerDisk, self).write_status(len(host_ip_list), len(host_ip_list)-len(error_record), len(error_record), 
+                                                  alarm_level, error_record, monitor_type, monitor_key, error_message)
+
+    def retrieve_alarm_level(self, total_count, used_count, free_count):
+        if free_count == 0:
+            return options.alarm_nothing
+        else:
+            return options.alarm_serious
+
+
+class CheckResMemory(CheckStatusBase):
+
+    def check(self):
+        monitor_type, monitor_key = 'server', 'memory'        
+        zk_opers = Scheduler_ZkOpers()        
+        try:
+            host_ip_list = zk_opers.retrieve_data_node_list()        
+            if not host_ip_list:
+                return
+        
+            error_record, host_mem = [], {}        
+            for host_ip in host_ip_list:               
+                host_mem = zk_opers.retrieveDataNodeServerResource(host_ip)           
+                if host_mem["mem_res"]["free"] < 10000:                    
+                    error_record.append('%s' % host_ip)
+        finally:
+            zk_opers.close()
+
+        alarm_level = self.retrieve_alarm_level(len(host_ip_list), len(host_ip_list)-len(error_record), len(error_record))
+        error_message="remaining memory is less than 10g"
+        super(CheckResMemory, self).write_status(len(host_ip_list), len(host_ip_list)-len(error_record), len(error_record), alarm_level,
+                                                       error_record, monitor_type, monitor_key, error_message)
+        
+
+    def retrieve_alarm_level(self, total_count, used_count, free_count):
+        if free_count == 0:
             return options.alarm_nothing
         else:
             return options.alarm_serious
