@@ -70,7 +70,7 @@ class PortOpers(object):
         
         zkOper = Common_ZkOpers()
         port_list = zkOper.get_ports_from_portPool(host_ip)
-        logging.info('port in host: %s, in ports pool:%s ' % (host_ip, str(port_list) ))
+        #logging.info('port in host: %s, in ports pool:%s ' % (host_ip, str(port_list) ))
         for port in port_list:
             ret = self.__port_legal(host_ip, port)
             if not ret:
