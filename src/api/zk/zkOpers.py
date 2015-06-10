@@ -456,9 +456,9 @@ class ZkOpers(object):
         return resultValue
     
     def getClusterUUID(self):
-        logging.debug(self.rootPath)
+        logging.info(self.rootPath)
         dataNodeName = self.DEFAULT_RETRY_POLICY(self.zk.get_children, self.rootPath)
-        logging.debug(dataNodeName)
+        logging.info(dataNodeName)
         return dataNodeName[0]
     
     def existCluster(self):

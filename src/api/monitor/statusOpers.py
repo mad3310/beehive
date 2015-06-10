@@ -160,19 +160,17 @@ class CheckServerDisk(CheckStatusBase):
     def check(self):
         monitor_type, monitor_key = 'server', 'disk'        
         zk_opers = Scheduler_ZkOpers()        
-        try:
-            host_ip_list = zk_opers.retrieve_data_node_list()        
-            if not host_ip_list:
-                return
-            
-            error_record, host_disk = [], {}
+
+        host_ip_list = zk_opers.retrieve_data_node_list()        
+        if not host_ip_list:
+            return
         
-            for host_ip in host_ip_list:                
-                host_disk = zk_opers.retrieveDataNodeServerResource(host_ip)           
-                if host_disk["server_disk"]["used"] > host_disk["server_disk"]["total"]*0.7:                    
-                    error_record.append('%s' % host_ip)
-        finally:
-            zk_opers.close()
+        error_record, host_disk = [], {}
+        
+        for host_ip in host_ip_list:                
+            host_disk = zk_opers.retrieveDataNodeServerResource(host_ip)           
+            if host_disk["server_disk"]["used"] > host_disk["server_disk"]["total"]*0.7:                    
+                error_record.append('%s' % host_ip)
 
         alarm_level = self.retrieve_alarm_level(len(host_ip_list), len(host_ip_list)-len(error_record), len(error_record))
         error_message = "disk capacity utilization rate is greater than 70% !"
@@ -191,18 +189,16 @@ class CheckResMemory(CheckStatusBase):
     def check(self):
         monitor_type, monitor_key = 'server', 'memory'        
         zk_opers = Scheduler_ZkOpers()        
-        try:
-            host_ip_list = zk_opers.retrieve_data_node_list()        
-            if not host_ip_list:
-                return
-        
-            error_record, host_mem = [], {}        
-            for host_ip in host_ip_list:               
-                host_mem = zk_opers.retrieveDataNodeServerResource(host_ip)           
-                if host_mem["mem_res"]["free"] < 10000:                    
-                    error_record.append('%s' % host_ip)
-        finally:
-            zk_opers.close()
+
+        host_ip_list = zk_opers.retrieve_data_node_list()        
+        if not host_ip_list:
+            return
+    
+        error_record, host_mem = [], {}        
+        for host_ip in host_ip_list:               
+            host_mem = zk_opers.retrieveDataNodeServerResource(host_ip)           
+            if host_mem["mem_res"]["free"] < 10000:                    
+                error_record.append('%s' % host_ip)
 
         alarm_level = self.retrieve_alarm_level(len(host_ip_list), len(host_ip_list)-len(error_record), len(error_record))
         error_message="remaining memory is less than 10g"
