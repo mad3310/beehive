@@ -95,7 +95,7 @@ class APIHandler(BaseHandler):
             logging.info("version_str :" + str(version_str)) 
             # send email
             subject = "[%s]Internal Server Error " % options.sitename
-            body = self.render_string("errors/500_email.html",
+            body = self.render_string("../templates/errors/500_email.html",
                                       exception=exception)
             
             body += "\n" + version_str[0] + "\nip:" + local_ip

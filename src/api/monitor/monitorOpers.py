@@ -6,7 +6,7 @@ Created on 2013-7-21
 @author: asus
 '''
 
-from statusOpers import CheckContainersUnderOom, CheckResIpNum, CheckContainersOomKillDisable, CheckServerPortNum
+from statusOpers import *
 
 
 class ContainerResCheckHandler:
@@ -30,12 +30,12 @@ class ServerResCheckcHandler:
     check_res_ip_num = CheckResIpNum()
     check_server_port_num = CheckServerPortNum()
     
-    '''
-    @todo:
-    1. the rest value of disk
-    2. the rest value of memory
-    '''
+    check_server_disk = CheckServerDisk()
+    check_server_memory = CheckResMemory()
     
     def retrieve_info(self):
         self.check_res_ip_num.check()
         self.check_server_port_num.check()
+        
+        self.check_server_disk.check()
+        self.check_server_memory.check()
