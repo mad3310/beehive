@@ -90,9 +90,6 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         
         self.__dispatch_create_container_task(container_model_list)
         
-        '''
-        @todo: what means use below logic? __dispatch_create_container_task don't confirm the container start status?
-        '''
         created = self.__check_cluster_started(_component_container_cluster_config)
         if not created:
             raise CommonException('cluster started failed, maybe part of nodes started, other failed!')

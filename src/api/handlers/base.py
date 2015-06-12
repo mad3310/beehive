@@ -90,7 +90,7 @@ class APIHandler(BaseHandler):
         try:
             local_ip = getHostIp()
             invokeCommand = InvokeCommand()
-            cmd_str = "rpm -qa nginx-manager"
+            cmd_str = "rpm -qa container-manager"
             version_str = invokeCommand._runSysCmd(cmd_str)
             logging.info("version_str :" + str(version_str)) 
             # send email
