@@ -373,12 +373,18 @@ class Container_create_action(Abstract_Async_Thread):
             if not self.docker_opers.pull(image):
                 raise CommonException('pull image %s failed, please check reason' % image)
     
-    def __make_mount_dir(self):
+    def __make_mount_dir(self, n=0):
         binds = self.docker_model.binds
         if binds:
             for server_dir,_ in binds.items():
+                if n>3:
+                    return
+                n += 1
                 if not os.path.exists(server_dir):
-                    os.makedirs(server_dir)
+                    try:
+                        os.makedirs(server_dir)
+                    except OSError, e:
+                        self.__make_mount_dir(n)
 
     def __check_create_status(self):
         container_name = self.docker_model.name
