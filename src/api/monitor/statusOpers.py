@@ -169,7 +169,7 @@ class CheckServerDisk(CheckStatusBase):
         
         for host_ip in host_ip_list:                
             host_disk = zk_opers.retrieveDataNodeServerResource(host_ip)           
-            if host_disk["server_disk"]["used"] > host_disk["server_disk"]["total"]*0.7:                    
+            if host_disk["server_disk"]["used"] > host_disk["server_disk"]["total"]*0.8:                    
                 error_record.append('%s' % host_ip)
 
         alarm_level = self.retrieve_alarm_level(len(host_ip_list), len(host_ip_list)-len(error_record), len(error_record))

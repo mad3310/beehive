@@ -19,4 +19,4 @@ class GbalancerContainerClusterConfig(BaseContainerClusterConfig):
         nodeCount = params.get('nodeCount')
         self.nodeCount = int(nodeCount) if nodeCount else 1
         image = params.get('image')
-        self.image = image if image else 'letv/mcluster_vip_gbalancer:0.0.3'
+        self.image = image if image else '10.160.140.32:5000/letv_mcluster_gbalancer:0.1.0'
