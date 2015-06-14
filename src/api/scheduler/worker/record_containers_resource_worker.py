@@ -31,7 +31,8 @@ class Record_Containers_Resource_Worker(Abstract_Async_Thread):
     
     def __action_record_containers_resource(self):
         logging.info('record containers resource')
-        resource_items = ['memory', 'cpuacct', 'networkio', 'disk', 'under_oom', 'oom_kill_disable']
+        #resource_items = ['memory', 'cpuacct', 'networkio', 'disk', 'under_oom', 'oom_kill_disable']
+        resource_items = ['memory', 'cpuacct', 'networkio', 'under_oom', 'oom_kill_disable']
         for resource_item in resource_items:
             resource_info = self.container_opers.get_containers_resource(resource_item)
             self.container_opers.write_containers_resource_to_zk(resource_item, resource_info)
