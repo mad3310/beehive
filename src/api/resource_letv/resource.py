@@ -59,6 +59,10 @@ class Resource(object):
         host_list = self.__host_list(score_list, host_score_dict)
         logging.info('select host list :%s' % str(host_list))
         
+        '''
+            servers available after validating
+        '''
+        
         node_count = component_container_cluster_config.nodeCount
         if len(host_list) < node_count:
             raise CommonException('the number of usable servers are not enough!')
@@ -76,7 +80,9 @@ class Resource(object):
     def retrieve_usable_host_resource(self, component_container_cluster_config):
         host_resource_dict = {}
         zkOper = Common_ZkOpers()
-        host_ip_list = zkOper.retrieve_servers_white_list()
+        servers_white_list = zkOper.retrieve_servers_white_list()
+        _exclude_servers = component_container_cluster_config.exclude_servers
+        host_ip_list = list(set(servers_white_list) - set(_exclude_servers))
         for host_ip in host_ip_list:
             host_resource = self.__get_usable_host_resource(host_ip, component_container_cluster_config)
             if host_resource != {}:
