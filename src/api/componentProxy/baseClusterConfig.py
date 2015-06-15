@@ -44,7 +44,7 @@ class BaseContainerClusterConfig(object):
         self.lxc_conf = dict(lxc_conf) if lxc_conf else {'lxc.cgroup.memory.oom_control':1}
         
         exclude_servers = params.get('excludeServers')
-        self.exclude_servers = eval(exclude_servers) if exclude_servers else []
+        self.exclude_servers = exclude_servers.split(',') if exclude_servers else []
         
         """
             if component need config itself, put self.resource_weight__score 
