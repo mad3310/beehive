@@ -82,9 +82,9 @@ class Resource(object):
         zkOper = Common_ZkOpers()
         servers_white_list = zkOper.retrieve_servers_white_list()
         _exclude_servers = component_container_cluster_config.exclude_servers
+        logging.info('exclude server:%s, type:%s' % (str(_exclude_servers), type(_exclude_servers)))
         host_ip_list = list(set(servers_white_list) - set(_exclude_servers))
-        logging.info('hosts can be used:%s' % str(host_ip_list))
-        logging.info('_exclude_server:%s, type:%s' % (str(_exclude_servers), type(_exclude_servers)))
+        logging.info('hosts choosed:%s' % str(host_ip_list))
         for host_ip in host_ip_list:
             host_resource = self.__get_usable_host_resource(host_ip, component_container_cluster_config)
             if host_resource != {}:
