@@ -97,7 +97,7 @@ class ServerUpdateAction(Abstract_Async_Thread):
 
     def update_del_node(self, container_name):
         status = {'status': Status.destroyed, 'message': ''}
-        logging.info('delete container name:%s' % container_name)
+        logging.info('container :%s are not existed, the infomation remains in zookeeper still' % container_name)
         self.container_opers.write_container_status_by_containerName(container_name, status)
 
     def _get_containers_from_host(self):
