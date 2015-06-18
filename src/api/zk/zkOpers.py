@@ -14,6 +14,7 @@ from kazoo.client import KazooClient, KazooState
 from utils import ping_ip_available, nc_ip_port_available, get_zk_address
 from kazoo.retry import KazooRetry
 from utils.decorators import zk_singleton
+from docker_letv.dockerOpers import Docker_Opers
 
 
 class ZkOpers(object):
@@ -310,12 +311,15 @@ class ZkOpers(object):
         path = self.rootPath + "/" + clusterUUID + "/ipPool"
         rest_ip_list = self._return_children_to_list(path)
         assign_ip_list = []
-
+        
+        docker_opers = Docker_Opers()
         for ip in rest_ip_list:
             ippath = path + "/" + ip
             self.zk.delete(ippath)
             if not ping_ip_available(ip):
-                assign_ip_list.append(ip)
+                host_con_ip_list = docker_opers.retrieve_containers_ips()
+                if ip not in host_con_ip_list:
+                    assign_ip_list.append(ip)
             if len(assign_ip_list) == ipCount:
                 break
         return assign_ip_list
