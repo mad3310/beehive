@@ -199,14 +199,14 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
             result.setdefault('error_msg', 'create containers failed!')
         
         elif start_flag == Status.succeed:
-            cluster_status_info = self.cluster_status_info(containerClusterName)
+            create_info = self.__cluster_created_info(containerClusterName)
             result.update(create_successful)
-            result.update(cluster_status_info)
+            result.update(create_info)
         else:
             result.update(creating)
         return result
 
-    def cluster_status_info(self, cluster):
+    def __cluster_created_info(self, cluster):
         zkOper = Requests_ZkOpers()
         message_list = []
         

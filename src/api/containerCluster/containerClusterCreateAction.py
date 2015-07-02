@@ -116,7 +116,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
             logging.info('container length:%s, nodeCount :%s' % (len(container_list), nodeCount) )
             return False
         logging.info('nodeCount is created: %s' % nodeCount)
-        status = self.component_container_cluster_validator.cluster_status_info(container_cluster_name)
+        status = self.component_container_cluster_validator.container_cluster_status_validator(container_cluster_name)
         logging.info('cluster status: %s' % status)
         return status.get('status') == Status.started
 
