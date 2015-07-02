@@ -106,7 +106,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         
         container_cluster_name = component_container_cluster_config.container_cluster_name
         nodeCount = component_container_cluster_config.nodeCount
-        return handleTimeout(self.__is_cluster_started, (250, 1), container_cluster_name, nodeCount)
+        return handleTimeout(self.__is_cluster_started, (250, 4), container_cluster_name, nodeCount)
 
     def __is_cluster_started(self, container_cluster_name, nodeCount):
         
