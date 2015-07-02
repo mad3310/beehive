@@ -41,6 +41,7 @@ handlers = [
     (r"/containerCluster/stop", ContainerClusterStopHandler),
     (r"/containerCluster/sync", CheckClusterSyncHandler),
     (r"/containerCluster/status/(.*)", CheckContainerClusterStatusHandler),
+    (r"/containerCluster/createResult/(.*)", CheckContainerClusterCreateResultHandler),
     
 #     '''
 #     @todo: used below uri?

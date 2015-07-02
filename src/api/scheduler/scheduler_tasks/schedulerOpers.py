@@ -42,7 +42,7 @@ class SchedulerOpers(object):
         '''
             for monitor containers resource and webportal paint resource picture
         '''
-        self.record_containers_resource_handler(25)
+        self.record_containers_resource_handler(100)
         
         self.monitor_check_handler(55)
         

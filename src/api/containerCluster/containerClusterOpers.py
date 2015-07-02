@@ -179,6 +179,47 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
             cluster_zk_info.setdefault(container_ip, container_node)
         return cluster_zk_info
 
+    def create_result(self, containerClusterName):
+        create_successful = {'code':"000000"}
+        creating = {'code':"000001"}
+        create_failed = {'code':"000002", 'status': Status.create_failed}
+
+        zkOper = Requests_ZkOpers()
+        exists = zkOper.check_containerCluster_exists(containerClusterName)
+        if not exists:
+            raise UserVisiableException('containerCluster %s not existed' % containerClusterName)
+        
+        result = {}
+
+        container_cluster_info = zkOper.retrieve_container_cluster_info(containerClusterName)
+        start_flag = container_cluster_info.get('start_flag')
+
+        if start_flag == Status.failed:
+            result.update(create_failed)
+            result.setdefault('error_msg', 'create containers failed!')
+        
+        elif start_flag == Status.succeed:
+            cluster_status_info = self.cluster_status_info(containerClusterName)
+            result.update(create_successful)
+            result.update(cluster_status_info)
+        else:
+            result.update(creating)
+        return result
+
+    def cluster_status_info(self, cluster):
+        zkOper = Requests_ZkOpers()
+        message_list = []
+        
+        container_node_list = zkOper.retrieve_container_list(cluster)
+        result = {}
+        for container_node in container_node_list:
+            container_node_value = zkOper.retrieve_container_node_value(cluster, container_node)
+            con = Container_Model()
+            create_info = con.create_info(container_node_value)
+            message_list.append(create_info)   
+        result.setdefault('containers', message_list)
+        return result
+
 
 class ContainerCluster_stop_Action(ContainerCluster_Action_Base):
 

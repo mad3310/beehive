@@ -115,7 +115,9 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         if len(container_list) != nodeCount:
             logging.info('container length:%s, nodeCount :%s' % (len(container_list), nodeCount) )
             return False
+        logging.info('nodeCount is created: %s' % nodeCount)
         status = self.component_container_cluster_validator.cluster_status_info(container_cluster_name)
+        logging.info('cluster status: %s' % status)
         return status.get('status') == Status.started
 
     def __update_zk_info_when_process_complete(self, _containerClusterName, create_result='failed', error_msg=''):

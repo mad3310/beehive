@@ -22,8 +22,8 @@ class ZkOpers(object):
     zk = None
     
     DEFAULT_RETRY_POLICY = KazooRetry(
-        max_tries=None,
-        max_delay=10000,
+        max_tries=3,
+        #max_delay=10000,
     )
     
     rootPath = "/letv/docker"
@@ -218,8 +218,11 @@ class ZkOpers(object):
         """
         clusterUUID = self.getClusterUUID()
         path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + cluster + "/" + container_node
+        logging.info('ensure_path : %s ' % path)
         self.zk.ensure_path(path)
+        logging.info('set container node info')
         self.DEFAULT_RETRY_POLICY(self.zk.set, path, str(containerProps))
+        logging.info('set container node info done, check')
         
         stat = {}
         stat.setdefault('status', status)

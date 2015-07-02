@@ -145,6 +145,19 @@ class CheckContainerClusterStatusHandler(APIHandler):
 
 
 @require_basic_auth
+class CheckContainerClusterCreateResultHandler(APIHandler):
+    '''
+    classdocs
+    '''
+    containerClusterOpers = ContainerCluster_Opers()
+    
+    # eg. curl --user root:root -X GET http://10.154.156.150:8888/containerCluster/status/dh
+    def get(self, containerClusterName):
+        result = self.containerClusterOpers.check(containerClusterName)
+        self.finish(result)
+
+
+@require_basic_auth
 class ContainerClusterStartHandler(APIHandler):
     '''
     classdocs
