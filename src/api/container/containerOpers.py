@@ -223,21 +223,17 @@ class Container_Opers(Abstract_Container_Opers):
             result.setdefault(container, ret)
         return result
 
-    def add_containers_memory(self, container_name_list):
+    def add_containers_memory(self, container_name_list, times=2):
+        '''
+            times: add memory times, default value is 2
+        '''
+        
         add_ret = {}
         containers = self._get_containers(container_name_list)
         for container in containers:
             _inspect = self.docker_opers.inspect_container(container)
-            con = Container_Model(_inspect)
-            inspect_limit_mem = con.memory()
-            conl = StateOpers(container)
-            con_limit_mem = conl.get_con_limit_mem()
-            
-            if con_limit_mem == inspect_limit_mem *2:
-                add_ret.setdefault(container, 'done before, do nothing!')
-                continue
-            
-            ret = conl.double_mem()
+            conl = StateOpers(container)            
+            ret = conl.extend_memory(times)
             add_ret.setdefault(container, ret)
             
         return add_ret
