@@ -11,6 +11,7 @@ import time
 import Queue
 import logging
 import re
+import kazoo
 
 from utils import ping_ip_available
 from utils.threadUtil import doInThread
@@ -148,16 +149,25 @@ class IpOpers(object):
         zkOper = Common_ZkOpers()
         ip_list = zkOper.get_ips_from_ipPool()
         return len(ip_list)
-    
-    def retrieve_ip_resource(self, ip_count):
-        ip_list = None
+
+    def retrieve_ip_resource(self, ip_count, try_times=5):
+        n = 0
+        while n < try_times:
+            ip_list = self.do_retrieve_ip_action(ip_count)
+            if ip_list:
+                return ip_list
+ 
+    def do_retrieve_ip_action(self, ip_count):
+        ip_list, isLock = None, None
         
         zkOper = Common_ZkOpers()
-        
         try:
             isLock,lock = zkOper.lock_assign_ip()
             if isLock:
                 ip_list = zkOper.retrieve_ip(ip_count)
+        except kazoo.exceptions.LockTimeout:
+            return
+            
         finally:
             if isLock:
                 zkOper.unLock_assign_ip(lock)

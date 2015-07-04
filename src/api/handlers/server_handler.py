@@ -11,6 +11,7 @@ from server.serverOpers import Server_Opers
 from resource_letv.serverResourceOpers import Server_Res_Opers
 from utils.exceptions import HTTPAPIError
 from tornado_letv.tornado_basic_auth import require_basic_auth
+from container.containerOpers import Container_Opers
 
 
 class UpdateServerHandler(APIHandler):
@@ -107,12 +108,13 @@ class GatherServerContainersDiskLoadHandler(APIHandler):
 @require_basic_auth
 class AddServerMemoryHandler(APIHandler):
     
-    server_opers = Server_Opers()
+    container_opers = Container_Opers()
     
     @asynchronous
     def post(self):
         args = self.get_all_arguments()
         containers = args.get('containerNameList')
+        times = args.get('times')
         container_name_list = containers.split(',')
         if not (container_name_list and isinstance(container_name_list, list)):
             raise HTTPAPIError(status_code=417, error_detail="containerNameList is illegal!",\
@@ -122,6 +124,6 @@ class AddServerMemoryHandler(APIHandler):
         
         host_ip = self.request.remote_ip
         
-        result = self.server_opers.add_containers_memory(container_name_list)
+        result = self.container_opers.add_containers_memory(container_name_list, times)
         logging.debug('add containers :%s memory on this server:%s, result:%s' % ( str(container_name_list), host_ip, str(result)) )
         self.finish(result)
