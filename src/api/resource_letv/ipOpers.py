@@ -153,9 +153,11 @@ class IpOpers(object):
     def retrieve_ip_resource(self, ip_count, try_times=5):
         n = 0
         while n < try_times:
+            n += 1
             ip_list = self.do_retrieve_ip_action(ip_count)
             if ip_list:
                 return ip_list
+            time.sleep(1)
  
     def do_retrieve_ip_action(self, ip_count):
         ip_list, isLock = None, None
