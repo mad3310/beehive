@@ -22,8 +22,8 @@ class ZkOpers(object):
     zk = None
     
     DEFAULT_RETRY_POLICY = KazooRetry(
-        max_tries=3,
-        #max_delay=10000,
+        max_tries=None,
+        max_delay=10000,
     )
     
     rootPath = "/letv/docker"
