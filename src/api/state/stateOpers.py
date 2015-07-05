@@ -193,13 +193,19 @@ class StateOpers(object):
 
     def __extend_memsw(self, times):
         memsw_value = self.get_con_limit_memsw()
-        extend_value = int(memsw_value)*times
-        return self.echo_value_to_file(extend_value, self.limit_memsw_path)
+        extend_value = int(memsw_value)*int(times)
+        if not self.echo_value_to_file(extend_value, self.limit_memsw_path):
+            logging.error('extend container: %s memroy swap faild, please check!' % self.container_name)
+            return
+        return extend_value
 
     def __extend_mem(self, times):
         mem_value = self.get_con_limit_mem()
-        extend_value = int(mem_value)*times
-        return self.echo_value_to_file(extend_value, self.limit_mem_path)
+        extend_value = int(mem_value)*int(times)
+        if not self.echo_value_to_file(extend_value, self.limit_mem_path):
+            logging.error('extend container: %s memory faild, please check!' % self.container_name)
+            return
+        return extend_value
 
     def extend_memory(self, times):
         memsw_ret = self.__extend_memsw(times)

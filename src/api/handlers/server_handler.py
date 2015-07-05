@@ -110,6 +110,7 @@ class AddServerMemoryHandler(APIHandler):
     
     container_opers = Container_Opers()
     
+    # eg. curl --user root:root -d "containerNameList=d-mcl-4_zabbix2-n-2&times=2" http://10.154.156.150:8888/server/containers/memory/add
     @asynchronous
     def post(self):
         args = self.get_all_arguments()
@@ -124,6 +125,6 @@ class AddServerMemoryHandler(APIHandler):
         
         host_ip = self.request.remote_ip
         
-        result = self.container_opers.add_containers_memory(container_name_list, times)
-        logging.debug('add containers :%s memory on this server:%s, result:%s' % ( str(container_name_list), host_ip, str(result)) )
+        result = self.container_opers.add_containers_memory(container_name_list, int(times) )
+        logging.info('add containers :%s memory on this server:%s, result:%s' % ( str(container_name_list), host_ip, str(result)) )
         self.finish(result)
