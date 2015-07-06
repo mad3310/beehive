@@ -152,7 +152,7 @@ class CheckResPortLegality(CheckStatusBase):
         if failed_count == 0:
             return options.alarm_nothing
         else:
-            return options.alarm_serious
+            return options.alarm_general
 
 
 class CheckServerDisk(CheckStatusBase):

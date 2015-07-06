@@ -191,17 +191,23 @@ class StateOpers(object):
         result.setdefault('volumes_mount', volume_mnt_size)
         return result
 
-    def __double_memsw_size(self):
+    def __extend_memsw(self, times):
         memsw_value = self.get_con_limit_memsw()
-        double_value = int(memsw_value)*2
-        return self.echo_value_to_file(double_value, self.limit_memsw_path)
+        extend_value = int(memsw_value)*int(times)
+        if not self.echo_value_to_file(extend_value, self.limit_memsw_path):
+            logging.error('extend container: %s memroy swap faild, please check!' % self.container_name)
+            return
+        return extend_value
 
-    def __double_mem_size(self):
+    def __extend_mem(self, times):
         mem_value = self.get_con_limit_mem()
-        double_value = int(mem_value)*2
-        return self.echo_value_to_file(double_value, self.limit_mem_path)
+        extend_value = int(mem_value)*int(times)
+        if not self.echo_value_to_file(extend_value, self.limit_mem_path):
+            logging.error('extend container: %s memory faild, please check!' % self.container_name)
+            return
+        return extend_value
 
-    def double_mem(self):
-        memsw_ret = self.__double_memsw_size()
-        mem_ret = self.__double_mem_size()
+    def extend_memory(self, times):
+        memsw_ret = self.__extend_memsw(times)
+        mem_ret = self.__extend_mem(times)
         return memsw_ret and mem_ret
