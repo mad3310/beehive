@@ -12,6 +12,7 @@ from utils.invokeCommand import InvokeCommand
 from docker_letv.dockerOpers import Docker_Opers
 from container.container_model import Container_Model
 from tornado.options import options
+from utils.exceptions import UserVisiableException
 
 
 class StateOpers(object):
@@ -195,16 +196,14 @@ class StateOpers(object):
         memsw_value = self.get_con_limit_memsw()
         extend_value = int(memsw_value)*int(times)
         if not self.echo_value_to_file(extend_value, self.limit_memsw_path):
-            logging.error('extend container: %s memroy swap faild, please check!' % self.container_name)
-            return
+            raise UserVisiableException('extend container: %s memroy swap faild, please check!' % self.container_name)
         return extend_value
 
     def __extend_mem(self, times):
         mem_value = self.get_con_limit_mem()
         extend_value = int(mem_value)*int(times)
         if not self.echo_value_to_file(extend_value, self.limit_mem_path):
-            logging.error('extend container: %s memory faild, please check!' % self.container_name)
-            return
+            raise UserVisiableException('extend container: %s memory faild, please check!' % self.container_name)
         return extend_value
 
     def extend_memory(self, times):
