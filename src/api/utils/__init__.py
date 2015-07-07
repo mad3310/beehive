@@ -268,13 +268,13 @@ def get_containerClusterName_from_containerName(container_name):
     if '-n-4' in container_name:
         containerClusterName = re.findall('d-\w{3,}-(.*)-n-\d', container_name)[0]
         containerClusterName = '%s_vip' % containerClusterName
-    elif 'd-' in container_name and 'vip' not in container_name:
-        containerClusterName = re.findall('d-\w{3,}-(.*)-n-\d', container_name)[0]
-    elif 'd_mcl' in container_name:
-        containerClusterName = re.findall('d_mcl_(.*)_node_\d', container_name)[0]
     elif 'd-vip' in container_name:
         containerClusterName = re.findall('d-vip-(.*)', container_name)[0]
         containerClusterName = '%s_vip' % containerClusterName
+    elif 'd-' in container_name:
+        containerClusterName = re.findall('d-\w{3,}-(.*)-n-\d', container_name)[0]
+    elif 'd_mcl' in container_name:
+        containerClusterName = re.findall('d_mcl_(.*)_node_\d', container_name)[0]
     elif 'doc-mcl' in container_name:
         containerClusterName = re.findall('doc-mcl-(.*)-n-\d', container_name)[0]
     else:
