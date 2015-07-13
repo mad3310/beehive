@@ -93,6 +93,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
             cluster_exist = self.__get_cluster_status(nodes)
             cluster.setdefault('status', cluster_exist)
             cluster.setdefault('clusterName', cluster_name)
+            logging.info('sync action, cluster name:%s' % cluster)
             for _,node_value in nodes.items():
                 container_info = node_value.get('container_info')
                 con = Container_Model()
