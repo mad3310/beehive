@@ -279,9 +279,16 @@ class Container_Model(object):
             need image name contain container component type
         '''
         
-        type_list = ['logstash', 'nginx', 'jetty', 'mcluster', 'gbalancer', 'gbalancerCluster', 'cbase']
+        type_dict = {'logstash':'logstash-0',
+                     'nginx':'base-nginx',
+                     'jetty':'base-jetty',
+                     'mcluster':'letv-mcluster:',
+                     'gbalancer':'letv_mcluster_gbalancer',
+                     'gbalancerCluster':'gbalancer-cluster',
+                     'cbase':'cbase',
+                     }
         _image = self.inspect_image()
-        for _type in type_list:
-            if _type in _image:
+        for _type,mark in type_dict.items():
+            if mark in _image:
                 return _type
         return 'unknow_type'
