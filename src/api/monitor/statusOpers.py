@@ -193,15 +193,20 @@ class CheckResMemory(CheckStatusBase):
         host_ip_list = zk_opers.retrieve_data_node_list()        
         if not host_ip_list:
             return
-    
-        error_record, host_mem = [], {}        
+        
+        server_node_value = zk_opers.retrieve_monitor_server_value()
+        logging.info('monitor server resource threshold:%s' % str(server_node_value))
+        memory_threshold = server_node_value.get('memory_threshold')
+        memory_threshold_m = memory_threshold/1024/1024
+        
+        error_record, host_mem = [], {}
         for host_ip in host_ip_list:               
             host_mem = zk_opers.retrieveDataNodeServerResource(host_ip)           
-            if host_mem["mem_res"]["free"] < 10000:                    
+            if host_mem["mem_res"]["free"] < memory_threshold_m:                    
                 error_record.append('%s' % host_ip)
 
         alarm_level = self.retrieve_alarm_level(len(host_ip_list), len(host_ip_list)-len(error_record), len(error_record))
-        error_message="remaining memory is less than 10g"
+        error_message="remaining memory is less than %s M" % memory_threshold_m
         super(CheckResMemory, self).write_status(len(host_ip_list), len(host_ip_list)-len(error_record), len(error_record), alarm_level,
                                                        error_record, monitor_type, monitor_key, error_message)
         

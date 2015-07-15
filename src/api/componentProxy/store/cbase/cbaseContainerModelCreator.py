@@ -51,6 +51,7 @@ class CbaseContainerModelCreator(AbstractContainerModelCreator):
             env.setdefault('GATEWAY', gateway)
             env.setdefault('HOSTNAME', 'd-mcl-%s-n-%s' % (containerClusterName, str(i+1)))
             env.setdefault('IP', container_ip_list[i])
+            #env.setdefault('IFACE', 'peth0')
             
             container_model.env = env
             create_container_arg_list.append(container_model)

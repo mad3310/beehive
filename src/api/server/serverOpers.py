@@ -77,6 +77,9 @@ class ServerUpdateAction(Abstract_Async_Thread):
         server_info = self._get_container_info_as_zk(container_name)
         zk_con_info = self.container_opers.retrieve_container_node_value_from_containerName(container_name)
         if server_info != zk_con_info:
+            _type = zk_con_info.get('type')
+            is_use_ip = zk_con_info.get('isUseIp')
+            server_info.update({'type':_type, 'isUseIp':is_use_ip})
             logging.info('update both node zookeeper info, container name :%s' % container_name)
             self.container_opers.write_container_node_value_by_containerName(container_name, server_info)
         
