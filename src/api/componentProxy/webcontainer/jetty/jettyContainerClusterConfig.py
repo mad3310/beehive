@@ -21,7 +21,7 @@ class JettyContainerClusterConfig(BaseContainerClusterConfig):
         image = params.get('image')
         self.image = image if image else '10.160.140.32:5000/letv/base-jetty:logstash-forwarder-0.0.7'
         ports = params.get('ports')
-        self.ports = eval(ports) if ports else [8888, 9888, 9999]
+        self.ports = eval(ports) if ports else [8888, 9888, 9999, 7777]
 
         
         logs_bind = '/var/log/%s' % self.container_cluster_name
