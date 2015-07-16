@@ -71,7 +71,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         _component_container_cluster_config = self.component_container_cluster_config_factory.retrieve_config(args)
         args.setdefault('component_config', _component_container_cluster_config)
         
-        self.__create_container_cluser_info_to_zk(_network_mode, _component_container_cluster_config)
+        self.__create_container_cluser_info_to_zk(_network_mode, _component_type, _component_container_cluster_config)
         
         is_res_verify = _component_container_cluster_config.is_res_verify
         if is_res_verify:
@@ -131,13 +131,14 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         _container_cluster_info.setdefault('containerClusterName', _containerClusterName)
         zkOper.write_container_cluster_info(_container_cluster_info)
 
-    def __create_container_cluser_info_to_zk(self, network_mode, component_container_cluster_config):
+    def __create_container_cluser_info_to_zk(self, network_mode, component_type, component_container_cluster_config):
         containerCount = component_container_cluster_config.nodeCount
         containerClusterName = component_container_cluster_config.container_cluster_name
         
         _container_cluster_info = {}
         _container_cluster_info.setdefault('containerCount', containerCount)
         _container_cluster_info.setdefault('containerClusterName', containerClusterName)
+        _container_cluster_info.setdefault('type', component_type)
         use_ip = True
         if 'bridge' == network_mode:
             use_ip = False
