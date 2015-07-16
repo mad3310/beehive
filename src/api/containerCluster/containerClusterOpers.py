@@ -9,7 +9,9 @@ Created on Sep 8, 2014
 
 import re
 import logging
+import sys
 
+from status.status_enum import Status
 from common.abstractContainerOpers import Abstract_Container_Opers
 from utils.exceptions import UserVisiableException
 from container.container_model import Container_Model
@@ -17,12 +19,13 @@ from zk.zkOpers import Container_ZkOpers, Requests_ZkOpers
 from containerCluster.baseContainerAction import ContainerCluster_Action_Base
 from containerCluster.containerClusterCreateAction import ContainerCluster_create_Action
 from componentProxy.componentContainerClusterValidator import ComponentContainerClusterValidator
-from status.status_enum import Status
+from utils.threading_exception_queue import Threading_Exception_Queue
 
 
 class ContainerCluster_Opers(Abstract_Container_Opers):
     
     component_container_cluster_validator = ComponentContainerClusterValidator()
+    threading_exception_queue = Threading_Exception_Queue()
         
     def __init__(self):
         super(ContainerCluster_Opers, self).__init__()
@@ -89,18 +92,29 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         
         clusters = []
         for cluster_name, nodes in clusters_zk_info.items():
-            cluster, nodeInfo = {}, []
-            cluster_exist = self.__get_cluster_status(nodes)
-            cluster.setdefault('status', cluster_exist)
-            cluster.setdefault('clusterName', cluster_name)
-            logging.info('sync action, cluster name:%s' % cluster)
-            for _,node_value in nodes.items():
-                container_info = node_value.get('container_info')
-                con = Container_Model()
-                create_info = con.create_info(container_info)
-                nodeInfo.append(create_info)
-            cluster.setdefault('nodeInfo', nodeInfo)
-            clusters.append(cluster)
+            try:
+                cluster, nodeInfo = {}, []
+                cluster_exist = self.__get_cluster_status(nodes)
+                cluster.setdefault('status', cluster_exist)
+                cluster.setdefault('clusterName', cluster_name)
+                logging.info('sync action, cluster name:%s' % cluster)
+                
+                zkOper = Requests_ZkOpers()
+                cluster_info = zkOper.retrieve_container_cluster_info(cluster_name)
+                _type = cluster_info.get('type')
+                cluster.setdefault('type', _type)
+                
+                for _,node_value in nodes.items():
+                    container_info = node_value.get('container_info')
+                    con = Container_Model()
+                    create_info = con.create_info(container_info)
+                    nodeInfo.append(create_info)
+                cluster.setdefault('nodeInfo', nodeInfo)
+                clusters.append(cluster)
+
+            except:
+                self.threading_exception_queue.put(sys.exc_info())
+                continue
             
         return clusters
 
