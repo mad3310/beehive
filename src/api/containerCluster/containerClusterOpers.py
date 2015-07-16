@@ -100,14 +100,12 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
                 logging.info('sync action, cluster name:%s' % cluster)
                 
                 zkOper = Requests_ZkOpers()
-                cluster_info = zkOper.retrieve_container_cluster_info()
+                cluster_info = zkOper.retrieve_container_cluster_info(cluster_name)
                 _type = cluster_info.get('type')
                 cluster.setdefault('type', _type)
                 
                 for _,node_value in nodes.items():
                     container_info = node_value.get('container_info')
-                    if not container_info:
-                        continue
                     con = Container_Model()
                     create_info = con.create_info(container_info)
                     nodeInfo.append(create_info)
