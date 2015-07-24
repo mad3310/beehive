@@ -53,6 +53,7 @@ class MclusterContainerModelCreator(AbstractContainerModelCreator):
                 env.setdefault('N%s_HOSTNAME' % str(j+1), 'd-mcl-%s-n-%s' % (containerClusterName, str(j+1)))
                 
             gateway = _get_gateway_from_ip(containerIp)
+            #env.setdefault('IFACE', 'peth0')
             env.setdefault('ZKID', i+1)
             env.setdefault('NETMASK', '255.255.0.0')
             env.setdefault('GATEWAY', gateway)

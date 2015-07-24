@@ -46,6 +46,7 @@ class GbalancerContainerModelCreator(AbstractContainerModelCreator):
             gateway = _get_gateway_from_ip(container_ip_list[0])
             
             env = {}
+            #env.setdefault('IFACE', 'peth0')
             env.setdefault('NETMASK', '255.255.0.0')
             env.setdefault('GATEWAY', gateway)
             env.setdefault('HOSTNAME', 'd-mcl-%s-n-%s' % (containerClusterName, str(i+1)))

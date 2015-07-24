@@ -11,6 +11,7 @@ import re
 import logging
 import sys
 
+from tornado.options import options
 from status.status_enum import Status
 from common.abstractContainerOpers import Abstract_Container_Opers
 from utils.exceptions import UserVisiableException
@@ -20,6 +21,14 @@ from containerCluster.baseContainerAction import ContainerCluster_Action_Base
 from containerCluster.containerClusterCreateAction import ContainerCluster_create_Action
 from componentProxy.componentContainerClusterValidator import ComponentContainerClusterValidator
 from utils.threading_exception_queue import Threading_Exception_Queue
+from common.abstractAsyncThread import Abstract_Async_Thread
+from resource_letv.resource import Resource
+
+from componentProxy.componentManagerValidator import ComponentManagerStatusValidator
+from componentProxy.componentContainerModelFactory import ComponentContainerModelFactory
+from componentProxy.componentContainerClusterConfigFactory import ComponentContainerClusterConfigFactory
+from utils import handleTimeout, _get_property_dict, dispatch_mutil_task
+from utils.exceptions import CommonException
 
 
 class ContainerCluster_Opers(Abstract_Container_Opers):
@@ -47,7 +56,27 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         
         containerCluster_create_action = ContainerCluster_create_Action(arg_dict)
         containerCluster_create_action.start()
-    
+
+    def add(self, arg_dict):
+        if not arg_dict.has_key('containerClusterName'):
+            raise UserVisiableException('params containerClusterName not be given, please check the params!')
+        if not arg_dict.has_key('nodeCount'):
+            raise UserVisiableException('params nodeCount not be given, please check the params!')        
+        if not arg_dict.has_key('networkMode'):
+            raise UserVisiableException('params networkMode not be given, please check the params!')
+        if not arg_dict.has_key('componentType'):
+            raise UserVisiableException('params componentType not be given, please check the params!')
+        
+        cluster = arg_dict.get('containerClusterName')
+        
+        zkOper = Container_ZkOpers()
+        exists = zkOper.check_containerCluster_exists(cluster)
+        if not exists:
+            raise UserVisiableException('cluster %s not exist, you should give a existed cluster when add node to it!' % cluster)
+        
+        containerCluster_create_action = ContainerCluster_addNode_Action(arg_dict)
+        containerCluster_create_action.start()
+
     def start(self, containerClusterName):
         zkOper = Container_ZkOpers()
         exists = zkOper.check_containerCluster_exists(containerClusterName)
@@ -252,3 +281,137 @@ class ContainerCluster_destroy_Action(ContainerCluster_Action_Base):
     
     def __init__(self, containerClusterName):
         super(ContainerCluster_destroy_Action, self).__init__(containerClusterName, 'remove')
+
+
+class ContainerCluster_addNode_Action(Abstract_Async_Thread): 
+    
+    resource = Resource()
+    
+    component_manager_status_validator = ComponentManagerStatusValidator()
+    
+    component_container_model_factory = ComponentContainerModelFactory()
+    
+    component_container_cluster_config_factory = ComponentContainerClusterConfigFactory()
+    
+    component_container_cluster_validator = ComponentContainerClusterValidator()
+    
+    def __init__(self, arg_dict={}):
+        super(ContainerCluster_addNode_Action, self).__init__()
+        self._arg_dict = arg_dict
+
+    def run(self):
+        __action_result = Status.failed
+        __error_message = ''
+        cluster = self._arg_dict.get('containerClusterName')
+        try:
+            logging.debug('add node to cluster : %s' % cluster)
+            __action_result = self.__issue_addNode_action(self._arg_dict)
+        except:
+            self.threading_exception_queue.put(sys.exc_info())
+        finally:
+            self.__update_zk_info_when_process_complete(cluster, __action_result, __error_message)
+
+    def __issue_addNode_action(self, args={}):
+        logging.info('args:%s' % str(args))
+        _component_type = args.get('componentType')
+        _network_mode = args.get('networkMode')
+        cluster = args.get('containerClusterName')
+        node_count = args.get('nodeCount')
+        
+        _component_container_cluster_config = self.component_container_cluster_config_factory.retrieve_config(args)
+        args.setdefault('component_config', _component_container_cluster_config)
+        
+        host_ip_list_used, container_names = self.__get_containers_info_created(cluster)
+        _component_container_cluster_config.exclude_servers = host_ip_list_used
+        
+        self.__update_add_node_info_to_zk(cluster, {'addResult' : Status.failed}, node_count)
+        
+        is_res_verify = _component_container_cluster_config.is_res_verify
+        if is_res_verify:
+            self.resource.validateResource(_component_container_cluster_config)
+        
+        host_ip_list = self.resource.elect_servers(_component_container_cluster_config)
+        
+        logging.info('host_ip_list:%s' % str(host_ip_list))
+        args.setdefault('host_ip_list', host_ip_list)
+        
+        ip_port_resource_list = self.resource.retrieve_ip_port_resource(host_ip_list, _component_container_cluster_config)
+        args.setdefault('ip_port_resource_list', ip_port_resource_list)
+        
+        add_container_name_list = self.__get_add_containers_names(_component_container_cluster_config, container_names)
+        _component_container_cluster_config.add_container_name_list = add_container_name_list
+        
+        logging.info('show args to get create containers args list: %s' % str(args))
+        container_model_list = self.component_container_model_factory.create(args)
+        
+        self.__dispatch_create_container_task(container_model_list)
+        
+        created = self.__check_node_added(_component_container_cluster_config)
+        if not created:
+            raise CommonException('cluster started failed, maybe part of nodes started, other failed!')
+        
+        _action_flag = True
+        if _component_container_cluster_config.need_validate_manager_status:
+            _action_flag = self.component_manager_status_validator.validate_manager_status_for_cluster(_component_type, container_model_list)
+        
+        logging.info('validator manager status result:%s' % str(_action_flag))
+        _action_result = Status.failed if not _action_flag else Status.succeed
+        return _action_result
+
+    def __get_containers_info_created(self, cluster):
+        host_ip_list = []
+        zk_opers = Container_ZkOpers()
+        container_list = zk_opers.retrieve_container_list(cluster)
+        for container in container_list:
+            container_value = zk_opers.retrieve_container_node_value(cluster, container)
+            host_ip = container_value.get('hostIp')
+            host_ip_list.append(host_ip)
+        return host_ip_list
+
+    def __get_add_containers_names(self, _component_container_cluster_config, container_names):
+        add_container_name_list, container_number_list = [], []
+        nodeCount = _component_container_cluster_config.nodeCount
+        for container_name in container_names:
+            container_prefix, container_number = int(re.findall('(.*-n-)(\d)', container_name)[0])
+            container_number_list.append(container_number)
+        max_number = max(container_number_list)
+        if max_number < 5:
+            max_number = 5
+        for i in range(nodeCount):
+            max_number += 1
+            add_container_name = container_prefix + str(max_number)
+            add_container_name_list.append(add_container_name)
+        return add_container_name_list
+
+    def __check_node_added(self, component_container_cluster_config):
+        container_cluster_name = component_container_cluster_config.container_cluster_name
+        nodeCount = component_container_cluster_config.nodeCount
+        return handleTimeout(self.__is_node_started, (250, 2), container_cluster_name, nodeCount)
+
+    def __is_node_started(self, container_cluster_name, nodeCount):
+        
+        zkOper = Container_ZkOpers()
+        container_list = zkOper.retrieve_container_list(container_cluster_name)
+        if len(container_list) != nodeCount:
+            logging.info('container length:%s, nodeCount :%s' % (len(container_list), nodeCount) )
+            return False
+        status = self.component_container_cluster_validator.cluster_status_info(container_cluster_name)
+        return status.get('status') == Status.started
+
+    def __update_add_node_info_to_zk(self, cluster, add_result, node_count):
+        zkOper = Container_ZkOpers()
+        cluster_info = zkOper.retrieve_container_cluster_info(cluster)
+        cluster_info.update(add_result)
+        container_count = cluster_info.get('containerCount')
+        cluster_info.update({'containerCount' : int(container_count) + int(node_count)})
+        zkOper.write_container_cluster_info(cluster_info)
+
+    def __dispatch_create_container_task(self, container_model_list):
+        
+        ip_port_params_list = []
+        for container_model in container_model_list:
+            property_dict = _get_property_dict(container_model)
+            host_ip = property_dict.get('host_ip')
+            ip_port_params_list.append((host_ip, options.port, property_dict))
+        
+        dispatch_mutil_task(ip_port_params_list, '/inner/container', 'POST')
