@@ -292,4 +292,3 @@ class CheckBeehiveAlived(CheckStatusBase):
                 error_record += 'server:%s , container-monitor-agent service is not running, please check!;' % host_ip
                 
         super(CheckBeehiveAlived, self).write_status(0, 0, 0, alarm_level, error_record, monitor_type, monitor_key)
-        

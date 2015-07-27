@@ -48,12 +48,12 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         if not arg_dict.has_key('componentType'):
             raise UserVisiableException('params componentType not be given, please check the params!')
         
-        _containerClusterName = arg_dict.get('containerClusterName')
+        cluster = arg_dict.get('containerClusterName')
         
         zkOper = Container_ZkOpers()
-        exists = zkOper.check_containerCluster_exists(_containerClusterName)
+        exists = zkOper.check_containerCluster_exists(cluster)
         if exists:
-            raise UserVisiableException('containerCluster %s has existed, choose another containerCluster name' % _containerClusterName)
+            raise UserVisiableException('containerCluster %s has existed, choose another containerCluster name' % cluster)
         
         containerCluster_create_action = ContainerCluster_create_Action(arg_dict)
         containerCluster_create_action.start()
@@ -316,17 +316,12 @@ class ContainerCluster_AddNode_Action(Abstract_Async_Thread):
         self._arg_dict = arg_dict
 
     def run(self):
-        __action_result = Status.failed
-        __error_message = ''
         cluster = self._arg_dict.get('containerClusterName')
-        node_count = self._arg_dict.get('nodeCount')
         try:
             logging.info('add node to cluster : %s' % cluster)
-            __action_result = self.__issue_addNode_action(self._arg_dict)
+            self.__issue_addNode_action(self._arg_dict)
         except:
             self.threading_exception_queue.put(sys.exc_info())
-        finally:
-            self.__update_zk_info_when_process_complete(cluster, __action_result, node_count, __error_message)
 
     def __issue_addNode_action(self, args={}):
         logging.info('args:%s' % str(args))
@@ -372,12 +367,14 @@ class ContainerCluster_AddNode_Action(Abstract_Async_Thread):
         container_model_list = self.component_container_model_factory.create(args)
 
         """
-            --------------------------------- dispatch create task and check --------------------------------------  
+            ---------------------------- dispatch creating task and check the result----------------------------  
         """
 
         self.__dispatch_create_container_task(container_model_list)
         
-        created = self.__check_node_added(_component_container_cluster_config)
+        nodes_sum = self.__get_nodes_sum(_component_container_cluster_config)
+        
+        created = self.__check_node_added(nodes_sum, _component_container_cluster_config)
         if not created:
             raise CommonException('cluster started failed, maybe part of nodes started, other failed!')
         
@@ -386,8 +383,26 @@ class ContainerCluster_AddNode_Action(Abstract_Async_Thread):
             _action_flag = self.component_manager_status_validator.validate_manager_status_for_cluster(_component_type, container_model_list)
         
         logging.info('validator manager status result:%s' % str(_action_flag))
-        _action_result = Status.failed if not _action_flag else Status.succeed
-        return _action_result
+        add_node_result = Status.failed if not _action_flag else Status.succeed
+        
+        self.__update_zk_info_when_finished(cluster, nodes_sum, add_node_result)
+        return add_node_result
+
+    def __update_zk_info_when_finished(self, cluster, nodes_sum, add_node_result='failed', error_msg=''):
+        zkOper = Container_ZkOpers()
+        _container_cluster_info = zkOper.retrieve_container_cluster_info(cluster)
+        _container_cluster_info.setdefault('addResult', add_node_result)
+        _container_cluster_info.setdefault('error_msg', error_msg)
+        _container_cluster_info.setdefault('containerCount', nodes_sum)
+        zkOper.write_container_cluster_info(_container_cluster_info)
+
+    def __get_nodes_sum(self, component_container_cluster_config):
+        zkOper = Container_ZkOpers()
+        add_node_count = component_container_cluster_config.nodeCount
+        container_cluster_name = component_container_cluster_config.container_cluster_name
+        cluster_info = zkOper.retrieve_container_cluster_info(container_cluster_name)
+        create_count = int(cluster_info.get('containerCount'))
+        return create_count + add_node_count
 
     def __get_containers_info_created(self, cluster):
         host_ip_list, container_name_list = [], []
@@ -408,29 +423,27 @@ class ContainerCluster_AddNode_Action(Abstract_Async_Thread):
             container_prefix, container_number = re.findall('(.*-n-)(\d)', container_name)[0]
             container_number_list.append(int(container_number))
         max_number = max(container_number_list)
-        if max_number < 5:
-            max_number = 5
+        if max_number < 4:
+            max_number = 4
         for i in range(nodeCount):
             max_number += 1
             add_container_name = container_prefix + str(max_number)
             add_container_name_list.append(add_container_name)
         return add_container_name_list
 
-    def __check_node_added(self, component_container_cluster_config):
-        container_cluster_name = component_container_cluster_config.container_cluster_name
-        nodeCount = component_container_cluster_config.nodeCount
-        return handleTimeout(self.__is_node_started, (250, 2), container_cluster_name, nodeCount)
+    def __check_node_added(self, nodes_sum, component_container_cluster_config):
+        return handleTimeout(self.__is_node_started, (250, 2), nodes_sum, component_container_cluster_config)
 
-    def __is_node_started(self, container_cluster_name, nodeCount):
+    def __is_node_started(self, nodes_sum, component_container_cluster_config):
         
         """
             need to besure
         """
-        
         zkOper = Container_ZkOpers()
+        container_cluster_name = component_container_cluster_config.container_cluster_name
         container_list = zkOper.retrieve_container_list(container_cluster_name)
-        if len(container_list) != nodeCount:
-            logging.info('container length:%s, nodeCount :%s' % (len(container_list), nodeCount) )
+        if len(container_list) != nodes_sum:
+            logging.info('container length:%s, nodeCount :%s' % (len(container_list), nodes_sum) )
             return False
         status = self.component_container_cluster_validator.cluster_status_info(container_cluster_name)
         return status.get('status') == Status.started
