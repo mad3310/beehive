@@ -24,10 +24,11 @@ from utils.threading_exception_queue import Threading_Exception_Queue
 from common.abstractAsyncThread import Abstract_Async_Thread
 from resource_letv.resource import Resource
 
+from tornado.httpclient import AsyncHTTPClient
 from componentProxy.componentManagerValidator import ComponentManagerStatusValidator
 from componentProxy.componentContainerModelFactory import ComponentContainerModelFactory
 from componentProxy.componentContainerClusterConfigFactory import ComponentContainerClusterConfigFactory
-from utils import handleTimeout, _get_property_dict, dispatch_mutil_task
+from utils import handleTimeout, _get_property_dict, dispatch_mutil_task, _retrieve_userName_passwd, async_http_post
 from utils.exceptions import CommonException
 
 
@@ -74,8 +75,23 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         if not exists:
             raise UserVisiableException('cluster %s not exist, you should give a existed cluster when add node to it!' % cluster)
         
-        containerCluster_create_action = ContainerCluster_addNode_Action(arg_dict)
+        containerCluster_create_action = ContainerCluster_AddNode_Action(arg_dict)
         containerCluster_create_action.start()
+
+    def remove(self, arg_dict):
+        cluster = arg_dict.has_key('containerClusterName')
+        if not cluster:
+            raise UserVisiableException('params containerClusterName not be given, please check the params!')
+        if not arg_dict.has_key('containerNameList'):
+            raise UserVisiableException('params nodeCount not be given, please check the params!')
+        
+        zkOper = Container_ZkOpers()
+        exists = zkOper.check_containerCluster_exists(cluster)
+        if not exists:
+            raise UserVisiableException('containerCluster %s not existed, no need to remove' % cluster)
+        
+        containerCluster_remove_node_action = ContainerCluster_RemoveNode_Action(arg_dict)
+        containerCluster_remove_node_action.start()
 
     def start(self, containerClusterName):
         zkOper = Container_ZkOpers()
@@ -85,7 +101,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         
         containerCluster_start_action = ContainerCluster_start_Action(containerClusterName)
         containerCluster_start_action.start()
-        
+
     def stop(self, containerClusterName):
         zkOper = Container_ZkOpers()
         exists = zkOper.check_containerCluster_exists(containerClusterName)
@@ -283,7 +299,7 @@ class ContainerCluster_destroy_Action(ContainerCluster_Action_Base):
         super(ContainerCluster_destroy_Action, self).__init__(containerClusterName, 'remove')
 
 
-class ContainerCluster_addNode_Action(Abstract_Async_Thread): 
+class ContainerCluster_AddNode_Action(Abstract_Async_Thread): 
     
     resource = Resource()
     
@@ -296,36 +312,43 @@ class ContainerCluster_addNode_Action(Abstract_Async_Thread):
     component_container_cluster_validator = ComponentContainerClusterValidator()
     
     def __init__(self, arg_dict={}):
-        super(ContainerCluster_addNode_Action, self).__init__()
+        super(ContainerCluster_AddNode_Action, self).__init__()
         self._arg_dict = arg_dict
 
     def run(self):
         __action_result = Status.failed
         __error_message = ''
         cluster = self._arg_dict.get('containerClusterName')
+        node_count = self._arg_dict.get('nodeCount')
         try:
-            logging.debug('add node to cluster : %s' % cluster)
+            logging.info('add node to cluster : %s' % cluster)
             __action_result = self.__issue_addNode_action(self._arg_dict)
         except:
             self.threading_exception_queue.put(sys.exc_info())
         finally:
-            self.__update_zk_info_when_process_complete(cluster, __action_result, __error_message)
+            self.__update_zk_info_when_process_complete(cluster, __action_result, node_count, __error_message)
 
     def __issue_addNode_action(self, args={}):
         logging.info('args:%s' % str(args))
         _component_type = args.get('componentType')
         _network_mode = args.get('networkMode')
         cluster = args.get('containerClusterName')
-        node_count = args.get('nodeCount')
         
         _component_container_cluster_config = self.component_container_cluster_config_factory.retrieve_config(args)
         args.setdefault('component_config', _component_container_cluster_config)
         
+        """
+            need to get container_name from existing containers
+        """
+        
         host_ip_list_used, container_names = self.__get_containers_info_created(cluster)
         _component_container_cluster_config.exclude_servers = host_ip_list_used
         
-        self.__update_add_node_info_to_zk(cluster, {'addResult' : Status.failed}, node_count)
+        self.__update_add_node_info_to_zk(cluster, {'addResult' : Status.failed})
         
+        """
+            ---------------------------------  resource validate ---------------------------------------------  
+        """
         is_res_verify = _component_container_cluster_config.is_res_verify
         if is_res_verify:
             self.resource.validateResource(_component_container_cluster_config)
@@ -338,12 +361,20 @@ class ContainerCluster_addNode_Action(Abstract_Async_Thread):
         ip_port_resource_list = self.resource.retrieve_ip_port_resource(host_ip_list, _component_container_cluster_config)
         args.setdefault('ip_port_resource_list', ip_port_resource_list)
         
+        """
+            ---------------------------------  get create container params--------------------------------------  
+        """
+        
         add_container_name_list = self.__get_add_containers_names(_component_container_cluster_config, container_names)
         _component_container_cluster_config.add_container_name_list = add_container_name_list
         
         logging.info('show args to get create containers args list: %s' % str(args))
         container_model_list = self.component_container_model_factory.create(args)
-        
+
+        """
+            --------------------------------- dispatch create task and check --------------------------------------  
+        """
+
         self.__dispatch_create_container_task(container_model_list)
         
         created = self.__check_node_added(_component_container_cluster_config)
@@ -359,21 +390,23 @@ class ContainerCluster_addNode_Action(Abstract_Async_Thread):
         return _action_result
 
     def __get_containers_info_created(self, cluster):
-        host_ip_list = []
+        host_ip_list, container_name_list = [], []
         zk_opers = Container_ZkOpers()
         container_list = zk_opers.retrieve_container_list(cluster)
         for container in container_list:
             container_value = zk_opers.retrieve_container_node_value(cluster, container)
             host_ip = container_value.get('hostIp')
             host_ip_list.append(host_ip)
-        return host_ip_list
+            container_name = container_value.get('containerName')
+            container_name_list.append(container_name)
+        return host_ip_list, container_name_list
 
     def __get_add_containers_names(self, _component_container_cluster_config, container_names):
         add_container_name_list, container_number_list = [], []
         nodeCount = _component_container_cluster_config.nodeCount
         for container_name in container_names:
-            container_prefix, container_number = int(re.findall('(.*-n-)(\d)', container_name)[0])
-            container_number_list.append(container_number)
+            container_prefix, container_number = re.findall('(.*-n-)(\d)', container_name)[0]
+            container_number_list.append(int(container_number))
         max_number = max(container_number_list)
         if max_number < 5:
             max_number = 5
@@ -390,6 +423,10 @@ class ContainerCluster_addNode_Action(Abstract_Async_Thread):
 
     def __is_node_started(self, container_cluster_name, nodeCount):
         
+        """
+            need to besure
+        """
+        
         zkOper = Container_ZkOpers()
         container_list = zkOper.retrieve_container_list(container_cluster_name)
         if len(container_list) != nodeCount:
@@ -398,12 +435,10 @@ class ContainerCluster_addNode_Action(Abstract_Async_Thread):
         status = self.component_container_cluster_validator.cluster_status_info(container_cluster_name)
         return status.get('status') == Status.started
 
-    def __update_add_node_info_to_zk(self, cluster, add_result, node_count):
+    def __update_add_node_info_to_zk(self, cluster, add_result):
         zkOper = Container_ZkOpers()
         cluster_info = zkOper.retrieve_container_cluster_info(cluster)
         cluster_info.update(add_result)
-        container_count = cluster_info.get('containerCount')
-        cluster_info.update({'containerCount' : int(container_count) + int(node_count)})
         zkOper.write_container_cluster_info(cluster_info)
 
     def __dispatch_create_container_task(self, container_model_list):
@@ -415,3 +450,37 @@ class ContainerCluster_addNode_Action(Abstract_Async_Thread):
             ip_port_params_list.append((host_ip, options.port, property_dict))
         
         dispatch_mutil_task(ip_port_params_list, '/inner/container', 'POST')
+
+
+class ContainerCluster_RemoveNode_Action(Abstract_Async_Thread):
+
+    def __init__(self, args={}):
+        super(ContainerCluster_AddNode_Action, self).__init__()
+        self.args = args
+
+    def run(self):
+        try:
+            self.__issue_remove_node_action()
+        except:
+            self.threading_exception_queue.put(sys.exc_info())
+
+    def __issue_remove_node_action(self):
+        params = self.__get_params()
+        adminUser, adminPasswd = _retrieve_userName_passwd()
+        logging.info('params: %s' % str(params))
+        
+        async_client = AsyncHTTPClient()
+        try:
+            for host_ip, container_name_list in params.items():
+                logging.info('container_name_list %s in host %s ' % (str(container_name_list), host_ip) )
+                for container_name in container_name_list:
+                    args = {'containerName':container_name}
+                    request_uri = 'http://%s:%s/container/%s' % (host_ip, options.port)
+                    logging.info('post-----  url: %s, \n body: %s' % ( request_uri, str (args) ) )
+                    async_http_post(async_client, request_uri, body=args, auth_username=adminUser, auth_password=adminPasswd)
+        finally:
+            async_client.close()
+        
+        if self.action == 'remove':
+            self.__do_when_remove_cluster()
+

@@ -38,7 +38,14 @@ class MclusterContainerModelCreator(AbstractContainerModelCreator):
             container_model.network_mode = network_mode
             container_model.container_cluster_name = containerClusterName
             container_model.container_ip = container_ip_list[i]
-            container_name = 'd-mcl-%s-n-%s' % (containerClusterName, str(i+1))
+
+            if args.has_key('addNode'):
+                add_container_name_list = _component_container_cluster_config.add_container_name_list
+                container_name = add_container_name_list[i]
+            else:
+                container_name = 'd-mcl-%s-n-%s' % (containerClusterName, str(i+1))
+
+            #container_name = 'd-mcl-%s-n-%s' % (containerClusterName, str(i+1))
             container_model.container_name = container_name
             container_model.volumes = volumes
             container_model.binds = binds

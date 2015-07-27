@@ -257,5 +257,21 @@ class ContainerClusterAddNodeHandler(APIHandler):
         args.setdefault('addNode', True)
         self.containerClusterOpers.add(args)
         result = {}
+        result.setdefault("message", "due to add container need a little more times, please wait a moment and check the result!")
+        self.finish(result)
+
+
+@require_basic_auth
+class CheckClusterRemoveNodeHandler(APIHandler):
+    '''
+    classdocs
+    '''
+    containerClusterOpers = ContainerCluster_Opers()
+    
+    def post(self):
+        args = self.get_all_arguments()
+        
+        self.containerClusterOpers.remove(args)
+        result = {}
         result.setdefault("message", "due to create container cluster need a little more times, please wait to finished and email to you, when cluster have started!")
         self.finish(result)
