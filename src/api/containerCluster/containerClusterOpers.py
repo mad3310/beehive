@@ -445,7 +445,7 @@ class ContainerCluster_AddNode_Action(Abstract_Async_Thread):
         if len(container_list) != nodes_sum:
             logging.info('container length:%s, nodeCount :%s' % (len(container_list), nodes_sum) )
             return False
-        status = self.component_container_cluster_validator.cluster_status_info(container_cluster_name)
+        status = self.component_container_cluster_validator.container_cluster_status_validator(container_cluster_name)
         return status.get('status') == Status.started
 
     def __update_add_node_info_to_zk(self, cluster, add_result):
