@@ -39,3 +39,16 @@ class ServerResCheckcHandler:
         
         self.check_server_disk.check()
         self.check_server_memory.check()
+
+
+class BeehiveCheckHandler:
+    """monitor container item
+    
+    """
+    
+    check_cons_oom_kill_disable = CheckContainersOomKillDisable()
+    check_cons_under_oom = CheckContainersUnderOom()
+    
+    def retrieve_info(self):
+        self.check_cons_under_oom.check()
+        self.check_cons_oom_kill_disable.check()
