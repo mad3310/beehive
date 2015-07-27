@@ -46,9 +46,7 @@ class BeehiveCheckHandler:
     
     """
     
-    check_cons_oom_kill_disable = CheckContainersOomKillDisable()
-    check_cons_under_oom = CheckContainersUnderOom()
+    check_beehive_alived = CheckBeehiveAlived()
     
     def retrieve_info(self):
-        self.check_cons_under_oom.check()
-        self.check_cons_oom_kill_disable.check()
+        self.check_beehive_alived.check()

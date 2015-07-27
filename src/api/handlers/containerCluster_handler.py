@@ -262,7 +262,7 @@ class ContainerClusterAddNodeHandler(APIHandler):
 
 
 @require_basic_auth
-class CheckClusterRemoveNodeHandler(APIHandler):
+class ContainerClusterRemoveNodeHandler(APIHandler):
     '''
     classdocs
     '''

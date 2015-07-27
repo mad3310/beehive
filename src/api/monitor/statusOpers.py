@@ -269,8 +269,8 @@ class CheckContainersOomKillDisable(CheckContainersKeyValue):
     
     def __init__(self):
         super(CheckContainersOomKillDisable, self).__init__('oom_kill_disable', 1)
-        
-        
+
+
 class CheckBeehiveAlived(CheckStatusBase):
 
     def check(self):
@@ -279,16 +279,17 @@ class CheckBeehiveAlived(CheckStatusBase):
         zk_opers = Scheduler_ZkOpers()
         host_ip_list = zk_opers.retrieve_data_node_list()
         beehive_port, monitor_port = 8888, 6666
+        alarm_level = options.alarm_nothing
         for host_ip in host_ip_list:
             beehive_ret = nc_ip_port_available(host_ip, beehive_port)
             if not beehive_ret:
                 alarm_level = options.alarm_serious
-                error_record += 'server:%s , beehive service is not running, please check!\n'
+                error_record += 'server:%s , beehive service is not running, please check!;' % host_ip
             
             monitor_ret = nc_ip_port_available(host_ip, monitor_port)
             if not monitor_ret:
                 alarm_level = options.alarm_serious
-                error_record += 'server:%s , container-monitor-agent service is not running, please check!\n'
+                error_record += 'server:%s , container-monitor-agent service is not running, please check!;' % host_ip
                 
-        super(CheckResIpNum, self).write_status(0, 0, 0, alarm_level, error_record, monitor_type, monitor_key)
+        super(CheckBeehiveAlived, self).write_status(0, 0, 0, alarm_level, error_record, monitor_type, monitor_key)
         
