@@ -271,7 +271,7 @@ class ContainerClusterRemoveNodeHandler(APIHandler):
     def post(self):
         args = self.get_all_arguments()
         
-        self.containerClusterOpers.remove(args)
+        self.containerClusterOpers.remove_node(args)
         result = {}
         result.setdefault("message", "due to create container cluster need a little more times, please wait to finished and email to you, when cluster have started!")
         self.finish(result)

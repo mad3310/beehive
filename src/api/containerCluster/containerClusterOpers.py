@@ -30,7 +30,7 @@ from componentProxy.componentContainerModelFactory import ComponentContainerMode
 from componentProxy.componentContainerClusterConfigFactory import ComponentContainerClusterConfigFactory
 from utils import handleTimeout, _get_property_dict, dispatch_mutil_task, _retrieve_userName_passwd, async_http_post
 from utils.exceptions import CommonException
-
+from container.containerOpers import Container_Opers
 
 class ContainerCluster_Opers(Abstract_Container_Opers):
     
@@ -78,7 +78,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         containerCluster_create_action = ContainerCluster_AddNode_Action(arg_dict)
         containerCluster_create_action.start()
 
-    def remove(self, arg_dict):
+    def remove_node(self, arg_dict):
         cluster = arg_dict.has_key('containerClusterName')
         if not cluster:
             raise UserVisiableException('params containerClusterName not be given, please check the params!')
@@ -391,9 +391,11 @@ class ContainerCluster_AddNode_Action(Abstract_Async_Thread):
     def __update_zk_info_when_finished(self, cluster, nodes_sum, add_node_result='failed', error_msg=''):
         zkOper = Container_ZkOpers()
         _container_cluster_info = zkOper.retrieve_container_cluster_info(cluster)
-        _container_cluster_info.setdefault('addResult', add_node_result)
-        _container_cluster_info.setdefault('error_msg', error_msg)
-        _container_cluster_info.setdefault('containerCount', nodes_sum)
+        logging.info('container info:%s' % str(_container_cluster_info))
+        _container_cluster_info.update({'addResult':add_node_result})
+        _container_cluster_info.update({'error_msg':error_msg})
+        _container_cluster_info.update({'containerCount':nodes_sum})
+        _container_cluster_info.update({'containerClusterName': cluster})
         zkOper.write_container_cluster_info(_container_cluster_info)
 
     def __get_nodes_sum(self, component_container_cluster_config):
@@ -467,6 +469,8 @@ class ContainerCluster_AddNode_Action(Abstract_Async_Thread):
 
 class ContainerCluster_RemoveNode_Action(Abstract_Async_Thread):
 
+    container_opers = Container_Opers()
+
     def __init__(self, args={}):
         super(ContainerCluster_AddNode_Action, self).__init__()
         self.args = args
@@ -478,22 +482,21 @@ class ContainerCluster_RemoveNode_Action(Abstract_Async_Thread):
             self.threading_exception_queue.put(sys.exc_info())
 
     def __issue_remove_node_action(self):
-        params = self.__get_params()
-        adminUser, adminPasswd = _retrieve_userName_passwd()
-        logging.info('params: %s' % str(params))
         
+        cluster = self.args.get('containerClusterName')
+        container_name_list = self.args.get('containerNameList')
+        zkOper = Container_ZkOpers()
+        adminUser, adminPasswd = _retrieve_userName_passwd()
         async_client = AsyncHTTPClient()
+        
         try:
-            for host_ip, container_name_list in params.items():
-                logging.info('container_name_list %s in host %s ' % (str(container_name_list), host_ip) )
-                for container_name in container_name_list:
-                    args = {'containerName':container_name}
-                    request_uri = 'http://%s:%s/container/%s' % (host_ip, options.port)
-                    logging.info('post-----  url: %s, \n body: %s' % ( request_uri, str (args) ) )
-                    async_http_post(async_client, request_uri, body=args, auth_username=adminUser, auth_password=adminPasswd)
+            for container_name in container_name_list:
+                container_node = self.container_opers.get_container_node_from_container_name(cluster, container_name)
+                container_node_value = zkOper.retrieve_container_node_value(cluster, container_node)
+                host_ip = container_node_value.get('hostIp')
+                args = {'containerName':container_name}
+                request_uri = 'http://%s:%s/container/remove' % (host_ip, options.port)
+                logging.info('post-----  url: %s, \n container name: %s' % ( request_uri, container_name ) )
+                async_http_post(async_client, request_uri, body=args, auth_username=adminUser, auth_password=adminPasswd)
         finally:
             async_client.close()
-        
-        if self.action == 'remove':
-            self.__do_when_remove_cluster()
-
