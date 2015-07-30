@@ -39,19 +39,24 @@ class ComponentContainerClusterValidator(object):
         
         cluster_stat = ''
         
-        if len(set(status_list)) == 1:
+        status_set_len = len(set(status_list))
+        if status_set_len == 1:
             stat = status_list.pop()
             if stat in Status:
                 cluster_stat = stat
             else:
                 cluster_stat = Status.failed
+        elif status_set_len == 0:
+            cluster_stat = Status.destroyed
         else:
             i = 0
             for status in status_list:
                 if status == Status.started:
                     i += 1
-                    
-            if i == 2:
+            
+            if i >= 3:
+                cluster_stat = Status.started
+            elif i == 2:
                 cluster_stat = Status.danger
             elif i ==1:
                 cluster_stat = Status.crisis

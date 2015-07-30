@@ -238,6 +238,36 @@ class Container_Opers(Abstract_Container_Opers):
             
         return add_ret
 
+    def set_container_cpushares(self, args):
+        
+        container_name = args.get('containerName')
+        exists = self.check_container_exists(container_name)
+        if not exists:
+            raise UserVisiableException("container(name:%s) dont's existed!" % (container_name))
+        cpushares = args.get('cpushares')
+        
+        add_ret = {}
+        state_opers = StateOpers(container_name)
+        cpushares_value = state_opers.set_cpushares(cpushares)
+        add_ret.setdefault(container_name, cpushares_value)
+        
+        return add_ret
+
+    def set_container_cpuset(self, args):
+        
+        container_name = args.get('containerName')
+        exists = self.check_container_exists(container_name)
+        if not exists:
+            raise UserVisiableException("container(name:%s) dont's existed!" % (container_name))
+        cpus = args.get('cpus')
+        
+        add_ret = {}
+        state_opers = StateOpers(container_name)
+        cpuset_value = state_opers.set_cpuset(cpus)
+        add_ret.setdefault(container_name, cpuset_value)
+        
+        return add_ret
+
     def get_containers_disk_load(self, container_name_list):
         result = {}
         containers = self._get_containers(container_name_list)

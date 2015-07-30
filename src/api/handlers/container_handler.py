@@ -245,6 +245,34 @@ class GatherContainerNetworkioHandler(APIHandler):
 
 
 @require_basic_auth
+class SetContainerCpusharesHandler(APIHandler):
+    
+    container_opers = Container_Opers()
+    
+    def post(self):
+        args = self.get_all_arguments()
+        ret = self.container_opers.set_container_cpushares(args)
+        
+        result = {}
+        result.setdefault(ret)
+        self.finish(result)
+
+
+@require_basic_auth
+class SetContainerCpusetHandler(APIHandler):
+    
+    container_opers = Container_Opers()
+    
+    def post(self):
+        args = self.get_all_arguments()
+        ret = self.container_opers.set_container_cpuset(args)
+        
+        result = {}
+        result.setdefault(ret)
+        self.finish(result)
+
+
+@require_basic_auth
 class CheckContainerStatusHandler(APIHandler):
     '''
     classdocs

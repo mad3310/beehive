@@ -32,6 +32,8 @@ class StateOpers(object):
         self.root_mnt_path = '/srv/docker/devicemapper/mnt/%s' % self.container_id
         self.memory_stat_path = '/cgroup/memory/lxc/%s/memory.stat' % self.container_id
         self.cpuacct_stat_path = '/cgroup/cpuacct/lxc/%s/cpuacct.stat' % self.container_id
+        self.cpushares_path = '/cgroup/cpu/lxc/%s/cpu.shares' % self.container_id
+        self.cpuset_path = '/cgroup/cpu/lxc/%s/cpuset.cpus' % self.container_id
 
     def get_container_id(self):
         _inspect = self.docker_opers.inspect_container(self.container_name)
@@ -85,6 +87,12 @@ class StateOpers(object):
     def get_cpuacct_stat_value(self):
         value = self.get_file_value(self.cpuacct_stat_path)
         return value.split('\n')
+
+    def get_cpushares_value(self):
+        return self.get_file_value(self.cpushares_path)
+
+    def get_cpuset_value(self):
+        return self.get_file_value(self.cpuset_path)
 
     def get_memory_stat_item(self):
         mem_stat_dict = {}
@@ -210,3 +218,13 @@ class StateOpers(object):
         memsw_ret = self.__extend_memsw(times)
         mem_ret = self.__extend_mem(times)
         return memsw_ret and mem_ret
+
+    def set_cpushares(self, cpushares="1024"):
+        if not self.echo_value_to_file(self.cpushares_path, cpushares):
+            raise UserVisiableException('set container :%s cpu.shares value:% failed' % (self.container_name, cpushares))
+        return self.get_cpushares_value()
+
+    def set_cpuset(self, cpus):
+        if not self.echo_value_to_file(self.cpuset_path, cpus):
+            raise UserVisiableException('set container :%s cpu.shares value:% failed' % (self.container_name, cpus))
+        return self.get_cpuset_value()

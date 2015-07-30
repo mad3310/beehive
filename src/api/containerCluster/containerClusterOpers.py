@@ -79,7 +79,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         containerCluster_create_action.start()
 
     def remove_node(self, arg_dict):
-        cluster = arg_dict.has_key('containerClusterName')
+        cluster = arg_dict.get('containerClusterName')
         if not cluster:
             raise UserVisiableException('params containerClusterName not be given, please check the params!')
         if not arg_dict.has_key('containerNameList'):
@@ -472,7 +472,7 @@ class ContainerCluster_RemoveNode_Action(Abstract_Async_Thread):
     container_opers = Container_Opers()
 
     def __init__(self, args={}):
-        super(ContainerCluster_AddNode_Action, self).__init__()
+        super(ContainerCluster_RemoveNode_Action, self).__init__()
         self.args = args
 
     def run(self):
@@ -484,7 +484,8 @@ class ContainerCluster_RemoveNode_Action(Abstract_Async_Thread):
     def __issue_remove_node_action(self):
         
         cluster = self.args.get('containerClusterName')
-        container_name_list = self.args.get('containerNameList')
+        _container_name_list = self.args.get('containerNameList')
+        container_name_list = _container_name_list.split(',')
         zkOper = Container_ZkOpers()
         adminUser, adminPasswd = _retrieve_userName_passwd()
         async_client = AsyncHTTPClient()
