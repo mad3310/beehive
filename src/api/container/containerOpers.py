@@ -245,6 +245,8 @@ class Container_Opers(Abstract_Container_Opers):
         if not exists:
             raise UserVisiableException("container(name:%s) dont's existed!" % (container_name))
         cpushares = args.get('cpushares')
+        if not cpushares:
+            raise UserVisiableException("params cpushares should be given!" )
         
         add_ret = {}
         state_opers = StateOpers(container_name)
@@ -260,6 +262,8 @@ class Container_Opers(Abstract_Container_Opers):
         if not exists:
             raise UserVisiableException("container(name:%s) dont's existed!" % (container_name))
         cpus = args.get('cpus')
+        if not cpus:
+            raise UserVisiableException("params cpus should be given!" )
         
         add_ret = {}
         state_opers = StateOpers(container_name)

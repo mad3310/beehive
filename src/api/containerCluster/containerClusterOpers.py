@@ -222,6 +222,8 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         clusters_zk_info = {}
         for cluster_name in cluster_name_list:
             cluster_info_dict = self.get_cluster_zk(cluster_name)
+            if not cluster_info_dict:
+                continue
             clusters_zk_info.setdefault(cluster_name, cluster_info_dict)
             
         return clusters_zk_info
@@ -250,7 +252,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
             raise UserVisiableException('containerCluster %s not existed' % containerClusterName)
         
         result = {}
-
+        
         container_cluster_info = zkOper.retrieve_container_cluster_info(containerClusterName)
         start_flag = container_cluster_info.get('start_flag')
 

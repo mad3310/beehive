@@ -49,6 +49,7 @@ class StateOpers(object):
 
     def echo_value_to_file(self, value, file_path):
         cmd = 'echo %s > %s' % (value, file_path)
+        logging.info('run cmd :%s' % cmd)
         commands.getoutput(cmd)
         return self.get_file_value(file_path) == str(value)
 
@@ -220,11 +221,11 @@ class StateOpers(object):
         return memsw_ret and mem_ret
 
     def set_cpushares(self, cpushares="1024"):
-        if not self.echo_value_to_file(self.cpushares_path, cpushares):
+        if not self.echo_value_to_file(cpushares, self.cpushares_path):
             raise UserVisiableException('set container :%s cpu.shares value:% failed' % (self.container_name, cpushares))
         return self.get_cpushares_value()
 
     def set_cpuset(self, cpus):
-        if not self.echo_value_to_file(self.cpuset_path, cpus):
-            raise UserVisiableException('set container :%s cpu.shares value:% failed' % (self.container_name, cpus))
+        if not self.echo_value_to_file(cpus, self.cpuset_path):
+            raise UserVisiableException('set container :%s cpus value:%s failed' % (self.container_name, cpus))
         return self.get_cpuset_value()

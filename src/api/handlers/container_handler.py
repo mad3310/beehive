@@ -253,9 +253,7 @@ class SetContainerCpusharesHandler(APIHandler):
         args = self.get_all_arguments()
         ret = self.container_opers.set_container_cpushares(args)
         
-        result = {}
-        result.setdefault(ret)
-        self.finish(result)
+        self.finish(ret)
 
 
 @require_basic_auth
