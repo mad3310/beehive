@@ -5,16 +5,22 @@ Created on Sep 8, 2014
 
 @author: root
 '''
-import kazoo
 import logging
+import urllib
+import json
 
+from tornado.options import options
 from tornado.web import asynchronous
 from tornado_letv.tornado_basic_auth import require_basic_auth
 from base import APIHandler
-from utils.exceptions import HTTPAPIError
+from utils.exceptions import HTTPAPIError, UserVisiableException
 from container.containerOpers import Container_Opers
+from container.container_model import Container_Model
 from containerCluster.containerClusterOpers import ContainerCluster_Opers
 from zk.zkOpers import Requests_ZkOpers
+from tornado.gen import engine, Task
+from utils import _retrieve_userName_passwd
+from tornado.httpclient import HTTPRequest, AsyncHTTPClient
 
 
 class GatherClusterResourceHandler(APIHandler):
@@ -246,32 +252,49 @@ class CheckClusterSyncHandler(APIHandler):
 
 
 @require_basic_auth
-class ContainerClusterAddNodeHandler(APIHandler):
-    '''
-    classdocs
-    '''
-    containerClusterOpers = ContainerCluster_Opers()
+class SetContainerClusterCpusharesHandler(APIHandler):
     
+    @asynchronous
+    @engine
     def post(self):
         args = self.get_all_arguments()
-        args.setdefault('addNode', True)
-        self.containerClusterOpers.add(args)
-        result = {}
-        result.setdefault("message", "due to add container need a little more times, please wait a moment and check the result!")
-        self.finish(result)
-
-
-@require_basic_auth
-class ContainerClusterRemoveNodeHandler(APIHandler):
-    '''
-    classdocs
-    '''
-    containerClusterOpers = ContainerCluster_Opers()
-    
-    def post(self):
-        args = self.get_all_arguments()
+        cluster = args.get('containerClusterName')
+        if not cluster:
+            raise UserVisiableException("params cluster should be given!")
+        times = args.get('times')
+        if not times:
+            raise UserVisiableException("params times should be given!")        
         
-        self.containerClusterOpers.remove_node(args)
-        result = {}
-        result.setdefault("message", "due to create container cluster need a little more times, please wait to finished and email to you, when cluster have started!")
-        self.finish(result)
+        hostIp_containerName_list = self.__get_hostIp_containerName_list(cluster)
+        auth_username, auth_password = _retrieve_userName_passwd()
+        async_client = AsyncHTTPClient()
+        
+        _post_args, set_cpushares_result = {}, {}
+        _post_args.setdefault('times', times)
+        try:
+            for host_ip, container_name in hostIp_containerName_list:
+                requesturi = 'http://%s:%s/containerCluster/cpushares' % (host_ip, options.port)
+                logging.info('server requesturi: %s' % str(requesturi))
+                _post_args.setdefault('containerName', container_name)
+                request = HTTPRequest(url=requesturi, method='POST', body=urllib.urlencode(_post_args), connect_timeout=40, \
+                                      request_timeout=40, auth_username = auth_username, auth_password = auth_password)
+                
+                response = yield Task(async_client.fetch, request)
+                body = json.loads(response.body.strip())
+                ret = body.get('response')
+                set_cpushares_result.update(ret)
+        finally:
+            async_client.close()
+        
+        self.finish(set_cpushares_result)
+
+    def __get_hostIp_containerName_list(self, cluster):
+        zkOper = Requests_ZkOpers()
+        hostIp_containerName_list = []
+        container_list = zkOper.retrieve_container_list(cluster)
+        for container in container_list:
+            container_info = zkOper.retrieve_container_node_value(cluster, container)
+            host_ip = container_info.get('hostIp')
+            container_name =  container_info.get('containerName')
+            hostIp_containerName_list.append((host_ip, container_name))
+        return hostIp_containerName_list

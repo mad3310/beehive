@@ -7,6 +7,7 @@ Created on 2015-2-5
 from componentProxy.abstractContainerModelCreator import AbstractContainerModelCreator
 from container.container_model import Container_Model
 from utils import _get_gateway_from_ip
+#from tornado.options import options
 
 class GbalancerContainerModelCreator(AbstractContainerModelCreator):
     '''
@@ -46,7 +47,7 @@ class GbalancerContainerModelCreator(AbstractContainerModelCreator):
             gateway = _get_gateway_from_ip(container_ip_list[0])
             
             env = {}
-            #env.setdefault('IFACE', 'peth0')
+            #env.setdefault('IFACE', options.test_cluster_NIC)
             env.setdefault('NETMASK', '255.255.0.0')
             env.setdefault('GATEWAY', gateway)
             env.setdefault('HOSTNAME', 'd-mcl-%s-n-%s' % (containerClusterName, str(i+1)))

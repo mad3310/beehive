@@ -244,11 +244,12 @@ class Container_Opers(Abstract_Container_Opers):
         exists = self.check_container_exists(container_name)
         if not exists:
             raise UserVisiableException("container(name:%s) dont's existed!" % (container_name))
-        cpushares = args.get('cpushares')
-        if not cpushares:
-            raise UserVisiableException("params cpushares should be given!" )
+        times = int(args.get('times'))
+        if not times:
+            raise UserVisiableException("params times should be given!" )
         
         add_ret = {}
+        cpushares = 1024 * times
         state_opers = StateOpers(container_name)
         cpushares_value = state_opers.set_cpushares(cpushares)
         add_ret.setdefault(container_name, cpushares_value)
