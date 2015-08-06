@@ -243,7 +243,7 @@ class Container_Opers(Abstract_Container_Opers):
         container_name = args.get('containerName')
         exists = self.check_container_exists(container_name)
         if not exists:
-            raise UserVisiableException("container(name:%s) dont's existed!" % (container_name))
+            raise UserVisiableException("container(name:%s) dont's existed!" % container_name)
         times = args.get('times')
         if not times:
             raise UserVisiableException("params times should be given!" )

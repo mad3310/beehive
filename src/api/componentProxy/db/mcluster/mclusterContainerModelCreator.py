@@ -7,7 +7,7 @@ Created on 2015-2-5
 from componentProxy.abstractContainerModelCreator import AbstractContainerModelCreator
 from container.container_model import Container_Model
 from utils import _get_gateway_from_ip
-#from tornado.options import options
+from tornado.options import options
 
 class MclusterContainerModelCreator(AbstractContainerModelCreator):
     '''

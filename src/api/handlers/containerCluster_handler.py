@@ -273,9 +273,9 @@ class SetContainerClusterCpusharesHandler(APIHandler):
         _post_args.setdefault('times', times)
         try:
             for host_ip, container_name in hostIp_containerName_list:
-                requesturi = 'http://%s:%s/containerCluster/cpushares' % (host_ip, options.port)
+                requesturi = 'http://%s:%s/container/cpushares' % (host_ip, options.port)
                 logging.info('server requesturi: %s' % str(requesturi))
-                _post_args.setdefault('containerName', container_name)
+                _post_args.update({'containerName':container_name})
                 request = HTTPRequest(url=requesturi, method='POST', body=urllib.urlencode(_post_args), connect_timeout=40, \
                                       request_timeout=40, auth_username = auth_username, auth_password = auth_password)
                 
