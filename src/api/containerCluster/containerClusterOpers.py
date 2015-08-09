@@ -94,10 +94,10 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         for cluster_name, nodes in clusters_zk_info.items():
             try:
                 cluster, nodeInfo = {}, []
-                cluster_status = self.component_container_cluster_validator.container_cluster_status_validator(cluster)
+                logging.info('sync action, cluster name:%s' % cluster)
+                cluster_status = self.component_container_cluster_validator.container_cluster_status_validator(cluster_name)
                 cluster.setdefault('status', cluster_status)
                 cluster.setdefault('clusterName', cluster_name)
-                logging.info('sync action, cluster name:%s' % cluster)
                 
                 zkOper = Requests_ZkOpers()
                 cluster_info = zkOper.retrieve_container_cluster_info(cluster_name)
@@ -186,7 +186,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
             raise UserVisiableException('containerCluster %s not existed' % containerClusterName)
         
         result = {}
-        
+
         container_cluster_info = zkOper.retrieve_container_cluster_info(containerClusterName)
         start_flag = container_cluster_info.get('start_flag')
 

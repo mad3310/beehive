@@ -260,7 +260,7 @@ class SetContainerClusterCpusharesHandler(APIHandler):
         args = self.get_all_arguments()
         cluster = args.get('containerClusterName')
         if not cluster:
-            raise UserVisiableException("params cluster should be given!")
+            raise UserVisiableException("params containerClusterName should be given!")
         times = args.get('times')
         if not times:
             raise UserVisiableException("params times should be given!")        
