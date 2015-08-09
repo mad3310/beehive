@@ -60,7 +60,7 @@ handlers = [
     (r"/container/stop", StopContainerHandler),
     (r"/container/remove", RemoveContainerHandler),
     (r"/container/cpushares", SetContainerCpusharesHandler),
-    (r"/container/cpuset", SetContainerCpusetHandler),
+    #(r"/container/cpuset", SetContainerCpusetHandler),
     (r"/container/status/(.*)", CheckContainerStatusHandler),
     (r"/container/stat/(.*)/memory", GatherContainerMemeoyHandler),
     (r"/container/stat/(.*)/cpuacct", GatherContainerCpuacctHandler),

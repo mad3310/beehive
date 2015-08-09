@@ -134,7 +134,7 @@ class SwitchServersUnderoomHandler(APIHandler):
         for con in except_cons:
             result.setdefault(con, 'no such container or code exception')
         self.finish(result)
-
+    
 
 @require_basic_auth
 class GatherServersContainersDiskLoadHandler(APIHandler):
