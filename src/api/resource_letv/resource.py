@@ -172,6 +172,7 @@ class Resource(object):
         port_number = server_res['port_number']
         port_condition = port_number > 10
         
+        logging.info('mem_condition:%s , disk_condition:%s, port_condition:%s' % (mem_condition, disk_condition, port_condition))
         if mem_condition and disk_condition and port_condition:
             resource_result.setdefault('memory', host_mem_can_be_used)
             resource_result.setdefault('disk', host_disk_can_be_used)

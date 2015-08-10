@@ -7,6 +7,7 @@ Created on 2015-2-5
 from componentProxy.abstractContainerModelCreator import AbstractContainerModelCreator
 from container.container_model import Container_Model
 from utils import _get_gateway_from_ip
+from tornado.options import options
 
 class MclusterContainerModelCreator(AbstractContainerModelCreator):
     '''
@@ -53,10 +54,11 @@ class MclusterContainerModelCreator(AbstractContainerModelCreator):
                 env.setdefault('N%s_HOSTNAME' % str(j+1), 'd-mcl-%s-n-%s' % (containerClusterName, str(j+1)))
                 
             gateway = _get_gateway_from_ip(containerIp)
+            #env.setdefault('IFACE', options.test_cluster_NIC)
             env.setdefault('ZKID', i+1)
             env.setdefault('NETMASK', '255.255.0.0')
             env.setdefault('GATEWAY', gateway)
-            env.setdefault('HOSTNAME', 'd-mcl-%s-n-%s' % (containerClusterName, str(i+1)))
+            env.setdefault('HOSTNAME', container_name)
             env.setdefault('IP', container_ip_list[i])
             
             container_model.env = env
@@ -73,4 +75,3 @@ class MclusterContainerModelCreator(AbstractContainerModelCreator):
             else:
                 binds.setdefault(v, {'bind': k, 'ro' : ro})
         return volumes, binds
-

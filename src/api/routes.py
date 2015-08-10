@@ -47,6 +47,7 @@ handlers = [
 #     @todo: used below uri?
 #     '''
     (r"/containerCluster/conf", ClusterConfigHandler),
+    (r"/containerCluster/cpushares", SetContainerClusterCpusharesHandler),
     (r"/containerCluster/stat/(.*)/memory", GatherClusterMemeoyHandler),
     (r"/containerCluster/stat/(.*)/cpuacct", GatherClusterCpuacctHandler),
     (r"/containerCluster/stat/(.*)/networkio", GatherClusterNetworkioHandler),
@@ -58,6 +59,8 @@ handlers = [
     (r"/container/start", StartContainerHandler),
     (r"/container/stop", StopContainerHandler),
     (r"/container/remove", RemoveContainerHandler),
+    (r"/container/cpushares", SetContainerCpusharesHandler),
+    #(r"/container/cpuset", SetContainerCpusetHandler),
     (r"/container/status/(.*)", CheckContainerStatusHandler),
     (r"/container/stat/(.*)/memory", GatherContainerMemeoyHandler),
     (r"/container/stat/(.*)/cpuacct", GatherContainerCpuacctHandler),

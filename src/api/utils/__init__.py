@@ -12,11 +12,9 @@ import json
 import os
 
 from tornado.options import options
-from tornado.httpclient import HTTPClient
-from tornado.httpclient import HTTPError
 from utils.configFileOpers import ConfigFileOpers
 from tornado.gen import engine, Task
-from tornado.httpclient import HTTPRequest, AsyncHTTPClient
+from tornado.httpclient import HTTPRequest, AsyncHTTPClient, HTTPClient, HTTPError
 from utils.exceptions import CommonException
 from tornado.gen import Callback, Wait
 

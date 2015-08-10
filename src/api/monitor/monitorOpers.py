@@ -39,3 +39,14 @@ class ServerResCheckcHandler:
         
         self.check_server_disk.check()
         self.check_server_memory.check()
+
+
+class BeehiveCheckHandler:
+    """monitor container item
+    
+    """
+    
+    check_beehive_alived = CheckBeehiveAlived()
+    
+    def retrieve_info(self):
+        self.check_beehive_alived.check()

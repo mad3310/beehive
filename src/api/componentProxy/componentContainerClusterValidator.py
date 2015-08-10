@@ -39,23 +39,27 @@ class ComponentContainerClusterValidator(object):
         
         cluster_stat = ''
         
-        if len(set(status_list)) == 1:
-            stat = status_list.pop()
-            if stat in Status:
-                cluster_stat = stat
-            else:
-                cluster_stat = Status.failed
+        status_set_len = len(set(status_list))
+        
+        if status_set_len == 0:
+            cluster_stat = Status.destroyed
+        elif status_set_len == 1:
+            cluster_stat = status_list.pop()
         else:
             i = 0
             for status in status_list:
                 if status == Status.started:
                     i += 1
-                    
-            if i == 2:
-                cluster_stat = Status.danger
-            elif i ==1:
+            
+            '''
+                if the count of started nodes is more than 2,
+                and there is node whose status is not started, 
+                the cluster status is defined danger,
+                otherwise crisis.
+            '''
+            if i <= 1:
                 cluster_stat = Status.crisis
             else:
-                cluster_stat = Status.failed
+                cluster_stat = Status.danger
                 
         return cluster_stat

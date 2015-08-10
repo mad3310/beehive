@@ -38,16 +38,16 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         if not arg_dict.has_key('componentType'):
             raise UserVisiableException('params componentType not be given, please check the params!')
         
-        _containerClusterName = arg_dict.get('containerClusterName')
+        cluster = arg_dict.get('containerClusterName')
         
         zkOper = Container_ZkOpers()
-        exists = zkOper.check_containerCluster_exists(_containerClusterName)
+        exists = zkOper.check_containerCluster_exists(cluster)
         if exists:
-            raise UserVisiableException('containerCluster %s has existed, choose another containerCluster name' % _containerClusterName)
+            raise UserVisiableException('containerCluster %s has existed, choose another containerCluster name' % cluster)
         
         containerCluster_create_action = ContainerCluster_create_Action(arg_dict)
         containerCluster_create_action.start()
-    
+
     def start(self, containerClusterName):
         zkOper = Container_ZkOpers()
         exists = zkOper.check_containerCluster_exists(containerClusterName)
@@ -56,7 +56,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         
         containerCluster_start_action = ContainerCluster_start_Action(containerClusterName)
         containerCluster_start_action.start()
-        
+
     def stop(self, containerClusterName):
         zkOper = Container_ZkOpers()
         exists = zkOper.check_containerCluster_exists(containerClusterName)
@@ -94,10 +94,10 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         for cluster_name, nodes in clusters_zk_info.items():
             try:
                 cluster, nodeInfo = {}, []
-                cluster_exist = self.__get_cluster_status(nodes)
-                cluster.setdefault('status', cluster_exist)
-                cluster.setdefault('clusterName', cluster_name)
                 logging.info('sync action, cluster name:%s' % cluster)
+                cluster_status = self.component_container_cluster_validator.container_cluster_status_validator(cluster_name)
+                cluster.setdefault('status', cluster_status)
+                cluster.setdefault('clusterName', cluster_name)
                 
                 zkOper = Requests_ZkOpers()
                 cluster_info = zkOper.retrieve_container_cluster_info(cluster_name)
@@ -111,33 +111,12 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
                     nodeInfo.append(create_info)
                 cluster.setdefault('nodeInfo', nodeInfo)
                 clusters.append(cluster)
-
+                
             except:
                 self.threading_exception_queue.put(sys.exc_info())
                 continue
             
         return clusters
-
-
-    '''
-        one cluster status func
-    '''
-    def __get_cluster_status(self, nodes):
-        n = 0
-        for _,container_info in nodes.items():
-            stat = container_info.get('status').get('status')
-            if stat == Status.destroyed:
-                n += 1
-        if n == len(nodes):
-            exist = Status.destroyed
-        else:
-            exist = Status.alive
-        return exist
-
-    def __check_cluster_in_zk(self, containerClusterName):
-        zkOper = Requests_ZkOpers()
-        container_ip_list = zkOper.retrieve_container_list(containerClusterName)
-        return len(container_ip_list) != 0
 
     def config(self, conf_dict={}):
         error_msg = ''
@@ -177,6 +156,8 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         clusters_zk_info = {}
         for cluster_name in cluster_name_list:
             cluster_info_dict = self.get_cluster_zk(cluster_name)
+            if not cluster_info_dict:
+                continue
             clusters_zk_info.setdefault(cluster_name, cluster_info_dict)
             
         return clusters_zk_info
