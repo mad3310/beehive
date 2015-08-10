@@ -261,6 +261,11 @@ class SetContainerClusterCpusharesHandler(APIHandler):
         cluster = args.get('containerClusterName')
         if not cluster:
             raise UserVisiableException("params containerClusterName should be given!")
+        
+        zkOper = Requests_ZkOpers()
+        exists = zkOper.check_containerCluster_exists(cluster)
+        if not exists:
+            raise UserVisiableException('containerCluster %s not exist, choose another containerCluster name' % cluster)
         times = args.get('times')
         if not times:
             raise UserVisiableException("params times should be given!")        
