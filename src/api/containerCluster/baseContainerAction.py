@@ -15,10 +15,10 @@ from zk.zkOpers import Container_ZkOpers
 
 
 
-class ContainerCluster_Action_Base(Abstract_Async_Thread):
+class Base_ContainerCluster_Action(Abstract_Async_Thread):
 
     def __init__(self, containerClusterName, action):
-        super(ContainerCluster_Action_Base, self).__init__()
+        super(Base_ContainerCluster_Action, self).__init__()
         self.cluster = containerClusterName
         self.action = action
 

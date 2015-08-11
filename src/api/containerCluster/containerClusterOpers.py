@@ -16,16 +16,18 @@ from common.abstractContainerOpers import Abstract_Container_Opers
 from utils.exceptions import UserVisiableException
 from container.container_model import Container_Model
 from zk.zkOpers import Container_ZkOpers, Requests_ZkOpers
-from containerCluster.baseContainerAction import ContainerCluster_Action_Base
+from containerCluster.baseContainerAction import Base_ContainerCluster_Action
 from containerCluster.containerClusterCreateAction import ContainerCluster_create_Action
 from componentProxy.componentContainerClusterValidator import ComponentContainerClusterValidator
 from utils.threading_exception_queue import Threading_Exception_Queue
+from componentProxy.componentContainerClusterConfigFactory import ComponentContainerClusterConfigFactory
 
 
 class ContainerCluster_Opers(Abstract_Container_Opers):
     
     component_container_cluster_validator = ComponentContainerClusterValidator()
     threading_exception_queue = Threading_Exception_Queue()
+    component_container_cluster_config_factory = ComponentContainerClusterConfigFactory()
         
     def __init__(self):
         super(ContainerCluster_Opers, self).__init__()
@@ -44,6 +46,9 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         exists = zkOper.check_containerCluster_exists(cluster)
         if exists:
             raise UserVisiableException('containerCluster %s has existed, choose another containerCluster name' % cluster)
+        
+        _component_container_cluster_config = self.component_container_cluster_config_factory.retrieve_config(arg_dict)
+        arg_dict.setdefault('component_config', _component_container_cluster_config)
         
         containerCluster_create_action = ContainerCluster_create_Action(arg_dict)
         containerCluster_create_action.start()
@@ -217,19 +222,19 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         return result
 
 
-class ContainerCluster_stop_Action(ContainerCluster_Action_Base):
+class ContainerCluster_stop_Action(Base_ContainerCluster_Action):
 
     def __init__(self, containerClusterName):
         super(ContainerCluster_stop_Action, self).__init__(containerClusterName, 'stop')
 
 
-class ContainerCluster_start_Action(ContainerCluster_Action_Base):
+class ContainerCluster_start_Action(Base_ContainerCluster_Action):
     
     def __init__(self, containerClusterName):
         super(ContainerCluster_start_Action, self).__init__(containerClusterName, 'start')
 
 
-class ContainerCluster_destroy_Action(ContainerCluster_Action_Base):
+class ContainerCluster_destroy_Action(Base_ContainerCluster_Action):
     
     def __init__(self, containerClusterName):
         super(ContainerCluster_destroy_Action, self).__init__(containerClusterName, 'remove')

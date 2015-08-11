@@ -19,6 +19,7 @@ from componentProxy.componentContainerClusterConfigFactory import ComponentConta
 from componentProxy.componentContainerClusterValidator import ComponentContainerClusterValidator
 from status.status_enum import Status
 from zk.zkOpers import Container_ZkOpers
+from componentProxy.baseContainerModelCreator import BaseContainerModelCreator
 
 
 class ContainerCluster_create_Action(Abstract_Async_Thread): 
@@ -35,6 +36,8 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
     component_container_cluster_config_factory = ComponentContainerClusterConfigFactory()
     
     component_container_cluster_validator = ComponentContainerClusterValidator()
+    
+    base_container_model_creator = BaseContainerModelCreator()
     
     def __init__(self, arg_dict={}):
         super(ContainerCluster_create_Action, self).__init__()
@@ -86,7 +89,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
         args.setdefault('ip_port_resource_list', ip_port_resource_list)
         
         logging.info('show args to get create containers args list: %s' % str(args))
-        container_model_list = self.component_container_model_factory.create(args)
+        container_model_list = self.base_container_model_creator.create(args)
         
         self.__dispatch_create_container_task(container_model_list)
         
