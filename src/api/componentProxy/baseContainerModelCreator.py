@@ -6,6 +6,7 @@ Created on 2015-2-5
 
 from container.container_model import Container_Model
 from utils import _get_gateway_from_ip
+from componentProxy import _name
 from tornado.options import options
 
 
@@ -22,6 +23,7 @@ class BaseContainerModelCreator(object):
     def create(self, args):
         
         component_type = args.get('componentType')
+        mid_name = _name.get(component_type)
         network_mode = args.get('networkMode')
         _component_container_cluster_config = args.get('component_config')
         cluster = args.get('containerClusterName')
@@ -43,49 +45,51 @@ class BaseContainerModelCreator(object):
             container_model.host_ip = host_ip
             container_model.network_mode = network_mode
             container_model.container_cluster_name = cluster
-            container_ip = ip_port_resource[i]
-            container_model.container_ip = container_ip
-            container_name = 'd-mcl-%s-n-%s' % (cluster, str(i+1))
+            container_name = 'd-%s-%s-n-%s' % (mid_name, cluster, str(i+1))
             container_model.container_name = container_name
             container_model.volumes = volumes
             container_model.binds = binds
             container_model.image = _component_container_cluster_config.image
             container_model.lxc_conf = _component_container_cluster_config.lxc_conf
-            ports = _component_container_cluster_config.ports
-            container_model.ports = ports
             container_model.mem_limit = _component_container_cluster_config.mem_limit
             
             if 'bridge' == network_mode:
+                ports = _component_container_cluster_config.ports
+                container_model.ports = ports
                 port_list = ip_port_resource.get(host_ip)
                 port_list = [('0.0.0.0', item) for item in port_list]
                 port_bindings = dict(zip(ports, port_list))
                 container_model.port_bindings = port_bindings
             else:
+                container_ip = ip_port_resource[i]
+                container_model.container_ip = container_ip
+                env = {}
                 if component_type == 'mcluster':
-                    env = {}
                     for j, containerIp in enumerate(ip_port_resource):
                         env.setdefault('N%s_IP' % str(j+1), containerIp)
-                        env.setdefault('N%s_HOSTNAME' % str(j+1), 'd-mcl-%s-n-%s' % (cluster, str(j+1)))
+                        env.setdefault('N%s_HOSTNAME' % str(j+1), 'd-%s-%s-n-%s' % (mid_name, cluster, str(j+1)))
+                        env.setdefault('ZKID', i+1)
                         
                 gateway = _get_gateway_from_ip(container_ip)
                 #env.setdefault('IFACE', options.test_cluster_NIC)
-                env.setdefault('ZKID', i+1)
                 env.setdefault('NETMASK', '255.255.0.0')
                 env.setdefault('GATEWAY', gateway)
                 env.setdefault('HOSTNAME', container_name)
                 env.setdefault('IP', container_ip)
+                container_model.env = env
             
-            container_model.env = env
             create_container_arg_list.append(container_model)
             
         return create_container_arg_list
     
     def __get_normal_volumes_args(self, mount_dir, ro=False):
         volumes, binds = {}, {}
-        for k,v in mount_dir.items():
-            volumes.setdefault(k, v)
-            if '/srv/mcluster' in k:
-                binds = {}
-            else:
-                binds.setdefault(v, {'bind': k, 'ro' : ro})
+        for _dir in mount_dir:
+            ro = _dir.pop('ro')
+            for k,v in _dir.items():
+                volumes.setdefault(k, v)
+                if '/srv/mcluster' in k:
+                    binds = {}
+                else:
+                    binds.setdefault(v, {'bind': k, 'ro' : ro})
         return volumes, binds

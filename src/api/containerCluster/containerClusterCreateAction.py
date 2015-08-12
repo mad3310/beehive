@@ -14,7 +14,6 @@ from resource_letv.resource import Resource
 from utils import handleTimeout, _get_property_dict, dispatch_mutil_task
 from utils.exceptions import CommonException
 from componentProxy.componentManagerValidator import ComponentManagerStatusValidator
-from componentProxy.componentContainerModelFactory import ComponentContainerModelFactory
 from componentProxy.componentContainerClusterConfigFactory import ComponentContainerClusterConfigFactory
 from componentProxy.componentContainerClusterValidator import ComponentContainerClusterValidator
 from status.status_enum import Status
@@ -30,9 +29,7 @@ class ContainerCluster_create_Action(Abstract_Async_Thread):
     resource = Resource()
     
     component_manager_status_validator = ComponentManagerStatusValidator()
-    
-    component_container_model_factory = ComponentContainerModelFactory()
-    
+        
     component_container_cluster_config_factory = ComponentContainerClusterConfigFactory()
     
     component_container_cluster_validator = ComponentContainerClusterValidator()

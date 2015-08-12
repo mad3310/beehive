@@ -23,5 +23,5 @@ class LogstashContainerClusterConfig(BaseContainerClusterConfig):
         ports = params.get('ports')
         self.ports = eval(ports) if ports else [5601, 9999]
         
-        data_bind = '/data/openssl_keys/%s' % self.container_cluster_name
-        self.mount_dir = {'/data/openssl_keys':data_bind}
+#         data_bind = '/data/openssl_keys/%s' % self.container_cluster_name
+#         self.mount_dir = {'/data/openssl_keys':data_bind}
