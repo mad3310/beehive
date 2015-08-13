@@ -19,7 +19,6 @@ from utils.threading_exception_queue import Threading_Exception_Queue
 from componentProxy.componentContainerClusterConfigFactory import ComponentContainerClusterConfigFactory
 
 
-
 class ContainerCluster_Opers(Abstract_Container_Opers):
     
     component_container_cluster_validator = ComponentContainerClusterValidator()
@@ -29,48 +28,41 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
     def __init__(self):
         super(ContainerCluster_Opers, self).__init__()
     
-    def create(self, arg_dict):
-        if not arg_dict.has_key('containerClusterName'):
+    def create(self, args):
+        cluster = args.get('containerClusterName', None)
+        if not cluster:
             raise UserVisiableException('params containerClusterName not be given, please check the params!')
-        if not arg_dict.has_key('networkMode'):
+        if not args.has_key('networkMode'):
             raise UserVisiableException('params networkMode not be given, please check the params!')
-        if not arg_dict.has_key('componentType'):
+        if not args.has_key('componentType'):
             raise UserVisiableException('params componentType not be given, please check the params!')
-        
-        cluster = arg_dict.get('containerClusterName')
         
         zkOper = Container_ZkOpers()
         exists = zkOper.check_containerCluster_exists(cluster)
         if exists:
             raise UserVisiableException('containerCluster %s has existed, choose another containerCluster name' % cluster)
         
-        _component_container_cluster_config = self.component_container_cluster_config_factory.retrieve_config(arg_dict)
-        arg_dict.setdefault('component_config', _component_container_cluster_config)
-        
-        node_count = _component_container_cluster_config.nodeCount
-        arg_dict.setdefault('sum_count', node_count)
-        containerCluster_create_action = ContainerCluster_create_Action(arg_dict)
+        containerCluster_create_action = ContainerCluster_create_Action(args)
         containerCluster_create_action.start()
 
-    def add(self, arg_dict):
-        if not arg_dict.has_key('containerClusterName'):
+    def add(self, args):
+        cluster = args.get('containerClusterName', None)
+        if not cluster:
             raise UserVisiableException('params containerClusterName not be given, please check the params!')
-        if not arg_dict.has_key('nodeCount'):
+        node_count = args.get('nodeCount') 
+        if not node_count:
             raise UserVisiableException('params nodeCount not be given, please check the params!')        
-        if not arg_dict.has_key('networkMode'):
+        if not args.has_key('networkMode'):
             raise UserVisiableException('params networkMode not be given, please check the params!')
-        if not arg_dict.has_key('componentType'):
+        if not args.has_key('componentType'):
             raise UserVisiableException('params componentType not be given, please check the params!')
-        
-        cluster = arg_dict.get('containerClusterName')
         
         zkOper = Container_ZkOpers()
         exists = zkOper.check_containerCluster_exists(cluster)
         if not exists:
             raise UserVisiableException('cluster %s not exist, you should give a existed cluster when add node to it!' % cluster)
         
-        
-        containerCluster_create_action = ContainerCluster_Add_Action(arg_dict)
+        containerCluster_create_action = ContainerCluster_Add_Action(args)
         containerCluster_create_action.start()
 
     def start(self, containerClusterName):

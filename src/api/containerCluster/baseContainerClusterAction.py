@@ -97,24 +97,13 @@ class Base_ContainerCluster_create_Action(Abstract_Async_Thread):
         self._arg_dict = arg_dict
 
     def run(self):
-        __action_result = Status.failed
-        __error_message = ''
-        _containerClusterName = self._arg_dict.get('containerClusterName')
-        try:
-            logging.debug('begin create')
-            __action_result = self.create(self._arg_dict)
-        except:
-            self.threading_exception_queue.put(sys.exc_info())
+        raise NotImplementedError()
 
     def create(self, args={}):
         logging.info('args:%s' % str(args))
-        _component_type = args.get('componentType')
-        _network_mode = args.get('networkMode')
-        cluster = args.get('containerClusterName')
         
-        logging.info('containerClusterName : %s' % str(cluster))
+        _component_type = args.get('componentType')
         logging.info('component_type : %s' % str(_component_type))
-        logging.info('network_mode : %s' % str(_network_mode))
         
         _component_container_cluster_config = args.get('component_config')
         

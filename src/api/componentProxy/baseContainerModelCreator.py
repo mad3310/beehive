@@ -6,7 +6,6 @@ Created on 2015-2-5
 
 from container.container_model import Container_Model
 from utils import _get_gateway_from_ip
-from componentProxy import _name
 from tornado.options import options
 
 
@@ -23,7 +22,6 @@ class BaseContainerModelCreator(object):
     def create(self, args):
         
         component_type = args.get('componentType')
-        mid_name = _name.get(component_type)
         network_mode = args.get('networkMode')
         _component_container_cluster_config = args.get('component_config')
         cluster = args.get('containerClusterName')
@@ -38,6 +36,7 @@ class BaseContainerModelCreator(object):
         
         create_container_arg_list = []
         containerCount = _component_container_cluster_config.nodeCount
+        container_names = _component_container_cluster_config.container_names
         for i in range(int(containerCount)):
             container_model = Container_Model()
             container_model.component_type = component_type
@@ -45,7 +44,7 @@ class BaseContainerModelCreator(object):
             container_model.host_ip = host_ip
             container_model.network_mode = network_mode
             container_model.container_cluster_name = cluster
-            container_name = 'd-%s-%s-n-%s' % (mid_name, cluster, str(i+1))
+            container_name = container_names[i]
             container_model.container_name = container_name
             container_model.volumes = volumes
             container_model.binds = binds
