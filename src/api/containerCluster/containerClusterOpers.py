@@ -16,14 +16,12 @@ from container.container_model import Container_Model
 from zk.zkOpers import Requests_ZkOpers
 from componentProxy.componentContainerClusterValidator import ComponentContainerClusterValidator
 from utils.threading_exception_queue import Threading_Exception_Queue
-from componentProxy.componentContainerClusterConfigFactory import ComponentContainerClusterConfigFactory
 
 
 class ContainerCluster_Opers(Abstract_Container_Opers):
     
     component_container_cluster_validator = ComponentContainerClusterValidator()
     threading_exception_queue = Threading_Exception_Queue()
-    component_container_cluster_config_factory = ComponentContainerClusterConfigFactory()
         
     def __init__(self):
         super(ContainerCluster_Opers, self).__init__()
@@ -64,6 +62,9 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         
         containerCluster_create_action = ContainerCluster_Add_Action(args)
         containerCluster_create_action.start()
+
+    def remove(self):
+        pass
 
     def start(self, containerClusterName):
         zkOper = Container_ZkOpers()

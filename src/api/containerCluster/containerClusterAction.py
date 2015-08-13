@@ -6,6 +6,7 @@ from componentProxy import _name
 from status.status_enum import Status
 from zk.zkOpers import Container_ZkOpers
 from containerCluster.baseContainerClusterAction import Base_ContainerCluster_Action, Base_ContainerCluster_create_Action
+from componentProxy.componentContainerClusterConfigFactory import ComponentContainerClusterConfigFactory
 
 
 class ContainerCluster_stop_Action(Base_ContainerCluster_Action):
@@ -28,6 +29,8 @@ class ContainerCluster_destroy_Action(Base_ContainerCluster_Action):
 
 class ContainerCluster_create_Action(Base_ContainerCluster_create_Action):
 
+    component_container_cluster_config_factory = ComponentContainerClusterConfigFactory()
+
     def __init__(self, args):
         super(ContainerCluster_create_Action, self).__init__(args)
         self.args = args
@@ -49,10 +52,10 @@ class ContainerCluster_create_Action(Base_ContainerCluster_create_Action):
         _component_type = args.get('componentType')
         _network_mode = args.get('networkMode')
         _cluster = self.args.get('containerClusterName')
-        _component_container_cluster_config = args.get('component_config')
-        self.__create_container_cluser_info_to_zk(_network_mode, _component_type, _component_container_cluster_config)
+
         _component_container_cluster_config = self.component_container_cluster_config_factory.retrieve_config(args)
-        
+        self.__create_container_cluser_info_to_zk(_network_mode, _component_type, _component_container_cluster_config)
+
         node_count = _component_container_cluster_config.nodeCount
         _component_container_cluster_config.sum_count = node_count
         container_names = self.__get_container_names(_component_type, node_count, _cluster)

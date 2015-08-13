@@ -66,7 +66,7 @@ class BaseContainerModelCreator(object):
                 if component_type == 'mcluster':
                     for j, containerIp in enumerate(ip_port_resource):
                         env.setdefault('N%s_IP' % str(j+1), containerIp)
-                        env.setdefault('N%s_HOSTNAME' % str(j+1), 'd-%s-%s-n-%s' % (mid_name, cluster, str(j+1)))
+                        env.setdefault('N%s_HOSTNAME' % str(j+1), container_names[j])
                         env.setdefault('ZKID', i+1)
                         
                 gateway = _get_gateway_from_ip(container_ip)
