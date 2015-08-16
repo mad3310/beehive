@@ -63,8 +63,25 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         containerCluster_create_action = ContainerCluster_Add_Action(args)
         containerCluster_create_action.start()
 
-    def remove(self):
-        pass
+    def remove(self, args):
+        """
+            remove node in some cluster
+        """
+        
+        cluster = args.get('containerClusterName')
+        if not cluster:
+            raise UserVisiableException('params containerClusterName not be given, please check the params!')
+        containers = args.has_key('containerNameList')
+        if not containers:
+            raise UserVisiableException('params containerNameList not be given, please check the params!')
+        
+        zkOper = Container_ZkOpers()
+        exists = zkOper.check_containerCluster_exists(cluster)
+        if not exists:
+            raise UserVisiableException('containerCluster %s not existed, no need to remove' % cluster)
+        
+        containerCluster_remove_node_action = ContainerCluster_RemoveNode_Action(cluster, containers)
+        containerCluster_remove_node_action.start()
 
     def start(self, containerClusterName):
         zkOper = Container_ZkOpers()

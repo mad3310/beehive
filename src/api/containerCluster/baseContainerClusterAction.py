@@ -19,14 +19,18 @@ from componentProxy.componentManagerValidator import ComponentManagerStatusValid
 from componentProxy.componentContainerClusterValidator import ComponentContainerClusterValidator
 from status.status_enum import Status
 from componentProxy.baseContainerModelCreator import BaseContainerModelCreator
+from container.containerOpers import Container_Opers
 
 
 class Base_ContainerCluster_Action(Abstract_Async_Thread):
 
-    def __init__(self, containerClusterName, action):
+    container_opers = Container_Opers()
+
+    def __init__(self, containerClusterName, action, containers=None):
         super(Base_ContainerCluster_Action, self).__init__()
         self.cluster = containerClusterName
         self.action = action
+        self.containers = containers
 
     def run(self):
         try:
@@ -52,9 +56,9 @@ class Base_ContainerCluster_Action(Abstract_Async_Thread):
             async_client.close()
         
         if self.action == 'remove':
-            self.__do_when_remove_cluster()
+            self.do_when_remove_cluster()
 
-    def __do_when_remove_cluster(self):
+    def do_when_remove_cluster(self):
         zkOper = Container_ZkOpers()
         cluster_info = zkOper.retrieve_container_cluster_info(self.cluster)
         use_ip = cluster_info.get('isUseIp')
@@ -68,13 +72,19 @@ class Base_ContainerCluster_Action(Abstract_Async_Thread):
             two containers may be with a host_ip
         """
         
-        params, container_info = {}, {}
+        params, container_info, container_nodes = {}, {}, []
         
         zkOper = Container_ZkOpers()
-        container_ip_list = zkOper.retrieve_container_list(self.cluster)
-        for contaier_ip in container_ip_list:
+        if self.containers:
+            for container in self.containers:
+                container_node = self.container_opers.get_container_node_from_container_name(self.cluster, container)
+                container_nodes.append(container_node)
+        else:
+            container_nodes = zkOper.retrieve_container_list(self.cluster)
+        self.container_nodes = container_nodes
+        for container_node in self.container_nodes:
             container_name_list = []
-            container_info = zkOper.retrieve_container_node_value(self.cluster, contaier_ip)
+            container_info = zkOper.retrieve_container_node_value(self.cluster, container_node)
             container_name = container_info.get('containerName')
             host_ip = container_info.get('hostIp')
             container_name_list.append(container_name)
