@@ -333,5 +333,5 @@ class ContainerClusterRemoveNodeHandler(APIHandler):
         
         self.containerClusterOpers.remove(args)
         result = {}
-        result.setdefault("message", "due to create container cluster need a little more times, please wait to finished and email to you, when cluster have started!")
+        result.setdefault("message", "remove container will take a few seconds,please wait!")
         self.finish(result)
