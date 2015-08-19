@@ -190,7 +190,7 @@ class Base_ContainerCluster_create_Action(Abstract_Async_Thread):
         
         zkOper = Container_ZkOpers()
         _container_cluster_info = zkOper.retrieve_container_cluster_info(cluster)
-        _container_cluster_info.setdefault('start_flag', create_result)
-        _container_cluster_info.setdefault('error_msg', error_msg)
-        _container_cluster_info.setdefault('containerClusterName', cluster)
+        _container_cluster_info['start_flag']=create_result
+        _container_cluster_info['error_msg']=error_msg
+        _container_cluster_info['containerClusterName']=cluster
         zkOper.write_container_cluster_info(_container_cluster_info)
