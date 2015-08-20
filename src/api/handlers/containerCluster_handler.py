@@ -303,3 +303,35 @@ class SetContainerClusterCpusharesHandler(APIHandler):
             container_name =  container_info.get('containerName')
             hostIp_containerName_list.append((host_ip, container_name))
         return hostIp_containerName_list
+
+
+@require_basic_auth
+class ContainerClusterAddNodeHandler(APIHandler):
+    '''
+    classdocs
+    '''
+    containerClusterOpers = ContainerCluster_Opers()
+    
+    def post(self):
+        args = self.get_all_arguments()
+        args.setdefault('addNode', True)
+        self.containerClusterOpers.add(args)
+        result = {}
+        result.setdefault("message", "due to add container need a little more times, please wait a moment and check the result!")
+        self.finish(result)
+
+
+@require_basic_auth
+class ContainerClusterRemoveNodeHandler(APIHandler):
+    '''
+    classdocs
+    '''
+    containerClusterOpers = ContainerCluster_Opers()
+    
+    def post(self):
+        args = self.get_all_arguments()
+        
+        self.containerClusterOpers.remove(args)
+        result = {}
+        result.setdefault("message", "remove container will take a few seconds,please wait!")
+        self.finish(result)

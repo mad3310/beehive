@@ -1,0 +1,9 @@
+/.project
+
+/.pydevproject
+
+/.gitignore
+*.pyc
+*.pyo
+
+/.settings

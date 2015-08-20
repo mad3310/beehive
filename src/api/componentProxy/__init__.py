@@ -8,3 +8,13 @@ _path = {
     "cbase":"componentProxy.store",
     "logstash":"componentProxy.webcontainer",
 }
+
+_name = {
+    "nginx":"ngx",
+    "mcluster":"mcl",
+    "gbalancer":"gbl",
+    "jetty":"jty",
+    "gbalancerCluster":"gbc",
+    "cbase":"cbs",
+    "logstash":"lgs",
+}

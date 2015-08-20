@@ -241,8 +241,12 @@ class ZkOpers(object):
         path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + cluster + "/" + container_node +"/status"
         self.zk.ensure_path(path)
         self.DEFAULT_RETRY_POLICY(self.zk.set, path, str(record))
-        
-        
+
+    def delete_container_node(self, cluster, container_node):
+        clusterUUID = self.getClusterUUID()
+        path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + cluster + "/" + container_node
+        self.DEFAULT_RETRY_POLICY(self.zk.delete, path, recursive=True)    
+
     '''
     **************************************monitor status**************************************************
     '''
