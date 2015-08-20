@@ -2,16 +2,13 @@ import sys
 import re
 import logging
 
-from tornado.options import options
-from tornado.httpclient import AsyncHTTPClient
-
 from componentProxy import _name
 from status.status_enum import Status
 from zk.zkOpers import Container_ZkOpers
+from utils import handleTimeout
+from utils.exceptions import CommonException
 from containerCluster.baseContainerClusterAction import Base_ContainerCluster_Action, Base_ContainerCluster_create_Action
 from componentProxy.componentContainerClusterConfigFactory import ComponentContainerClusterConfigFactory
-from utils import _retrieve_userName_passwd
-from utils import async_http_post
 
 
 class ContainerCluster_stop_Action(Base_ContainerCluster_Action):
@@ -181,58 +178,23 @@ class ContainerCluster_RemoveNode_Action(Base_ContainerCluster_Action):
         super(ContainerCluster_RemoveNode_Action, self).__init__(cluster, 'remove' , containers)
 
     def do_when_remove_cluster(self):
+        
+        def check():
+            for container_node in self.container_nodes:
+                container_status = zk_opers.retrieve_container_status_value(self.cluster, container_node)
+                if container_status.get('status') != Status.destroyed:
+                    return
+            return True
+            
         zk_opers = Container_ZkOpers()
+        ret = handleTimeout(check, (50, 4))
+        if not ret:
+            raise CommonException('remove containers %s in containerCluster:%s failed' % (self.containers, self.cluster) )
         for container_node in self.container_nodes:
             zk_opers.delete_container_node(self.cluster, container_node)
-
+        
         cluster_info = zk_opers.retrieve_container_cluster_info(self.cluster)
         node_count = cluster_info.get('containerCount')
         _node_count = int(node_count) - len(self.containers)
         cluster_info.update({'containerCount':_node_count})
         zk_opers.write_container_cluster_info(cluster_info)
-
-
-# class ContainerCluster_RemoveNode_Action1(Base_ContainerCluster_Action):
-#   
-#     def __init__(self, cluster, containers,args={}):
-#         super(ContainerCluster_RemoveNode_Action, self).__init__(cluster, 'remove' , containers)
-#         self.args=args
-#       
-#     def do_when_remove_cluster(self):
-#         super(ContainerCluster_RemoveNode_Action, self).do_when_remove_cluster()
-#         zk_opers = Container_ZkOpers()
-#         for container_node in self.container_nodes:
-#             zk_opers.delete_container_node(self.cluster, container_node)
-#   
-#         cluster_info = zk_opers.retrieve_container_cluster_info(self.cluster)
-#         node_count = cluster_info.get('containerCount')
-#         _node_count = int(node_count) - len(self.containers)
-#         cluster_info.update({'containerCount':_node_count})
-#         zk_opers.write_container_cluster_info(cluster_info)
-#   
-#     def run(self):
-#         try:
-#             self.__issue_remove_node_action()
-#         except:
-#             self.threading_exception_queue.put(sys.exc_info())
-#   
-#     def __issue_remove_node_action(self):
-#   
-#         cluster = self.args.get('containerClusterName')
-#         _container_name_list = self.args.get('containerNameList')
-#         container_name_list = _container_name_list.split(',')
-#         zkOper = Container_ZkOpers()
-#         adminUser, adminPasswd = _retrieve_userName_passwd()
-#         async_client = AsyncHTTPClient()
-#   
-#         try:
-#             for container_name in container_name_list:
-#                 container_node = self.container_opers.get_container_node_from_container_name(cluster, container_name)
-#                 container_node_value = zkOper.retrieve_container_node_value(cluster, container_node)
-#                 host_ip = container_node_value.get('hostIp')
-#                 args = {'containerName':container_name}
-#                 request_uri = 'http://%s:%s/container/remove' % (host_ip, options.port)
-#                 logging.info('remove node action-----  url: %s, \n container name: %s' % ( request_uri, container_name ) )
-#                 async_http_post(async_client, request_uri, body=args, auth_username=adminUser, auth_password=adminPasswd)
-#         finally:
-#             async_client.close()

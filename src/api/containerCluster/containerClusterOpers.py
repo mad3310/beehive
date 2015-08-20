@@ -82,7 +82,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         if not exists:
             raise UserVisiableException('containerCluster %s not existed, no need to remove' % cluster)
         
-        containerCluster_remove_node_action = ContainerCluster_RemoveNode_Action(cluster, containers,args)
+        containerCluster_remove_node_action = ContainerCluster_RemoveNode_Action(cluster, containers)
         containerCluster_remove_node_action.start()
 
     def start(self, containerClusterName):
