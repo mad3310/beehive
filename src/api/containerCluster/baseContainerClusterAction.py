@@ -23,6 +23,10 @@ from container.containerOpers import Container_Opers
 
 
 class Base_ContainerCluster_Action(Abstract_Async_Thread):
+    """if param "containers" not given, the action is about cluster;
+     
+    if param "containers" are given, the action is about such containers.
+    """
 
     container_opers = Container_Opers()
 
