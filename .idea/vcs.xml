@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="" vcs="" />
+    <mapping directory="$PROJECT_DIR$/../letv_mcluster_image" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../letv_zookeeper_image" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../mcluster-manager" vcs="Git" />
+  </component>
+</project>
+
