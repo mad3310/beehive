@@ -149,7 +149,7 @@ class ContainerCluster_Add_Action(Base_ContainerCluster_create_Action):
         add_container_name_list, container_number_list = [], []
         nodeCount = _component_container_cluster_config.nodeCount
         for container_name in container_names:
-            container_prefix, container_number = re.findall('(.*-n-)(\d)', container_name)[0]
+            container_prefix, container_number = re.findall('(.*-n-)(\d+)', container_name)[0]
             container_number_list.append(int(container_number))
         max_number = max(container_number_list)
         if max_number < 4:
