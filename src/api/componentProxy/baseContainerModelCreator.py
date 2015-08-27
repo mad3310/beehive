@@ -63,11 +63,12 @@ class BaseContainerModelCreator(object):
                 container_ip = ip_port_resource[i]
                 container_model.container_ip = container_ip
                 env = {}
-                if component_type == 'mcluster':
+                if component_type in ('mcluster','zookeeper'):
                     for j, containerIp in enumerate(ip_port_resource):
                         env.setdefault('N%s_IP' % str(j+1), containerIp)
                         env.setdefault('N%s_HOSTNAME' % str(j+1), container_names[j])
                         env.setdefault('ZKID', i+1)
+                        env.setdefault('NODE_COUNT', containerCount)
                         
                 gateway = _get_gateway_from_ip(container_ip)
                 #env.setdefault('IFACE', options.test_cluster_NIC)
