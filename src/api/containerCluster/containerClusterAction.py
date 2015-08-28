@@ -191,6 +191,7 @@ class ContainerCluster_RemoveNode_Action(Base_ContainerCluster_Action):
         if not ret:
             raise CommonException('remove containers %s in containerCluster:%s failed' % (self.containers, self.cluster) )
         for container_node in self.container_nodes:
+            logging.info('do delete container node :%s info in zookeeper' % container_node)
             zk_opers.delete_container_node(self.cluster, container_node)
         
         cluster_info = zk_opers.retrieve_container_cluster_info(self.cluster)
