@@ -198,4 +198,5 @@ class ContainerCluster_RemoveNode_Action(Base_ContainerCluster_Action):
         node_count = cluster_info.get('containerCount')
         _node_count = int(node_count) - len(self.containers)
         cluster_info.update({'containerCount':_node_count})
+        cluster_info.update({'start_flag':Status.succeed})
         zk_opers.write_container_cluster_info(cluster_info)
