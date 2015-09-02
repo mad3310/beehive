@@ -27,15 +27,12 @@ class BaseContainerModelCreator(object):
         cluster = args.get('containerClusterName')
         ip_port_resource = args.get('ip_port_resource_list')
         host_ip_list = args.get('host_ip_list')
+        added = args.get('added', False)
         
         volumes, binds = {}, {}
         if hasattr(_component_container_cluster_config, 'mount_dir'):
             mount_dir = _component_container_cluster_config.mount_dir
             volumes, binds = self.__get_normal_volumes_args(mount_dir)
-        
-        added = False
-        if hasattr(_component_container_cluster_config, 'added'):
-            added = _component_container_cluster_config.added
         
         create_container_arg_list = []
         containerCount = _component_container_cluster_config.nodeCount
