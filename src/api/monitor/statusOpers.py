@@ -10,6 +10,7 @@ from resource_letv.ipOpers import IpOpers
 from resource_letv.portOpers import PortOpers
 from server.serverOpers import Server_Opers
 from utils import nc_ip_port_available
+from utils.invokeCommand import InvokeCommand
 
 TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 
@@ -183,6 +184,45 @@ class CheckServerDisk(CheckStatusBase):
             return options.alarm_nothing
         else:
             return options.alarm_serious
+
+
+class CheckServerDiskIO(CheckStatusBase):
+
+    MAX_READ_IOPS=500 #KB
+    MAX_WRITE_IOPS=500#KB
+
+    def __init__(self):
+        self.mount_dir="/srv/docker/vfs"
+
+    def check(self):
+        monitor_type, monitor_key = 'server', 'disk_io'
+        zk_opers = Scheduler_ZkOpers()
+
+        host_ip_list = zk_opers.retrieve_data_node_list()
+        if not host_ip_list:
+            return
+        error_record, host_disk = [], {}
+
+        for host_ip in host_ip_list:
+            host_disk = zk_opers.retrieveDataNodeServerResource(host_ip)
+            if host_disk["disk_io"]["iops"]["read"] > self.MAX_READ_IOPS or host_disk["disk_io"]["iops"]["read"] > self.MAX_WRITE_IOPS:
+                error_record.append('%s' % host_ip)
+
+        total_count=len(host_ip_list)
+        failed_count=len(error_record)
+        success_count=total_count-failed_count
+        alarm_level=self.retrieve_alarm_level(total_count,success_count,failed_count)
+        error_message = "disk IOPS is greater than 500KB/s !"
+
+        super(CheckServerDiskIO, self).write_status(total_count, success_count, failed_count,
+                                                  alarm_level, error_record, monitor_type, monitor_key, error_message)
+
+    def retrieve_alarm_level(self, total_count, success_count, failed_count):
+        if failed_count > 0:
+            return options.alarm_serious
+        else:
+            return options.alarm_nothing
+
 
 
 class CheckResMemory(CheckStatusBase):
