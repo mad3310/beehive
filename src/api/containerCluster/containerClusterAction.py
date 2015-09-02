@@ -115,6 +115,7 @@ class ContainerCluster_Add_Action(Base_ContainerCluster_create_Action):
         
         node_count = args.get('nodeCount')
         _component_container_cluster_config = self.component_container_cluster_config_factory.retrieve_config(args)
+        _component_container_cluster_config.added = True
         _component_container_cluster_config.sum_count = self.__sum_count(cluster, node_count)
         
         host_ip_list_used, container_names = self.__get_containers_info_created(cluster)

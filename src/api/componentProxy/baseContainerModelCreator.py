@@ -28,17 +28,21 @@ class BaseContainerModelCreator(object):
         ip_port_resource = args.get('ip_port_resource_list')
         host_ip_list = args.get('host_ip_list')
         
-        if 'mount_dir' in _component_container_cluster_config.__dict__:
+        volumes, binds = {}, {}
+        if hasattr(_component_container_cluster_config, 'mount_dir'):
             mount_dir = _component_container_cluster_config.mount_dir
             volumes, binds = self.__get_normal_volumes_args(mount_dir)
-        else:
-            volumes, binds = {}, {}
+        
+        added = False
+        if hasattr(_component_container_cluster_config, 'added'):
+            added = _component_container_cluster_config.added
         
         create_container_arg_list = []
         containerCount = _component_container_cluster_config.nodeCount
         container_names = _component_container_cluster_config.container_names
         for i in range(int(containerCount)):
             container_model = Container_Model()
+            container_model.added = added
             container_model.component_type = component_type
             host_ip = host_ip_list[i]
             container_model.host_ip = host_ip
