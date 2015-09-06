@@ -123,6 +123,7 @@ class ContainerCluster_Add_Action(Base_ContainerCluster_create_Action):
         container_names = self.__get_container_names(_component_container_cluster_config, container_names)
         _component_container_cluster_config.container_names = container_names
         args.setdefault('component_config', _component_container_cluster_config)
+        args.setdefault('added', True)
         
         self.__update_cluser_info_to_zk(cluster, _network_mode, _component_type, _component_container_cluster_config)
         return super(ContainerCluster_Add_Action, self).create(args)

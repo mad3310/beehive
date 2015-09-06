@@ -92,6 +92,8 @@ class Base_ContainerCluster_Action(Abstract_Async_Thread):
             container_name = container_info.get('containerName')
             host_ip = container_info.get('hostIp')
             container_name_list.append(container_name)
+            if host_ip in params:
+                container_name_list.extend(params[host_ip])
             params[host_ip] = container_name_list
         return params
 
