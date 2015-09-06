@@ -573,12 +573,12 @@ class Server_Res_Opers():
         result={}
         iops={}
         ivk_cmd=InvokeCommand()
-        cmd = "sh %s %s" % (options.disk_io_sh,self.mount_dir)
+        cmd = "sh %s %s" % (options.disk_io_sh,"/srv/docker/vfs")
         content=ivk_cmd._runSysCmd(cmd)[0]
         iopses=content.split()
         assert len(iopses)==2
-        iops['read']=int(iopses[0])
-        iops['write']=int(iopses[1])
+        iops['read']=float(iopses[0])
+        iops['write']=float(iopses[1])
         result['iops']=iops
         return result
    

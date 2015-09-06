@@ -63,7 +63,7 @@ class BaseContainerModelCreator(object):
                 container_ip = ip_port_resource[i]
                 container_model.container_ip = container_ip
                 env = {}
-                if component_type in ('mcluster','zookeeper'):
+                if component_type == 'mcluster':
                     for j, containerIp in enumerate(ip_port_resource):
                         env.setdefault('N%s_IP' % str(j+1), containerIp)
                         env.setdefault('N%s_HOSTNAME' % str(j+1), container_names[j])
@@ -75,12 +75,12 @@ class BaseContainerModelCreator(object):
                 env.setdefault('GATEWAY', gateway)
                 env.setdefault('HOSTNAME', container_name)
                 env.setdefault('IP', container_ip)
-                env.setdefault('NODE_COUNT', containerCount)
                 container_model.env = env
 
             create_container_arg_list.append(container_model)
             
         return create_container_arg_list
+
     
     def __get_normal_volumes_args(self, mount_dir, ro=False):
         volumes, binds = {}, {}

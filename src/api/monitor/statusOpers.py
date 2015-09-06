@@ -191,9 +191,6 @@ class CheckServerDiskIO(CheckStatusBase):
     MAX_READ_IOPS=500 #KB
     MAX_WRITE_IOPS=500#KB
 
-    def __init__(self):
-        self.mount_dir="/srv/docker/vfs"
-
     def check(self):
         monitor_type, monitor_key = 'server', 'disk_io'
         zk_opers = Scheduler_ZkOpers()
@@ -205,7 +202,7 @@ class CheckServerDiskIO(CheckStatusBase):
 
         for host_ip in host_ip_list:
             host_disk = zk_opers.retrieveDataNodeServerResource(host_ip)
-            if host_disk["disk_io"]["iops"]["read"] > self.MAX_READ_IOPS or host_disk["disk_io"]["iops"]["read"] > self.MAX_WRITE_IOPS:
+            if host_disk["disk_io"]["iops"]["read"] > self.MAX_READ_IOPS or host_disk["disk_io"]["iops"]["write"] > self.MAX_WRITE_IOPS:
                 error_record.append('%s' % host_ip)
 
         total_count=len(host_ip_list)

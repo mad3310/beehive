@@ -7,7 +7,6 @@ _path = {
     "gbalancerCluster":"componentProxy.loadbalance",
     "cbase":"componentProxy.store",
     "logstash":"componentProxy.webcontainer",
-    "zookeeper":"componentProxy.distribution",
 }
 
 _name = {
@@ -18,5 +17,4 @@ _name = {
     "gbalancerCluster":"gbc",
     "cbase":"cbs",
     "logstash":"lgs",
-    "zookeeper":"zkp",
 }
