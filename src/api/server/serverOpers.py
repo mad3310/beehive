@@ -74,14 +74,17 @@ class ServerUpdateAction(Abstract_Async_Thread):
         '''
         status = {}
 
-        server_info = self._get_container_info_as_zk(container_name)
         zk_con_info = self.container_opers.retrieve_container_node_value_from_containerName(container_name)
-        if server_info != zk_con_info:
-            _type = zk_con_info.get('type')
-            is_use_ip = zk_con_info.get('isUseIp')
-            server_info.update({'type':_type, 'isUseIp':is_use_ip})
+        #server_info = self._get_container_info_as_zk(container_name)
+        _type = zk_con_info.get('type')
+        _host_ip = zk_con_info.get('hostIp')
+        _added = zk_con_info.get('added', False)
+        con_info = self.container_opers.container_info(container_name, _type, _host_ip, _added)
+        con_info.update({'isUseIp':zk_con_info.get('isUseIp')})
+        
+        if con_info != zk_con_info:
             logging.info('update both node zookeeper info, container name :%s' % container_name)
-            self.container_opers.write_container_node_value_by_containerName(container_name, server_info)
+            self.container_opers.write_container_node_value_by_containerName(container_name, con_info)
         
         server_con_stat = self.container_opers.get_container_stat(container_name)
         zk_con_stat = self.container_opers.retrieve_container_status_from_containerName(container_name)
@@ -142,16 +145,4 @@ class ServerUpdateAction(Abstract_Async_Thread):
         delete = list( set(zk_container_list) - set(host_container_list) )
         both = list( set(host_container_list) & set( zk_container_list) )
         return add, delete, both
-
-    def _get_container_info_as_zk(self, container_name):
-        create_info = {}
-        _inspect = self.docker_opers.inspect_container(container_name)
-        con = Container_Model(_inspect)
-        _type = con.inspect_component_type()
-        create_info.setdefault('type', _type)
-        create_info.setdefault('inspect', con.inspect)
-        create_info.setdefault('isUseIp', con.use_ip())
-        create_info.setdefault('hostIp', self.host_ip)
-        create_info.setdefault('containerName', container_name)
-        return create_info
 

@@ -320,6 +320,37 @@ class Container_Opers(Abstract_Container_Opers):
         host_ip = getHostIp()
         zkOper.writeDataNodeContainersResource(host_ip, resource_type, resource_info)
 
+#     def container_info1(self, container_name, type=None, host_ip=None):
+#         _inspect = self.docker_opers.inspect_container(container_name)
+#         con = Container_Model(_inspect)
+#         container_node_info= {}
+#         container_node_info.setdefault('containerName', container_name)
+#         container_node_info.setdefault('inspect', _inspect)
+#         container_node_info.setdefault('hostIp', self.docker_model.host_ip)
+#         container_node_info.setdefault('type', self.docker_model.component_type)
+#         container_node_info.setdefault('isUseIp', self.docker_model.use_ip)
+#         if has_property(self.docker_model, 'added'):
+#             container_node_info.setdefault('added', True)
+#         return container_node_info
+ 
+    def container_info(self, container_name, _type=None, _host_ip=None, _added=False):
+        create_info = {}
+        _inspect = self.docker_opers.inspect_container(container_name)
+        con = Container_Model(_inspect)
+        if not _type:
+            _type = con.inspect_component_type()
+        if not _host_ip:
+            _host_ip = getHostIp()
+
+        if _added:
+            create_info.setdefault('added', _added)
+        create_info.setdefault('type', _type)
+        create_info.setdefault('hostIp', self.host_ip)
+        create_info.setdefault('inspect', con.inspect)
+        create_info.setdefault('isUseIp', con.use_ip())
+        create_info.setdefault('containerName', container_name)
+        return create_info
+
 
 class Container_create_action(Abstract_Async_Thread):
     
@@ -524,18 +555,13 @@ class Container_create_action(Abstract_Async_Thread):
         return r_list
 
     def _get_container_info(self):
-        container_name = self.docker_model.name
-        _inspect = self.docker_opers.inspect_container(container_name)
-        con = Container_Model(_inspect)
-        container_node_info= {}
-        container_node_info.setdefault('containerName', container_name)
-        container_node_info.setdefault('inspect', con.inspect)
-        container_node_info.setdefault('hostIp', self.docker_model.host_ip)
-        container_node_info.setdefault('type', self.docker_model.component_type)
-        container_node_info.setdefault('isUseIp', self.docker_model.use_ip)
+        _container_name = self.docker_model.name
+        _type = self.docker_model.component_type
+        _host_ip = self.docker_model.host_ip
         if has_property(self.docker_model, 'added'):
-            container_node_info.setdefault('added', True)
-        return container_node_info
+            _added = True
+        
+        return self.container_opers.container_info(_container_name, _type, _host_ip, _added)
 
     def __get_route_dicts(self, route_list=None):
         if route_list is None:
