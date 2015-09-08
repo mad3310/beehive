@@ -75,12 +75,9 @@ class ServerUpdateAction(Abstract_Async_Thread):
         status = {}
 
         zk_con_info = self.container_opers.retrieve_container_node_value_from_containerName(container_name)
-        #server_info = self._get_container_info_as_zk(container_name)
         _type = zk_con_info.get('type')
-        _host_ip = zk_con_info.get('hostIp')
         _added = zk_con_info.get('added', False)
-        con_info = self.container_opers.container_info(container_name, _type, _host_ip, _added)
-        con_info.update({'isUseIp':zk_con_info.get('isUseIp')})
+        con_info = self.container_opers.container_info(container_name, _type, _added)
         
         if con_info != zk_con_info:
             logging.info('update both node zookeeper info, container name :%s' % container_name)
@@ -95,7 +92,7 @@ class ServerUpdateAction(Abstract_Async_Thread):
 
     def update_add_node(self, container_name):
         logging.info('update add node : %s' % container_name )
-        create_info = self._get_container_info_as_zk(container_name)
+        create_info = self.container_opers.container_info(container_name)
         self.container_opers.write_container_node_value_by_containerName(container_name, create_info)
         container_stat = self.container_opers.get_container_stat(container_name)
         status = {'status': container_stat, 'message': ''}

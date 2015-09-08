@@ -333,19 +333,20 @@ class Container_Opers(Abstract_Container_Opers):
 #             container_node_info.setdefault('added', True)
 #         return container_node_info
  
-    def container_info(self, container_name, _type=None, _host_ip=None, _added=False):
+    def container_info(self, container_name, _type=None, _added=False):
+        """get container node info
+        
+        """
         create_info = {}
         _inspect = self.docker_opers.inspect_container(container_name)
         con = Container_Model(_inspect)
         if not _type:
             _type = con.inspect_component_type()
-        if not _host_ip:
-            _host_ip = getHostIp()
-
+            
         if _added:
             create_info.setdefault('added', _added)
         create_info.setdefault('type', _type)
-        create_info.setdefault('hostIp', self.host_ip)
+        create_info.setdefault('hostIp', getHostIp())
         create_info.setdefault('inspect', con.inspect)
         create_info.setdefault('isUseIp', con.use_ip())
         create_info.setdefault('containerName', container_name)
