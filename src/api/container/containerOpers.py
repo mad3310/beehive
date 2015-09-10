@@ -546,7 +546,7 @@ class Container_create_action(Abstract_Async_Thread):
         _container_name = self.docker_model.name
         _type = self.docker_model.component_type
         if has_property(self.docker_model, 'added'):
-            _added = True
+            _added = self.docker_model.added
         
         return self.container_opers.container_info(_container_name, _type, _added)
 
