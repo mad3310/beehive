@@ -25,9 +25,8 @@ class CbaseManager(BaseComponentManager):
             index = child.expect(["running", pexpect.EOF, pexpect.TIMEOUT], timeout=self.timeout)
             if index != 0:
                 stat = False
-            
-            child.sendline("service cbase restart")
-            child.expect(["OK", pexpect.EOF, pexpect.TIMEOUT], timeout=10)
+                child.sendline("service cbase restart")
+                child.expect(["OK", pexpect.EOF, pexpect.TIMEOUT], timeout=10)
         finally:
             child.close()
         
