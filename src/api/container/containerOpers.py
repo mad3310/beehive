@@ -545,9 +545,7 @@ class Container_create_action(Abstract_Async_Thread):
     def _get_container_info(self):
         _container_name = self.docker_model.name
         _type = self.docker_model.component_type
-        if has_property(self.docker_model, 'added'):
-            _added = self.docker_model.added
-        
+        _added = self.docker_model.added
         return self.container_opers.container_info(_container_name, _type, _added)
 
     def __get_route_dicts(self, route_list=None):
