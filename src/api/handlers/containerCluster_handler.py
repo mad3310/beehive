@@ -314,7 +314,6 @@ class ContainerClusterAddNodeHandler(APIHandler):
     
     def post(self):
         args = self.get_all_arguments()
-        args.setdefault('addNode', True)
         self.containerClusterOpers.add(args)
         result = {}
         result.setdefault("message", "due to add container need a little more times, please wait a moment and check the result!")

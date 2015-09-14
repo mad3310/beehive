@@ -159,6 +159,14 @@ class Container_Model(object):
     def set_network(self, set_network):
         self._set_network = set_network
 
+    @property
+    def added(self):
+        return self._added
+
+    @added.setter
+    def added(self, added):
+        self._added = added
+
     def memory(self):
         return self.inspect.get('Config').get('Memory')
 
@@ -251,6 +259,7 @@ class Container_Model(object):
         if isinstance(container_node_value, dict):
             self.inspect = container_node_value.get('inspect')
             isUseIp = container_node_value.get('isUseIp')
+            _added = container_node_value.get('added')
             create_info.setdefault('hostIp', container_node_value.get('hostIp') )
             create_info.setdefault('type', container_node_value.get('type') )
             container_name = self.name()
@@ -260,6 +269,7 @@ class Container_Model(object):
             create_info.setdefault('netMask', self.netmask() )
             create_info.setdefault('mountDir', str(self.inspect_volumes()) )
             create_info.setdefault('containerName', self.name() )
+            create_info.setdefault('added', _added)
             if isUseIp:
                 create_info.setdefault('ipAddr', self.ip() )
             else:

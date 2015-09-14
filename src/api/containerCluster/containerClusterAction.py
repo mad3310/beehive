@@ -123,6 +123,7 @@ class ContainerCluster_Add_Action(Base_ContainerCluster_create_Action):
         container_names = self.__get_container_names(_component_container_cluster_config, container_names)
         _component_container_cluster_config.container_names = container_names
         args.setdefault('component_config', _component_container_cluster_config)
+        args.setdefault('added', True)
         
         self.__update_cluser_info_to_zk(cluster, _network_mode, _component_type, _component_container_cluster_config)
         return super(ContainerCluster_Add_Action, self).create(args)
@@ -149,7 +150,7 @@ class ContainerCluster_Add_Action(Base_ContainerCluster_create_Action):
         add_container_name_list, container_number_list = [], []
         nodeCount = _component_container_cluster_config.nodeCount
         for container_name in container_names:
-            container_prefix, container_number = re.findall('(.*-n-)(\d)', container_name)[0]
+            container_prefix, container_number = re.findall('(.*-n-)(\d+)', container_name)[0]
             container_number_list.append(int(container_number))
         max_number = max(container_number_list)
         if max_number < 4:
@@ -191,10 +192,12 @@ class ContainerCluster_RemoveNode_Action(Base_ContainerCluster_Action):
         if not ret:
             raise CommonException('remove containers %s in containerCluster:%s failed' % (self.containers, self.cluster) )
         for container_node in self.container_nodes:
+            logging.info('do delete container node :%s info in zookeeper' % container_node)
             zk_opers.delete_container_node(self.cluster, container_node)
         
         cluster_info = zk_opers.retrieve_container_cluster_info(self.cluster)
         node_count = cluster_info.get('containerCount')
         _node_count = int(node_count) - len(self.containers)
         cluster_info.update({'containerCount':_node_count})
+        cluster_info.update({'start_flag':Status.succeed})
         zk_opers.write_container_cluster_info(cluster_info)

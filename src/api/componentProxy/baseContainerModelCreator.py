@@ -27,18 +27,19 @@ class BaseContainerModelCreator(object):
         cluster = args.get('containerClusterName')
         ip_port_resource = args.get('ip_port_resource_list')
         host_ip_list = args.get('host_ip_list')
+        added = args.get('added', False)
         
-        if 'mount_dir' in _component_container_cluster_config.__dict__:
+        volumes, binds = {}, {}
+        if hasattr(_component_container_cluster_config, 'mount_dir'):
             mount_dir = _component_container_cluster_config.mount_dir
             volumes, binds = self.__get_normal_volumes_args(mount_dir)
-        else:
-            volumes, binds = {}, {}
         
         create_container_arg_list = []
         containerCount = _component_container_cluster_config.nodeCount
         container_names = _component_container_cluster_config.container_names
         for i in range(int(containerCount)):
             container_model = Container_Model()
+            container_model.added = added
             container_model.component_type = component_type
             host_ip = host_ip_list[i]
             container_model.host_ip = host_ip
@@ -63,11 +64,12 @@ class BaseContainerModelCreator(object):
                 container_ip = ip_port_resource[i]
                 container_model.container_ip = container_ip
                 env = {}
-                if component_type == 'mcluster':
+                if component_type in options.NEED_TO_CONFIG_ZK:
                     for j, containerIp in enumerate(ip_port_resource):
                         env.setdefault('N%s_IP' % str(j+1), containerIp)
                         env.setdefault('N%s_HOSTNAME' % str(j+1), container_names[j])
                         env.setdefault('ZKID', i+1)
+                        env.setdefault('NODE_COUNT', containerCount)
                         
                 gateway = _get_gateway_from_ip(container_ip)
                 #env.setdefault('IFACE', options.test_cluster_NIC)

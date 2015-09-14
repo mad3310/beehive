@@ -263,7 +263,7 @@ def dispatch_mutil_task(request_ip_port_params_list, uri, http_method):
 
 def get_containerClusterName_from_containerName(container_name):
     containerClusterName = ''
-    if '-n-4' in container_name:
+    if re.match('^d-mcl.*n-4', container_name):
         containerClusterName = re.findall('d-\w{3,}-(.*)-n-\d', container_name)[0]
         containerClusterName = '%s_vip' % containerClusterName
     elif 'd-vip' in container_name:

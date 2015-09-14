@@ -71,18 +71,18 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         cluster = args.get('containerClusterName')
         if not cluster:
             raise UserVisiableException('params containerClusterName not be given, please check the params!')
-        containers_res = args.has_key('containerNameList')
-        if not containers_res:
+        containers = args.get('containerNameList')
+        if not containers:
             raise UserVisiableException('params containerNameList not be given, please check the params!')
 
-        containers=args.get('containerNameList').split(',')
+        _containers = containers.split(',')
         
         zkOper = Container_ZkOpers()
         exists = zkOper.check_containerCluster_exists(cluster)
         if not exists:
             raise UserVisiableException('containerCluster %s not existed, no need to remove' % cluster)
         
-        containerCluster_remove_node_action = ContainerCluster_RemoveNode_Action(cluster, containers)
+        containerCluster_remove_node_action = ContainerCluster_RemoveNode_Action(cluster, _containers)
         containerCluster_remove_node_action.start()
 
     def start(self, containerClusterName):
