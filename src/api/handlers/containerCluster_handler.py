@@ -305,7 +305,7 @@ class SetContainerClusterCpusharesHandler(APIHandler):
 
 
 @require_basic_auth
-class ContainerClusterAddNodeHandler(APIHandler):
+class ContainerClusterNodeHandler(APIHandler):
     '''
     classdocs
     '''
