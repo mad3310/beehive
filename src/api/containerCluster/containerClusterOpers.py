@@ -257,3 +257,10 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
             message_list.append(create_info)   
         result.setdefault('containers', message_list)
         return result
+
+    def cluster_node(self, cluster, container_name):
+        zk_opers = Requests_ZkOpers()
+        container_node = self.container_opers.get_container_node_from_container_name(cluster, container_name)
+        container_node_value = zk_opers.retrieve_container_node_value(cluster, container_node)
+        container_model = Container_Model()
+        return container_model.create_info(container_node_value)

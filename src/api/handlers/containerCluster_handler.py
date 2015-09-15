@@ -20,6 +20,7 @@ from zk.zkOpers import Requests_ZkOpers
 from tornado.gen import engine, Task
 from utils import _retrieve_userName_passwd
 from tornado.httpclient import HTTPRequest, AsyncHTTPClient
+from container.container_model import Container_Model
 
 
 class GatherClusterResourceHandler(APIHandler):
@@ -309,15 +310,24 @@ class ContainerClusterNodeHandler(APIHandler):
     '''
     classdocs
     '''
-    containerClusterOpers = ContainerCluster_Opers()
+    cluster_opers = ContainerCluster_Opers()
     
     def post(self):
         args = self.get_all_arguments()
-        container_names = self.containerClusterOpers.add(args)
+        container_names = self.cluster_opers.add(args)
         result = {}
         result.setdefault('containerNames', container_names)
         result.setdefault("message", "due to add container need a little more times, please wait a moment and check the result!")
         self.finish(result)
+    
+    def get(self):
+        args = self.get_all_arguments()
+        cluster = args.get('containerClusterName')
+        container_name = args.get('containerName')
+        container_info = self.cluster_opers.cluster_node(cluster, container_name)
+        
+        result = {}
+        result.setdefault(container_info)
 
 
 @require_basic_auth
