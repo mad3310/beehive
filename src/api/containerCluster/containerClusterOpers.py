@@ -23,7 +23,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
     
     component_container_cluster_validator = ComponentContainerClusterValidator()
     threading_exception_queue = Threading_Exception_Queue()
-    container_opers = Container_Opers
+    container_opers = Container_Opers()
         
     def __init__(self):
         super(ContainerCluster_Opers, self).__init__()

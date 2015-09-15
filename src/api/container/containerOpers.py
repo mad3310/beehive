@@ -355,7 +355,7 @@ class Container_Opers(Abstract_Container_Opers):
         max_number = max(container_numbers)
         if max_number < 4:
             max_number = 4
-        for i in range(count):
+        for i in range(int(count)):
             max_number += 1
             add_container_name = container_prefix + str(max_number)
             add_container_names.append(add_container_name)
