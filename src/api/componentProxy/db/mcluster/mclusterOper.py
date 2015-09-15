@@ -30,10 +30,10 @@ class MclusterManager(BaseComponentManager):
         
         try:
             child.expect(["bash", pexpect.EOF, pexpect.TIMEOUT], timeout=self.timeout)
-            child.sendline("curl 'http://127.0.0.1:8888/mcluster/health'") 
-            index = child.expect(["ok", pexpect.EOF, pexpect.TIMEOUT], timeout=self.timeout)
-            if index != 0:
-                stat = False
+#             child.sendline("curl 'http://127.0.0.1:8888/mcluster/health'") 
+#             index = child.expect(["ok", pexpect.EOF, pexpect.TIMEOUT], timeout=self.timeout)
+#             if index != 0:
+#                 stat = False
         finally:
             child.close()
         
