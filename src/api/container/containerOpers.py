@@ -9,6 +9,7 @@ Created on Sep 8, 2014
 
 
 import os
+import re
 import sys
 import logging
 import traceback
@@ -338,6 +339,27 @@ class Container_Opers(Abstract_Container_Opers):
         create_info.setdefault('isUseIp', con.use_ip())
         create_info.setdefault('containerName', container_name)
         return create_info
+
+    def get_names_added(self, count, cluster):
+        """generate container names when add container nodes to cluster
+        
+        """
+        add_container_names, container_numbers = [], []
+        zk_opers = Container_ZkOpers()
+        containers = zk_opers.retrieve_container_list(cluster)
+        for container in containers:
+            container_value = zk_opers.retrieve_container_node_value(cluster, container)
+            container_name = container_value.get('containerName')
+            container_prefix, container_number = re.findall('(.*-n-)(\d+)', container_name)[0]
+            container_numbers.append(int(container_number))
+        max_number = max(container_numbers)
+        if max_number < 4:
+            max_number = 4
+        for i in range(count):
+            max_number += 1
+            add_container_name = container_prefix + str(max_number)
+            add_container_names.append(add_container_name)
+        return add_container_names
 
 
 class Container_create_action(Abstract_Async_Thread):

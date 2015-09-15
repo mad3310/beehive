@@ -112,15 +112,15 @@ class ContainerCluster_Add_Action(Base_ContainerCluster_create_Action):
         cluster = args.get('containerClusterName')
         _component_type = args.get('componentType')
         _network_mode = args.get('networkMode')
+        container_names = args.get('container_names')
         
         node_count = args.get('nodeCount')
         _component_container_cluster_config = self.component_container_cluster_config_factory.retrieve_config(args)
         _component_container_cluster_config.sum_count = self.__sum_count(cluster, node_count)
         
-        host_ip_list_used, container_names = self.__get_containers_info_created(cluster)
-        _component_container_cluster_config.exclude_servers = host_ip_list_used
+        exclude_servers = self.__exclude_servers(cluster)
+        _component_container_cluster_config.exclude_servers = exclude_servers
         
-        container_names = self.__get_container_names(_component_container_cluster_config, container_names)
         _component_container_cluster_config.container_names = container_names
         args.setdefault('component_config', _component_container_cluster_config)
         args.setdefault('added', True)
@@ -134,32 +134,15 @@ class ContainerCluster_Add_Action(Base_ContainerCluster_create_Action):
         container_count = cluster_info.get('containerCount')
         return int(node_count) + int(container_count)        
 
-    def __get_containers_info_created(self, cluster):
-        host_ip_list, container_name_list = [], []
+    def __exclude_servers(self, cluster):
+        host_ip_list = []
         zk_opers = Container_ZkOpers()
         container_list = zk_opers.retrieve_container_list(cluster)
         for container in container_list:
             container_value = zk_opers.retrieve_container_node_value(cluster, container)
             host_ip = container_value.get('hostIp')
             host_ip_list.append(host_ip)
-            container_name = container_value.get('containerName')
-            container_name_list.append(container_name)
-        return host_ip_list, container_name_list
-
-    def __get_container_names(self, _component_container_cluster_config, container_names):
-        add_container_name_list, container_number_list = [], []
-        nodeCount = _component_container_cluster_config.nodeCount
-        for container_name in container_names:
-            container_prefix, container_number = re.findall('(.*-n-)(\d+)', container_name)[0]
-            container_number_list.append(int(container_number))
-        max_number = max(container_number_list)
-        if max_number < 4:
-            max_number = 4
-        for i in range(nodeCount):
-            max_number += 1
-            add_container_name = container_prefix + str(max_number)
-            add_container_name_list.append(add_container_name)
-        return add_container_name_list
+        return host_ip_list
 
     def __update_cluser_info_to_zk(self, cluster, network_mode, component_type, component_container_cluster_config):
         sum_count = component_container_cluster_config.sum_count

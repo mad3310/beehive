@@ -16,12 +16,14 @@ from container.container_model import Container_Model
 from zk.zkOpers import Requests_ZkOpers
 from componentProxy.componentContainerClusterValidator import ComponentContainerClusterValidator
 from utils.threading_exception_queue import Threading_Exception_Queue
+from container.containerOpers import Container_Opers
 
 
 class ContainerCluster_Opers(Abstract_Container_Opers):
     
     component_container_cluster_validator = ComponentContainerClusterValidator()
     threading_exception_queue = Threading_Exception_Queue()
+    container_opers = Container_Opers
         
     def __init__(self):
         super(ContainerCluster_Opers, self).__init__()
@@ -60,8 +62,11 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         if not exists:
             raise UserVisiableException('cluster %s not exist, you should give a existed cluster when add node to it!' % cluster)
         
+        container_names = self.container_opers.get_names_added(node_count, cluster)
+        args.setdefault('container_names', container_names)
         containerCluster_create_action = ContainerCluster_Add_Action(args)
         containerCluster_create_action.start()
+        return container_names
 
     def remove(self, args):
         """

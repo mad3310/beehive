@@ -15,7 +15,6 @@ from tornado_letv.tornado_basic_auth import require_basic_auth
 from base import APIHandler
 from utils.exceptions import HTTPAPIError, UserVisiableException
 from container.containerOpers import Container_Opers
-from container.container_model import Container_Model
 from containerCluster.containerClusterOpers import ContainerCluster_Opers
 from zk.zkOpers import Requests_ZkOpers
 from tornado.gen import engine, Task
@@ -314,8 +313,9 @@ class ContainerClusterAddNodeHandler(APIHandler):
     
     def post(self):
         args = self.get_all_arguments()
-        self.containerClusterOpers.add(args)
+        container_names = self.containerClusterOpers.add(args)
         result = {}
+        result.setdefault('containerNames', container_names)
         result.setdefault("message", "due to add container need a little more times, please wait a moment and check the result!")
         self.finish(result)
 
