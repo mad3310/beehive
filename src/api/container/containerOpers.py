@@ -338,10 +338,8 @@ class Container_Opers(Abstract_Container_Opers):
         create_info.setdefault('containerName', container_name)
         return create_info
 
-    def get_names_added(self, count, cluster):
-        """generate container names when add container nodes to cluster
+    def generate_container_names(self, count, cluster):
         
-        """
         add_container_names, container_numbers = [], []
         zk_opers = Container_ZkOpers()
         containers = zk_opers.retrieve_container_list(cluster)

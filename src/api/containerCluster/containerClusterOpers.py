@@ -62,7 +62,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         if not exists:
             raise UserVisiableException('cluster %s not exist, you should give a existed cluster when add node to it!' % cluster)
         
-        container_names = self.container_opers.get_names_added(node_count, cluster)
+        container_names = self.container_opers.generate_container_names(node_count, cluster)
         args.setdefault('container_names', container_names)
         containerCluster_create_action = ContainerCluster_Add_Action(args)
         containerCluster_create_action.start()
