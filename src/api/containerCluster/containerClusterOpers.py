@@ -217,7 +217,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
             cluster_zk_info.setdefault(container_ip, container_node)
         return cluster_zk_info
 
-    def create_result(self, containerClusterName):
+    def create_result(self, containerClusterName, container_names=[]):
         create_successful = {'code':"000000"}
         creating = {'code':"000001"}
         create_failed = {'code':"000002", 'status': Status.create_failed}
@@ -237,30 +237,28 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
             result.setdefault('error_msg', 'create containers failed!')
         
         elif start_flag == Status.succeed:
-            create_info = self.__cluster_created_info(containerClusterName)
+            create_info = self.__created_info(containerClusterName, container_names)
             result.update(create_successful)
             result.update(create_info)
         else:
             result.update(creating)
         return result
 
-    def __cluster_created_info(self, cluster):
+    def __created_info(self, cluster, container_names=[]):
         zkOper = Requests_ZkOpers()
-        message_list = []
+        message_list, container_nodes = [], []
+        if container_names:
+            for container_name in container_names:
+                container_node = self.container_opers.get_container_node_from_container_name(cluster, container_name)
+                container_nodes.append(container_node)
+        else:    
+            container_nodes = zkOper.retrieve_container_list(cluster)
         
-        container_node_list = zkOper.retrieve_container_list(cluster)
         result = {}
-        for container_node in container_node_list:
+        for container_node in container_nodes:
             container_node_value = zkOper.retrieve_container_node_value(cluster, container_node)
             con = Container_Model()
             create_info = con.create_info(container_node_value)
-            message_list.append(create_info)   
+            message_list.append(create_info)
         result.setdefault('containers', message_list)
         return result
-
-    def cluster_node(self, cluster, container_name):
-        zk_opers = Requests_ZkOpers()
-        container_node = self.container_opers.get_container_node_from_container_name(cluster, container_name)
-        container_node_value = zk_opers.retrieve_container_node_value(cluster, container_node)
-        container_model = Container_Model()
-        return container_model.create_info(container_node_value)

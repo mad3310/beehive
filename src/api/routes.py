@@ -43,6 +43,7 @@ handlers = [
     (r"/containerCluster/status/(.*)", CheckContainerClusterStatusHandler),
     (r"/containerCluster/createResult/(.*)", CheckContainerClusterCreateResultHandler),
     (r"/containerCluster/node", ContainerClusterNodeHandler),
+    (r"/containerCluster/(.*)/node/(.*)", ContainerClusterNodeHandler),
     (r"/containerCluster/node/remove", ContainerClusterRemoveNodeHandler),
     
 #     '''

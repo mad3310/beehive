@@ -76,8 +76,7 @@ class ServerUpdateAction(Abstract_Async_Thread):
 
         zk_con_info = self.container_opers.retrieve_container_node_value_from_containerName(container_name)
         _type = zk_con_info.get('type')
-        _added = zk_con_info.get('added', False)
-        con_info = self.container_opers.container_info(container_name, _type, _added)
+        con_info = self.container_opers.container_info(container_name, _type)
         
         if con_info != zk_con_info:
             logging.info('update both node zookeeper info, container name :%s' % container_name)

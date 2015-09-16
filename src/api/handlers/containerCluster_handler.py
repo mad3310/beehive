@@ -320,14 +320,11 @@ class ContainerClusterNodeHandler(APIHandler):
         result.setdefault("message", "due to add container need a little more times, please wait a moment and check the result!")
         self.finish(result)
     
-    def get(self):
-        args = self.get_all_arguments()
-        cluster = args.get('containerClusterName')
-        container_name = args.get('containerName')
-        container_info = self.cluster_opers.cluster_node(cluster, container_name)
+    def get(self, cluster, _container_names):
+        container_names = _container_names.split(',')
+        container_info = self.cluster_opers.create_result(cluster, container_names)
         
-        result = {}
-        result.setdefault(container_info)
+        self.finish(container_info)
 
 
 @require_basic_auth

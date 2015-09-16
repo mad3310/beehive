@@ -27,7 +27,6 @@ class BaseContainerModelCreator(object):
         cluster = args.get('containerClusterName')
         ip_port_resource = args.get('ip_port_resource_list')
         host_ip_list = args.get('host_ip_list')
-        added = args.get('added', False)
         
         volumes, binds = {}, {}
         if hasattr(_component_container_cluster_config, 'mount_dir'):
@@ -39,7 +38,6 @@ class BaseContainerModelCreator(object):
         container_names = _component_container_cluster_config.container_names
         for i in range(int(containerCount)):
             container_model = Container_Model()
-            container_model.added = added
             container_model.component_type = component_type
             host_ip = host_ip_list[i]
             container_model.host_ip = host_ip

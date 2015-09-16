@@ -321,7 +321,7 @@ class Container_Opers(Abstract_Container_Opers):
         host_ip = getHostIp()
         zkOper.writeDataNodeContainersResource(host_ip, resource_type, resource_info)
  
-    def container_info(self, container_name, _type=None, _added=False):
+    def container_info(self, container_name, _type=None):
         """get container node info
         
         """
@@ -330,9 +330,7 @@ class Container_Opers(Abstract_Container_Opers):
         con = Container_Model(_inspect)
         if not _type:
             _type = con.inspect_component_type()
-            
-        if _added:
-            create_info.setdefault('added', _added)
+        
         create_info.setdefault('type', _type)
         create_info.setdefault('hostIp', getHostIp())
         create_info.setdefault('inspect', con.inspect)
@@ -567,8 +565,7 @@ class Container_create_action(Abstract_Async_Thread):
     def _get_container_info(self):
         _container_name = self.docker_model.name
         _type = self.docker_model.component_type
-        _added = self.docker_model.added
-        return self.container_opers.container_info(_container_name, _type, _added)
+        return self.container_opers.container_info(_container_name, _type)
 
     def __get_route_dicts(self, route_list=None):
         if route_list is None:
