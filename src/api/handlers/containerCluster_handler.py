@@ -15,12 +15,12 @@ from tornado_letv.tornado_basic_auth import require_basic_auth
 from base import APIHandler
 from utils.exceptions import HTTPAPIError, UserVisiableException
 from container.containerOpers import Container_Opers
+from container.container_model import Container_Model
 from containerCluster.containerClusterOpers import ContainerCluster_Opers
 from zk.zkOpers import Requests_ZkOpers
 from tornado.gen import engine, Task
 from utils import _retrieve_userName_passwd
 from tornado.httpclient import HTTPRequest, AsyncHTTPClient
-from container.container_model import Container_Model
 
 
 class GatherClusterResourceHandler(APIHandler):

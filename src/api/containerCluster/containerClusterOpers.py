@@ -250,8 +250,10 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         if container_names:
             for container_name in container_names:
                 container_node = self.container_opers.get_container_node_from_container_name(cluster, container_name)
+                if not container_node:
+                    raise UserVisiableException('container :%s not existed' % container_name)
                 container_nodes.append(container_node)
-        else:    
+        else:
             container_nodes = zkOper.retrieve_container_list(cluster)
         
         result = {}
