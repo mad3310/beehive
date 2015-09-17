@@ -42,7 +42,8 @@ handlers = [
     (r"/containerCluster/sync", CheckClusterSyncHandler),
     (r"/containerCluster/status/(.*)", CheckContainerClusterStatusHandler),
     (r"/containerCluster/createResult/(.*)", CheckContainerClusterCreateResultHandler),
-    (r"/containerCluster/node/add", ContainerClusterAddNodeHandler),
+    (r"/containerCluster/node", ContainerClusterNodeHandler),
+    (r"/containerCluster/(.*)/node/(.*)", ContainerClusterNodeHandler),
     (r"/containerCluster/node/remove", ContainerClusterRemoveNodeHandler),
     
 #     '''

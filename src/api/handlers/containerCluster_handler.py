@@ -306,18 +306,26 @@ class SetContainerClusterCpusharesHandler(APIHandler):
 
 
 @require_basic_auth
-class ContainerClusterAddNodeHandler(APIHandler):
+class ContainerClusterNodeHandler(APIHandler):
     '''
     classdocs
     '''
-    containerClusterOpers = ContainerCluster_Opers()
+    cluster_opers = ContainerCluster_Opers()
     
     def post(self):
         args = self.get_all_arguments()
-        self.containerClusterOpers.add(args)
+        container_names = self.cluster_opers.add(args)
         result = {}
+        result.setdefault('containerNames', container_names)
         result.setdefault("message", "due to add container need a little more times, please wait a moment and check the result!")
         self.finish(result)
+    
+    # eg. curl --user root:root "http://127.0.0.1:8888/containerCluster/zz/node/d-mcl-zz-n-5,d-mcl-zz-n-4"
+    def get(self, cluster, _container_names):
+        container_names = _container_names.split(',')
+        container_info = self.cluster_opers.create_result(cluster, container_names)
+        
+        self.finish(container_info)
 
 
 @require_basic_auth

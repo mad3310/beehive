@@ -9,6 +9,7 @@ Created on Sep 8, 2014
 
 
 import os
+import re
 import sys
 import logging
 import traceback
@@ -27,6 +28,7 @@ from status.status_enum import Status
 from componentProxy.componentManagerValidator import ComponentManagerStatusValidator
 from utils import get_containerClusterName_from_containerName
 from state.stateOpers import StateOpers
+from componentProxy import _name
 
 
 class Container_Opers(Abstract_Container_Opers):
@@ -320,7 +322,7 @@ class Container_Opers(Abstract_Container_Opers):
         host_ip = getHostIp()
         zkOper.writeDataNodeContainersResource(host_ip, resource_type, resource_info)
  
-    def container_info(self, container_name, _type=None, _added=False):
+    def container_info(self, container_name, _type=None):
         """get container node info
         
         """
@@ -329,15 +331,39 @@ class Container_Opers(Abstract_Container_Opers):
         con = Container_Model(_inspect)
         if not _type:
             _type = con.inspect_component_type()
-            
-        if _added:
-            create_info.setdefault('added', _added)
+        
         create_info.setdefault('type', _type)
         create_info.setdefault('hostIp', getHostIp())
         create_info.setdefault('inspect', con.inspect)
         create_info.setdefault('isUseIp', con.use_ip())
         create_info.setdefault('containerName', container_name)
         return create_info
+
+    def generate_container_names(self, component_type, count, cluster):
+       
+        names, container_numbers = [], []
+        mid_name = _name.get(component_type)
+        zk_opers = Container_ZkOpers()
+        exists = zk_opers.check_containerCluster_exists(cluster)
+        if not exists:
+            for i in range(int(count)):
+                container_name = 'd-%s-%s-n-%s' % (mid_name, cluster, str(i+1))
+                names.append(container_name)
+        else:
+            containers = zk_opers.retrieve_container_list(cluster)
+            for container in containers:
+                container_value = zk_opers.retrieve_container_node_value(cluster, container)
+                container_name = container_value.get('containerName')
+                container_prefix, container_number = re.findall('(.*-n-)(\d+)', container_name)[0]
+                container_numbers.append(int(container_number))
+            max_number = max(container_numbers)
+            if max_number < 4:
+                max_number = 4
+            for i in range(int(count)):
+                max_number += 1
+                add_container_name = container_prefix + str(max_number)
+                names.append(add_container_name)
+        return names
 
 
 class Container_create_action(Abstract_Async_Thread):
@@ -545,8 +571,7 @@ class Container_create_action(Abstract_Async_Thread):
     def _get_container_info(self):
         _container_name = self.docker_model.name
         _type = self.docker_model.component_type
-        _added = self.docker_model.added
-        return self.container_opers.container_info(_container_name, _type, _added)
+        return self.container_opers.container_info(_container_name, _type)
 
     def __get_route_dicts(self, route_list=None):
         if route_list is None:

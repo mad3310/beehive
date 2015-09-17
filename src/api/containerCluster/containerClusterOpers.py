@@ -7,8 +7,6 @@ Created on Sep 8, 2014
 @author: root
 '''
 
-import re
-
 from containerClusterAction import *
 from common.abstractContainerOpers import Abstract_Container_Opers
 from utils.exceptions import UserVisiableException
@@ -22,6 +20,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
     
     component_container_cluster_validator = ComponentContainerClusterValidator()
     threading_exception_queue = Threading_Exception_Queue()
+    container_opers = Container_Opers()
         
     def __init__(self):
         super(ContainerCluster_Opers, self).__init__()
@@ -52,7 +51,8 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
             raise UserVisiableException('params nodeCount not be given, please check the params!')        
         if not args.has_key('networkMode'):
             raise UserVisiableException('params networkMode not be given, please check the params!')
-        if not args.has_key('componentType'):
+        component_type = args.get('componentType', None)
+        if not component_type:
             raise UserVisiableException('params componentType not be given, please check the params!')
         
         zkOper = Container_ZkOpers()
@@ -60,8 +60,11 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         if not exists:
             raise UserVisiableException('cluster %s not exist, you should give a existed cluster when add node to it!' % cluster)
         
+        container_names = self.container_opers.generate_container_names(component_type, node_count, cluster)
+        args.setdefault('container_names', container_names)
         containerCluster_create_action = ContainerCluster_Add_Action(args)
         containerCluster_create_action.start()
+        return container_names
 
     def remove(self, args):
         """
@@ -212,7 +215,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
             cluster_zk_info.setdefault(container_ip, container_node)
         return cluster_zk_info
 
-    def create_result(self, containerClusterName):
+    def create_result(self, containerClusterName, container_names=[]):
         create_successful = {'code':"000000"}
         creating = {'code':"000001"}
         create_failed = {'code':"000002", 'status': Status.create_failed}
@@ -232,23 +235,30 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
             result.setdefault('error_msg', 'create containers failed!')
         
         elif start_flag == Status.succeed:
-            create_info = self.__cluster_created_info(containerClusterName)
+            create_info = self.__created_info(containerClusterName, container_names)
             result.update(create_successful)
             result.update(create_info)
         else:
             result.update(creating)
         return result
 
-    def __cluster_created_info(self, cluster):
+    def __created_info(self, cluster, container_names=[]):
         zkOper = Requests_ZkOpers()
-        message_list = []
+        message_list, container_nodes = [], []
+        if container_names:
+            for container_name in container_names:
+                container_node = self.container_opers.get_container_node_from_container_name(cluster, container_name)
+                if not container_node:
+                    raise UserVisiableException('container :%s not existed' % container_name)
+                container_nodes.append(container_node)
+        else:
+            container_nodes = zkOper.retrieve_container_list(cluster)
         
-        container_node_list = zkOper.retrieve_container_list(cluster)
         result = {}
-        for container_node in container_node_list:
+        for container_node in container_nodes:
             container_node_value = zkOper.retrieve_container_node_value(cluster, container_node)
             con = Container_Model()
             create_info = con.create_info(container_node_value)
-            message_list.append(create_info)   
+            message_list.append(create_info)
         result.setdefault('containers', message_list)
         return result
