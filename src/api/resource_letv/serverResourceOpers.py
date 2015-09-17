@@ -11,6 +11,7 @@ import os, time
 import logging
 import docker
 
+from tornado.options import options
 from utils.invokeCommand import InvokeCommand
 from utils import getHostIp
 from docker_letv.dockerOpers import Docker_Opers
@@ -36,7 +37,6 @@ class Server_Res_Opers():
             self.matrix_list = self.get_top_cmd_ret()
             self.id_pid_dict = self.get_container_id_pid_dict(self.name)
 
-
     def retrieve_host_stat(self):
         resource = {}
         
@@ -45,6 +45,9 @@ class Server_Res_Opers():
         
         server_disk = self.disk_stat()
         resource.setdefault("server_disk", server_disk)
+
+        disk_io=self.disk_io()
+        resource.setdefault("disk_io", disk_io)
 
         containers = self.container_opers.get_all_containers()
         resource.setdefault("container_number", len(containers))
@@ -565,6 +568,19 @@ class Server_Res_Opers():
         hd['total'] = disk.f_bsize * disk.f_blocks / (1024*1024)
         hd['used'] = hd['total'] - hd['free']
         return hd
+
+    def disk_io(self):
+        result={}
+        iops={}
+        ivk_cmd=InvokeCommand()
+        cmd = "sh %s %s" % (options.disk_io_sh,"/srv/docker/vfs")
+        content=ivk_cmd._runSysCmd(cmd)[0]
+        iopses=content.split()
+        assert len(iopses)==2
+        iops['read']=float(iopses[0])
+        iops['write']=float(iopses[1])
+        result['iops']=iops
+        return result
    
     def disk_loadavg(self):  
         loadavg = {}  

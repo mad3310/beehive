@@ -16,11 +16,11 @@ from container.containerOpers import Container_Opers
 
 class UpdateServerHandler(APIHandler):
     """
-    update server container 
+    update server container
     """
-    
+
     server_opers = Server_Opers()
-    
+
     def get(self):
         self.server_opers.update()
         return_message = {}
@@ -49,31 +49,31 @@ class SwitchServerUnderoomHandler(APIHandler):
     def post(self):
         args = self.get_all_arguments()
         switch = args.get('switch')
-        
+
         if not switch or (switch!='on' and switch!='off'):
             raise HTTPAPIError(status_code=417, error_detail="switch params wrong!",\
                                 notification = "direct", \
                                 log_message= "switch params wrong!",\
                                 response =  "please check params!")
-        
+
         containerNameList = args.get('containerNameList')
         if not containerNameList:
             raise HTTPAPIError(status_code=417, error_detail="containerNameList params not given!",\
                                 notification = "direct", \
                                 log_message= "containerNameList params not given!",\
                                 response =  "please check params!")
-        
+
         if ',' in containerNameList:
             containerNameList = containerNameList.split(',')
         else:
             containerNameList = [containerNameList]
-        
+
         result = {}
         if switch == 'on':
             result = self.server_opers.open_containers_under_oom(containerNameList)
         elif switch == 'off':
             result = self.server_opers.shut_containers_under_oom(containerNameList)
-        
+
         logging.debug('under_oom result: %s' % str(result))
         self.finish(result)
 
@@ -107,9 +107,9 @@ class GatherServerContainersDiskLoadHandler(APIHandler):
 
 @require_basic_auth
 class AddServerMemoryHandler(APIHandler):
-    
+
     container_opers = Container_Opers()
-    
+
     # eg. curl --user root:root -d "containerNameList=d-mcl-4_zabbix2-n-2&times=2" http://10.154.156.150:8888/server/containers/memory/add
     @asynchronous
     def post(self):
@@ -122,9 +122,9 @@ class AddServerMemoryHandler(APIHandler):
                                 notification = "direct", \
                                 log_message= "containerNameList is illegal!",\
                                 response =  "please check params!")
-        
+
         host_ip = self.request.remote_ip
-        
+
         result = self.container_opers.add_containers_memory(container_name_list, int(times) )
         logging.info('add containers :%s memory on this server:%s, result:%s' % ( str(container_name_list), host_ip, str(result)) )
         self.finish(result)
