@@ -28,6 +28,7 @@ from status.status_enum import Status
 from componentProxy.componentManagerValidator import ComponentManagerStatusValidator
 from utils import get_containerClusterName_from_containerName
 from state.stateOpers import StateOpers
+from componentProxy import _name
 
 
 class Container_Opers(Abstract_Container_Opers):
@@ -338,24 +339,31 @@ class Container_Opers(Abstract_Container_Opers):
         create_info.setdefault('containerName', container_name)
         return create_info
 
-    def generate_container_names(self, count, cluster):
-        
-        add_container_names, container_numbers = [], []
+    def generate_container_names(self, component_type, count, cluster):
+       
+        names, container_numbers = [], []
+        mid_name = _name.get(component_type)
         zk_opers = Container_ZkOpers()
-        containers = zk_opers.retrieve_container_list(cluster)
-        for container in containers:
-            container_value = zk_opers.retrieve_container_node_value(cluster, container)
-            container_name = container_value.get('containerName')
-            container_prefix, container_number = re.findall('(.*-n-)(\d+)', container_name)[0]
-            container_numbers.append(int(container_number))
-        max_number = max(container_numbers)
-        if max_number < 4:
-            max_number = 4
-        for i in range(int(count)):
-            max_number += 1
-            add_container_name = container_prefix + str(max_number)
-            add_container_names.append(add_container_name)
-        return add_container_names
+        exists = zk_opers.check_containerCluster_exists(cluster)
+        if not exists:
+            for i in range(int(count)):
+                container_name = 'd-%s-%s-n-%s' % (mid_name, cluster, str(i+1))
+                names.append(container_name)
+        else:
+            containers = zk_opers.retrieve_container_list(cluster)
+            for container in containers:
+                container_value = zk_opers.retrieve_container_node_value(cluster, container)
+                container_name = container_value.get('containerName')
+                container_prefix, container_number = re.findall('(.*-n-)(\d+)', container_name)[0]
+                container_numbers.append(int(container_number))
+            max_number = max(container_numbers)
+            if max_number < 4:
+                max_number = 4
+            for i in range(int(count)):
+                max_number += 1
+                add_container_name = container_prefix + str(max_number)
+                names.append(add_container_name)
+        return names
 
 
 class Container_create_action(Abstract_Async_Thread):

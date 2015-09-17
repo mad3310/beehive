@@ -7,8 +7,6 @@ Created on Sep 8, 2014
 @author: root
 '''
 
-import re
-
 from containerClusterAction import *
 from common.abstractContainerOpers import Abstract_Container_Opers
 from utils.exceptions import UserVisiableException
@@ -16,7 +14,6 @@ from container.container_model import Container_Model
 from zk.zkOpers import Requests_ZkOpers
 from componentProxy.componentContainerClusterValidator import ComponentContainerClusterValidator
 from utils.threading_exception_queue import Threading_Exception_Queue
-from container.containerOpers import Container_Opers
 
 
 class ContainerCluster_Opers(Abstract_Container_Opers):
@@ -54,7 +51,8 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
             raise UserVisiableException('params nodeCount not be given, please check the params!')        
         if not args.has_key('networkMode'):
             raise UserVisiableException('params networkMode not be given, please check the params!')
-        if not args.has_key('componentType'):
+        component_type = args.get('componentType', None)
+        if not component_type:
             raise UserVisiableException('params componentType not be given, please check the params!')
         
         zkOper = Container_ZkOpers()
@@ -62,7 +60,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         if not exists:
             raise UserVisiableException('cluster %s not exist, you should give a existed cluster when add node to it!' % cluster)
         
-        container_names = self.container_opers.generate_container_names(node_count, cluster)
+        container_names = self.container_opers.generate_container_names(component_type, node_count, cluster)
         args.setdefault('container_names', container_names)
         containerCluster_create_action = ContainerCluster_Add_Action(args)
         containerCluster_create_action.start()

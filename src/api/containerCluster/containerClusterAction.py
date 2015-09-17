@@ -1,14 +1,13 @@
 import sys
-import re
 import logging
 
-from componentProxy import _name
 from status.status_enum import Status
 from zk.zkOpers import Container_ZkOpers
 from utils import handleTimeout
 from utils.exceptions import CommonException
 from containerCluster.baseContainerClusterAction import Base_ContainerCluster_Action, Base_ContainerCluster_create_Action
 from componentProxy.componentContainerClusterConfigFactory import ComponentContainerClusterConfigFactory
+from container.containerOpers import Container_Opers
 
 
 class ContainerCluster_stop_Action(Base_ContainerCluster_Action):
@@ -32,6 +31,7 @@ class ContainerCluster_destroy_Action(Base_ContainerCluster_Action):
 class ContainerCluster_create_Action(Base_ContainerCluster_create_Action):
 
     component_container_cluster_config_factory = ComponentContainerClusterConfigFactory()
+    container_opers = Container_Opers()
 
     def __init__(self, args):
         super(ContainerCluster_create_Action, self).__init__(args)
@@ -58,20 +58,12 @@ class ContainerCluster_create_Action(Base_ContainerCluster_create_Action):
         _component_container_cluster_config = self.component_container_cluster_config_factory.retrieve_config(args)
         node_count = _component_container_cluster_config.nodeCount
         _component_container_cluster_config.sum_count = node_count
-        container_names = self.__get_container_names(_component_type, node_count, _cluster)
+        container_names = self.container_opers.generate_container_names(_component_type, node_count, _cluster)
         _component_container_cluster_config.container_names = container_names
         args.setdefault('component_config', _component_container_cluster_config)
         
         self.__create_cluser_info_to_zk(_network_mode, _component_type, _component_container_cluster_config)
         return super(ContainerCluster_create_Action, self).create(args)
-
-    def __get_container_names(self, component_type, node_count, cluster):
-        names = []
-        mid_name = _name.get(component_type)
-        for i in range(int(node_count)):
-            container_name = 'd-%s-%s-n-%s' % (mid_name, cluster, str(i+1))
-            names.append(container_name)
-        return names
 
     def __create_cluser_info_to_zk(self, network_mode, component_type, component_container_cluster_config):
         containerCount = component_container_cluster_config.nodeCount
