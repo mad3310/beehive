@@ -93,13 +93,13 @@ class ContainerCluster_Add_Action(Base_ContainerCluster_create_Action):
         cluster = self._arg_dict.get('containerClusterName')
         try:
             logging.debug('begin to add containers')
-            __action_result = self.create(self._arg_dict)
+            __action_result = self.add(self._arg_dict)
         except:
             self.threading_exception_queue.put(sys.exc_info())
         finally:
             self.update_zk_info_when_process_complete(cluster, __action_result, '')
 
-    def create(self, args):
+    def add(self, args):
         logging.info('args:%s' % str(args))
         cluster = args.get('containerClusterName')
         _component_type = args.get('componentType')
