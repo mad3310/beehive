@@ -80,7 +80,6 @@ class BaseContainerModelCreator(object):
             create_container_arg_list.append(container_model)
             
         return create_container_arg_list
-
     
     def __get_normal_volumes_args(self, mount_dir, ro=False):
         volumes, binds = {}, {}
