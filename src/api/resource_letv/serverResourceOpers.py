@@ -576,9 +576,11 @@ class Server_Res_Opers():
         cmd = "sh %s %s" % (options.disk_io_sh,"/srv/docker/vfs")
         content=ivk_cmd._runSysCmd(cmd)[0]
         iopses=content.split()
-        assert len(iopses)==2
-        iops['read']=float(iopses[0])
-        iops['write']=float(iopses[1])
+        if len(iopses)==2:
+            iops['read']=float(iopses[0])
+            iops['write']=float(iopses[1])
+        else:
+            iops['read']=iops['write']=0
         result['iops']=iops
         return result
    

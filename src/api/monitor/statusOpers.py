@@ -188,28 +188,28 @@ class CheckServerDisk(CheckStatusBase):
 
 class CheckServerDiskIO(CheckStatusBase):
 
-    MAX_READ_IOPS=500 #KB
-    MAX_WRITE_IOPS=500#KB
-
     def check(self):
         monitor_type, monitor_key = 'server', 'disk_io'
         zk_opers = Scheduler_ZkOpers()
 
         host_ip_list = zk_opers.retrieve_data_node_list()
+        server_threshold=zk_opers.retrieve_monitor_server_value()
+        MAX_READ_IOPS=server_threshold.get("disk_threshold").get("read")
+        MAX_WRITE_IOPS=server_threshold.get("disk_threshold").get("write")
         if not host_ip_list:
             return
         error_record, host_disk = [], {}
 
         for host_ip in host_ip_list:
             host_disk = zk_opers.retrieveDataNodeServerResource(host_ip)
-            if host_disk["disk_io"]["iops"]["read"] > self.MAX_READ_IOPS or host_disk["disk_io"]["iops"]["write"] > self.MAX_WRITE_IOPS:
+            if host_disk["disk_io"]["iops"]["read"]*1024 > MAX_READ_IOPS or host_disk["disk_io"]["iops"]["write"]*1024 > MAX_WRITE_IOPS:
                 error_record.append('%s' % host_ip)
 
         total_count=len(host_ip_list)
         failed_count=len(error_record)
         success_count=total_count-failed_count
         alarm_level=self.retrieve_alarm_level(total_count,success_count,failed_count)
-        error_message = "disk IOPS is greater than 500KB/s !"
+        error_message = "disk read iops greater than %d or write iops greater than %d" % (MAX_READ_IOPS,MAX_WRITE_IOPS)
 
         super(CheckServerDiskIO, self).write_status(total_count, success_count, failed_count,
                                                   alarm_level, error_record, monitor_type, monitor_key, error_message)
