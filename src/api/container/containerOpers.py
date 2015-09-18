@@ -493,6 +493,14 @@ class Container_create_action(Abstract_Async_Thread):
         return ret
 
     def __set_ip_add_route(self, container_name=None):
+        child = pexpect.spawn(r"docker attach %s" % (container_name))
+        child.expect(["bash", pexpect.EOF, pexpect.TIMEOUT], 5)
+        child.sendline(r"route del default gw 10.11.0.1 dev peth0")
+        child.expect(["bash", pexpect.EOF, pexpect.TIMEOUT], 5)
+        child.sendline(r"route add default gw 10.11.144.1 dev peth0")
+        child.expect(["#", pexpect.EOF, pexpect.TIMEOUT], 5)
+        return
+        
         timeout = 5
         
         _inspect = self.docker_opers.inspect_container(container_name)
