@@ -214,6 +214,28 @@ class Container_Opers(Abstract_Container_Opers):
             result.setdefault(container, ret)
         return result
 
+    def set_containers_disk_bps(self,container_name_list,container_type,method='write',data=0):
+        result={}
+        containers=self._get_containers(container_name_list)
+        for container in containers:
+            stat_op=StateOpers(container)
+            ret=stat_op.set_container_disk_bps(container_type,method,data)
+            if not ret:
+                logging.error('container %s set disk bps failed' % container)
+            result.setdefault(container,{'bps':ret})
+        return result
+
+    def set_containers_disk_iops(self,container_name_list,container_type,method='write',times=0):
+        result={}
+        containers=self._get_containers(container_name_list)
+        for container in containers:
+            stat_op=StateOpers(container)
+            ret=stat_op.set_container_disk_iops(container_type,method,times)
+            if not ret:
+                logging.error('container %s set disk iops failed' % container)
+            result.setdefault(container,{'iops':ret})
+        return result
+
     def shut_containers_under_oom(self, container_name_list):
         result = {}
         containers = self._get_containers(container_name_list)

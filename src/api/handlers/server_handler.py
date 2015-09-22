@@ -40,10 +40,25 @@ class CollectServerResHandler(APIHandler):
         self.finish(server_res)
 
 
-@require_basic_auth
-class SwitchServerUnderoomHandler(APIHandler):
+class BaseServerHandler(APIHandler):
 
-    server_opers = Server_Opers()
+    container_opers=Container_Opers()
+
+    @staticmethod
+    def parse_container_name_list(container_name_list):
+        if container_name_list:
+            return container_name_list.split(',')
+        else:
+            raise HTTPAPIError(status_code=417, error_detail="containerNameList params not given!",\
+                                notification = "direct", \
+                                log_message= "containerNameList params not given!",\
+                                response =  "please check params!")
+
+
+@require_basic_auth
+class SwitchServerUnderoomHandler(BaseServerHandler):
+
+    container_opers = Container_Opers()
 
     # eg. curl --user root:root -d "switch=on&containerNameList=d-mcl-dh-n-1" "http://10.154.156.150:8888/server/containers/under_oom"
     def post(self):
@@ -56,57 +71,73 @@ class SwitchServerUnderoomHandler(APIHandler):
                                 log_message= "switch params wrong!",\
                                 response =  "please check params!")
         
-        containerNameList = args.get('containerNameList')
-        if not containerNameList:
-            raise HTTPAPIError(status_code=417, error_detail="containerNameList params not given!",\
-                                notification = "direct", \
-                                log_message= "containerNameList params not given!",\
-                                response =  "please check params!")
-        
-        if ',' in containerNameList:
-            containerNameList = containerNameList.split(',')
-        else:
-            containerNameList = [containerNameList]
-        
+        containers = args.get('containerNameList')
+        containerNameList = self.parse_container_name_list(containers)
+
         result = {}
         if switch == 'on':
-            result = self.server_opers.open_containers_under_oom(containerNameList)
+            result = self.container_opers.open_containers_under_oom(containerNameList)
         elif switch == 'off':
-            result = self.server_opers.shut_containers_under_oom(containerNameList)
+            result = self.container_opers.shut_containers_under_oom(containerNameList)
         
         logging.debug('under_oom result: %s' % str(result))
         self.finish(result)
 
 
 @require_basic_auth
-class GatherServerContainersDiskLoadHandler(APIHandler):
+class SetServerContainersDiskBpsHandler(BaseServerHandler):
+
+    def post(self):
+        args=self.get_all_arguments()
+        containers=args.get('containerNameList')
+        type=args.get('containerType')
+        method=args.get('method')
+        data=int(args.get('data',0))
+        container_name_list=self.parse_container_name_list(containers)
+        result=self.container_opers.set_containers_disk_bps(container_name_list,type,method,data)
+        logging.debug('set disk bps result: %s' % result)
+        self.finish(result)
+
+
+@require_basic_auth
+class SetServerContainersDiskIopsHandler(BaseServerHandler):
+
+    def post(self):
+        args=self.get_all_arguments()
+        containers=args.get('containerNameList')
+        type=args.get('containerType')
+        method=args.get('method')
+        times=int(args.get('times',0))
+        container_name_list=self.parse_container_name_list(containers)
+        result=self.container_opers.set_containers_disk_iops(container_name_list,type,method,times)
+        logging.debug('set disk iops result: %s' % result)
+        self.finish(result)
+
+
+@require_basic_auth
+class GatherServerContainersDiskLoadHandler(BaseServerHandler):
     """get the disk container use server 
     
     """
     
-    server_opers = Server_Opers()
+    container_opers = Container_Opers()
     
     # eg. curl --user root:root -d "containerNameList=d-mcl-4_zabbix2-n-2" http://localhost:8888/server/containers/disk
     @asynchronous
     def post(self):
         args = self.get_all_arguments()
         containers = args.get('containerNameList')
-        container_name_list = containers.split(',')
-        if not (container_name_list and isinstance(container_name_list, list)):
-            raise HTTPAPIError(status_code=417, error_detail="containerNameList is illegal!",\
-                                notification = "direct", \
-                                log_message= "containerNameList is illegal!",\
-                                response =  "please check params!")
+        container_name_list = self.parse_container_name_list(containers)
         
         host_ip = self.request.remote_ip
         
-        result = self.server_opers.get_containers_disk_load(container_name_list)
+        result = self.container_opers.get_containers_disk_load(container_name_list)
         logging.debug('get disk load on this server:%s, result:%s' %( host_ip, str(result)) )
         self.finish(result)
 
 
 @require_basic_auth
-class AddServerMemoryHandler(APIHandler):
+class AddServerMemoryHandler(BaseServerHandler):
     
     container_opers = Container_Opers()
     
@@ -116,12 +147,7 @@ class AddServerMemoryHandler(APIHandler):
         args = self.get_all_arguments()
         containers = args.get('containerNameList')
         times = args.get('times')
-        container_name_list = containers.split(',')
-        if not (container_name_list and isinstance(container_name_list, list)):
-            raise HTTPAPIError(status_code=417, error_detail="containerNameList is illegal!",\
-                                notification = "direct", \
-                                log_message= "containerNameList is illegal!",\
-                                response =  "please check params!")
+        container_name_list = self.parse_container_name_list(containers)
         
         host_ip = self.request.remote_ip
         

@@ -13,6 +13,7 @@ from docker_letv.dockerOpers import Docker_Opers
 from container.container_model import Container_Model
 from tornado.options import options
 from utils.exceptions import UserVisiableException
+from componentProxy import _mount_dir
 
 
 class StateOpers(object):
@@ -34,6 +35,8 @@ class StateOpers(object):
         self.cpuacct_stat_path = '/cgroup/cpuacct/lxc/%s/cpuacct.stat' % self.container_id
         self.cpushares_path = '/cgroup/cpu/lxc/%s/cpu.shares' % self.container_id
         self.cpuset_path = '/cgroup/cpu/lxc/%s/cpuset.cpus' % self.container_id
+        self.disk_bps= '/cgroup/blkio/lxc/%s/blkio.throttle.%%s_bps_device' % self.container_id
+        self.disk_iops= '/cgroup/blkio/lxc/%s/blkio.throttle.%%s_iops_device' % self.container_id
 
     def get_container_id(self):
         _inspect = self.docker_opers.inspect_container(self.container_name)
@@ -229,3 +232,25 @@ class StateOpers(object):
         if not self.echo_value_to_file(cpus, self.cpuset_path):
             raise UserVisiableException('set container :%s cpus value:%s failed' % (self.container_name, cpus))
         return self.get_cpuset_value()
+
+    def set_container_disk_bps(self,type,method='write',data=0):
+        mount_dir=_mount_dir.get(type,'/srv')
+        dev_number=self.get_dev_number_by_mount_dir(mount_dir)
+        value='%s\t%d' % (dev_number,data)
+        path=self.disk_bps % method
+        self.echo_value_to_file(value, path)
+        return value
+
+    def set_container_disk_iops(self,type,method='write',times=0):
+        mount_dir=_mount_dir.get(type,'/srv')
+        dev_number=self.get_dev_number_by_mount_dir(mount_dir)
+        value='%s\t%d' % (dev_number,times)
+        path=self.disk_iops % method
+        self.echo_value_to_file(value, path)
+        return value
+
+    @staticmethod
+    def get_dev_number_by_mount_dir(mount_dir):
+        ivk_cmd = InvokeCommand()
+        cmd = "sh %s %s" % (options.disk_number_sh, mount_dir)
+        return ivk_cmd._runSysCmd(cmd)[0].strip()
