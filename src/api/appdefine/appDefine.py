@@ -14,7 +14,7 @@ define('sitename', default = "container manager", help = 'site name')
 define('domain', default = "letv.com", help = 'domain name')
 
 define('send_email_switch', default = True, type = bool, help = 'the flag of if send error email')
-define('admins', default = ("mazheng <mazheng@letv.com>",), help = 'admin email address')
+define('admins', default = ("zhangzeng <zhangzeng@letv.com>", "mazheng <mazheng@letv.com>", "zhoubingzheng <zhoubingzheng@letv.com>", "gaoqiang3 <gaoqiang3@letv.com>", "xuyanwei <xuyanwei@letv.com>",), help = 'admin email address')
 define('smtp_host', default = "10.205.91.22", help = 'smtp host')
 define('smtp_port', default = 587, help = 'smtp port')
 define('smtp_user', default = "mcluster", help = 'smtp user')
@@ -39,3 +39,5 @@ define("disk_io_sh", default=join(base_dir, "shell", "disk_io.sh"), help="get di
 define("test_cluster_NIC", default='peth0', help="default test cluster network interface card")
 define("disk_number_sh", default=join(base_dir, "shell", "disk_number.sh"), help="get disk number script")
 define("NEED_TO_CONFIG_ZK", default=('mcluster','zookeeper'), help="default test cluster network interface card")
+
+define("nsenter", default='nsenter --target `docker inspect -f "{{.State.Pid}}" %s` --mount --uts --ipc --net --pid -- ', help="default test cluster network interface card")
