@@ -86,30 +86,45 @@ class SwitchServerUnderoomHandler(BaseServerHandler):
 
 @require_basic_auth
 class SetServerContainersDiskBpsHandler(BaseServerHandler):
+    """refer to wiki: http://wiki.letv.cn/pages/viewpage.action?pageId=48637217
+    
+    containerType :  component type
+    method :  write or read
+    date : Byte per second limit
+    eg. curl --user root:root -d "containerNameList=d-mcl-zz-n-3&containerType=mcluster&method=write&data=500" http://localhost:8888/server/containers/disk/bps
+    """
 
     def post(self):
-        args=self.get_all_arguments()
-        containers=args.get('containerNameList')
-        type=args.get('containerType')
-        method=args.get('method')
-        data=int(args.get('data',0))
-        container_name_list=self.parse_container_name_list(containers)
-        result=self.container_opers.set_containers_disk_bps(container_name_list,type,method,data)
+        args = self.get_all_arguments()
+        containers = args.get('containerNameList')
+        _type = args.get('containerType')
+        method = args.get('method')
+        data = int(args.get('data', 0))
+        container_name_list = self.parse_container_name_list(containers)
+        result = self.container_opers.set_containers_disk_bps(container_name_list, _type, method, data)
         logging.debug('set disk bps result: %s' % result)
         self.finish(result)
 
 
 @require_basic_auth
 class SetServerContainersDiskIopsHandler(BaseServerHandler):
-
+    """refer to wiki: http://wiki.letv.cn/pages/viewpage.action?pageId=48637217
+    
+    containerType :  component type
+    method :  write or read
+    date : times per second limit
+    
+    eg. curl --user root:root -d "containerNameList=d-mcl-zz-n-3&containerType=mcluster&method=write&data=50" http://localhost:8888/server/containers/disk/bps
+    """
+    
     def post(self):
-        args=self.get_all_arguments()
-        containers=args.get('containerNameList')
-        type=args.get('containerType')
-        method=args.get('method')
-        times=int(args.get('times',0))
-        container_name_list=self.parse_container_name_list(containers)
-        result=self.container_opers.set_containers_disk_iops(container_name_list,type,method,times)
+        args = self.get_all_arguments()
+        containers = args.get('containerNameList')
+        _type = args.get('containerType')
+        method = args.get('method')
+        times = int(args.get('times', 0))
+        container_name_list = self.parse_container_name_list(containers)
+        result = self.container_opers.set_containers_disk_iops(container_name_list, _type, method, times)
         logging.debug('set disk iops result: %s' % result)
         self.finish(result)
 

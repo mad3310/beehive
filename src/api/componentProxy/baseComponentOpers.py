@@ -19,9 +19,9 @@ class BaseComponentManager(object):
         container_id = ret.read().strip()
         return self.__check(container_id)
 
-    def __check(self, container_id = None):
+    def __check(self, container_id):
         
-        stat = True
+        result = True
         
         nsenter = options.nsenter % container_id
         cmd = self.validate_cmd if self.validate_cmd else "curl -d 'zkAddress=127.0.0.1' 'http://127.0.0.1:8888/admin/conf'"
@@ -33,8 +33,8 @@ class BaseComponentManager(object):
         flag = self.validate_flag if self.validate_flag else Flag.successful
         
         if not flag in status:
-            stat = False
+            result = False
             component_restart_cmd = nsenter + 'service %s restart' % self.component_manager
             os.system(component_restart_cmd)
         
-        return stat
+        return result

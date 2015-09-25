@@ -233,19 +233,19 @@ class StateOpers(object):
             raise UserVisiableException('set container :%s cpus value:%s failed' % (self.container_name, cpus))
         return self.get_cpuset_value()
 
-    def set_container_disk_bps(self,type,method='write',data=0):
-        mount_dir=_mount_dir.get(type,'/srv')
-        dev_number=self.get_dev_number_by_mount_dir(mount_dir)
-        value='%s\t%d' % (dev_number,data)
-        path=self.disk_bps % method
+    def set_container_disk_bps(self, _type, method='write', data=0):
+        mount_dir = _mount_dir.get(_type, '/srv')
+        dev_number = self.get_dev_number_by_mount_dir(mount_dir)
+        value = '%s\t%d' % (dev_number, data)
+        path = self.disk_bps % method
         self.echo_value_to_file(value, path)
         return value
 
-    def set_container_disk_iops(self,type,method='write',times=0):
-        mount_dir=_mount_dir.get(type,'/srv')
-        dev_number=self.get_dev_number_by_mount_dir(mount_dir)
-        value='%s\t%d' % (dev_number,times)
-        path=self.disk_iops % method
+    def set_container_disk_iops(self, _type, method='write', times=0):
+        mount_dir = _mount_dir.get(_type, '/srv')
+        dev_number = self.get_dev_number_by_mount_dir(mount_dir)
+        value = '%s\t%d' % (dev_number, times)
+        path = self.disk_iops % method
         self.echo_value_to_file(value, path)
         return value
 
