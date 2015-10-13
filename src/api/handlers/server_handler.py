@@ -7,37 +7,9 @@ import logging
 
 from tornado.web import asynchronous
 from base import APIHandler
-from server.serverOpers import Server_Opers
-from resource_letv.serverResourceOpers import Server_Res_Opers
 from utils.exceptions import HTTPAPIError
 from tornado_letv.tornado_basic_auth import require_basic_auth
 from container.containerOpers import Container_Opers
-
-
-class UpdateServerHandler(APIHandler):
-    """
-    update server container 
-    """
-    
-    server_opers = Server_Opers()
-    
-    def get(self):
-        self.server_opers.update()
-        return_message = {}
-        return_message.setdefault("message", "update server successful")
-        self.finish(return_message)
-
-
-class CollectServerResHandler(APIHandler):
-    _server_res_opers = Server_Res_Opers()
-    
-    _server_opers = Server_Opers()
-    
-    # eg. curl http://localhost:8888/server/resource
-    @asynchronous
-    def get(self):
-        server_res = self._server_res_opers.retrieve_host_stat()
-        self.finish(server_res)
 
 
 class BaseServerHandler(APIHandler):
@@ -126,28 +98,6 @@ class SetServerContainersDiskIopsHandler(BaseServerHandler):
         container_name_list = self.parse_container_name_list(containers)
         result = self.container_opers.set_containers_disk_iops(container_name_list, _type, method, times)
         logging.debug('set disk iops result: %s' % result)
-        self.finish(result)
-
-
-@require_basic_auth
-class GatherServerContainersDiskLoadHandler(BaseServerHandler):
-    """get the disk container use server 
-    
-    """
-    
-    container_opers = Container_Opers()
-    
-    # eg. curl --user root:root -d "containerNameList=d-mcl-4_zabbix2-n-2" http://localhost:8888/server/containers/disk
-    @asynchronous
-    def post(self):
-        args = self.get_all_arguments()
-        containers = args.get('containerNameList')
-        container_name_list = self.parse_container_name_list(containers)
-        
-        host_ip = self.request.remote_ip
-        
-        result = self.container_opers.get_containers_disk_load(container_name_list)
-        logging.debug('get disk load on this server:%s, result:%s' %( host_ip, str(result)) )
         self.finish(result)
 
 

@@ -295,50 +295,6 @@ class Container_Opers(Abstract_Container_Opers):
         cpuset_value = state_opers.set_cpuset(cpus)
         add_ret.setdefault(container_name, cpuset_value)
         
-        return add_ret
-
-    def get_containers_disk_load(self, container_name_list):
-        result = {}
-        containers = self._get_containers(container_name_list)
-        for container in containers:
-            load = {}
-            conl = StateOpers(container)
-            #root_mnt_size, mysql_mnt_size = conl.get_sum_disk_load()
-            root_mnt_size, _ = conl.get_sum_disk_load()
-            load.setdefault('root_mount', root_mnt_size)
-            #load.setdefault('mysql_mount', mysql_mnt_size)
-            result.setdefault(container, load)
-        return result
-
-    def get_containers_resource(self, resource_type):
-        '''
-            resource_type: memory, networkio, cpuacct, disk and so on.
-        '''
-        
-        container_name_list = self.get_all_containers(False)
-        if not container_name_list:
-            return {}
-        
-        resource_func_dict = {'memory' : 'get_memory_stat_item',
-                              'cpuacct' : 'get_cpuacct_stat_item',
-                              'networkio' : 'get_network_io',
-                              'disk' : 'get_sum_disk_load', 
-                              'under_oom' : 'get_under_oom_value', 
-                              'oom_kill_disable' : 'get_oom_kill_disable_value',
-                              }
-        
-        resource_info, resource_item, container_resource = {}, {}, {}
-        current_time = get_current_time()
-        for container_name in container_name_list:
-            state_opers = StateOpers(container_name)
-            _method = resource_func_dict.get(resource_type)
-            resource_item = getattr(state_opers, _method)()
-            container_resource.setdefault(container_name, resource_item)
-            
-        resource_info.setdefault(str(resource_type), container_resource)
-        resource_info.setdefault('time', current_time)
-        return resource_info
-
     def write_containers_resource_to_zk(self, resource_type, resource_info):
         zkOper = Container_ZkOpers()
         host_ip = getHostIp()

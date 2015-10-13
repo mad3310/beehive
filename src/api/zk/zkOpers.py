@@ -21,11 +21,6 @@ class ZkOpers(object):
     
     zk = None
     
-    DEFAULT_RETRY_POLICY = KazooRetry(
-        max_tries=None,
-        max_delay=10000,
-    )
-    
     rootPath = "/letv/docker"
     
     '''
@@ -37,6 +32,10 @@ class ZkOpers(object):
         '''
         self.zkaddress, self.zkport = get_zk_address()
         if "" != self.zkaddress and "" != self.zkport:
+            self.DEFAULT_RETRY_POLICY = KazooRetry(
+                max_tries=None,
+                max_delay=10000,
+            )
             self.zk = KazooClient(
                                   hosts=self.zkaddress+':'+str(self.zkport), 
                                   connection_retry=self.DEFAULT_RETRY_POLICY,
@@ -66,7 +65,6 @@ class ZkOpers(object):
             
         elif state == KazooState.SUSPENDED:
             logging.info("zk connect suspended, stop this connection and then start new one!")
-            self.re_connect()
         else:
             pass
 

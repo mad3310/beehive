@@ -3,7 +3,6 @@ Created on 2015-2-8
 
 @author: asus
 '''
-import logging
 
 from zk.zkOpers import Common_ZkOpers
 from utils.exceptions import CommonException

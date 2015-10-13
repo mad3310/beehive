@@ -56,15 +56,6 @@ class StateOpers(object):
         commands.getoutput(cmd)
         return self.get_file_value(file_path) == str(value)
 
-    def get_dir_size(self, dir_path):
-        size = 0
-        dir_cmd = 'du -sm %s' % dir_path
-        if os.path.exists(dir_path):
-            value = commands.getoutput(dir_cmd)
-            if value:
-                size = re.findall('(.*)\\t.*', value)[0]
-        return size
-
     def get_con_used_mem(self):
         return float(self.get_file_value(self.used_mem_path))
 
@@ -77,17 +68,6 @@ class StateOpers(object):
     def get_con_limit_memsw(self):
         return float(self.get_file_value(self.limit_memsw_path))
 
-    def get_under_oom_value(self): 
-        value = self.get_file_value(self.under_oom_path)
-        under_oom_value = re.findall('.*under_oom (\d)$', value)[0]
-        return int(under_oom_value)
-
-    def get_memory_stat_value_list(self):
-        value = self.get_file_value(self.memory_stat_path)
-        if value:
-            return value.split('\n')
-        return []
-
     def get_cpuacct_stat_value(self):
         value = self.get_file_value(self.cpuacct_stat_path)
         return value.split('\n')
@@ -97,46 +77,6 @@ class StateOpers(object):
 
     def get_cpuset_value(self):
         return self.get_file_value(self.cpuset_path)
-
-    def get_memory_stat_item(self):
-        mem_stat_dict = {}
-        mem_stat_items = self.get_memory_stat_value_list()
-        for item in mem_stat_items:
-            if 'total_rss' in item:
-                total_rss = item.split(' ')[1]
-                mem_stat_dict.setdefault('total_rss', total_rss)
-            elif 'total_swap ' in item:
-                total_swap = item.split(' ')[1]
-                mem_stat_dict.setdefault('total_swap', total_swap)
-            elif 'total_cache ' in item:
-                total_cache = item.split(' ')[1]
-                mem_stat_dict.setdefault('total_cache', total_cache)
-        return mem_stat_dict
-
-    def get_cpuacct_stat_item(self):
-        cpuacct_stat_dict = {}
-        cpuacct_stat_items = self.get_cpuacct_stat_value()
-        for item in cpuacct_stat_items:
-            if 'user' in item:
-                user = item.split(' ')[1]
-                cpuacct_stat_dict.setdefault('user', user)
-            elif 'system ' in item:
-                system = item.split(' ')[1]
-                cpuacct_stat_dict.setdefault('system', system)
-        return cpuacct_stat_dict
-
-    def get_network_io(self):
-        network_io_dict, RX_SUM, TX_SUM = {}, 0, 0
-        ivk_cmd = InvokeCommand()
-        cmd = "sh %s %s" % (options.network_io_sh, self.container_id)
-        content = ivk_cmd._runSysCmd(cmd)[0]
-        RTX_list = re.findall('.*peth0\s+\d+\s+\d+\s+(\d+)\s+\d+\s+\d+\s+\d+\s+(\d+).*', content)
-        for RX, TX in RTX_list:
-            RX_SUM += int(RX)
-            TX_SUM += int(TX)
-        network_io_dict.setdefault('RX', int(RX_SUM/1024/1024))
-        network_io_dict.setdefault('TX', int(TX_SUM/1024/1024))
-        return network_io_dict
 
     def get_oom_kill_disable_value(self): 
         value = self.get_file_value(self.under_oom_path)
@@ -157,52 +97,6 @@ class StateOpers(object):
     def shut_container_under_oom(self):
         self._change_container_under_oom(1)
         return self.get_oom_kill_disable_value() == 1
-
-    def get_mem_load(self):
-        mem_load_rate, mem_load_dict = 0, {}
-        used_mem = self.get_con_used_mem()
-        limit_mem = self.get_con_limit_mem()
-        
-        if used_mem and limit_mem:
-            mem_load_rate =  used_mem / limit_mem
-            mem_load_dict.setdefault('used_mem', used_mem)
-            mem_load_dict.setdefault('limit_mem', limit_mem)
-            mem_load_dict.setdefault('mem_load_rate', mem_load_rate)
-        return mem_load_dict
-
-    def get_memsw_load(self):
-        memsw_load_rate, memsw_load_dict = 0, {}
-        used_memsw = self.get_con_used_memsw()
-        limit_memsw = self.get_con_limit_memsw()
-        
-        if used_memsw and limit_memsw:
-            memsw_load_rate =  used_memsw / limit_memsw
-            memsw_load_dict.setdefault('used_memsw', used_memsw)
-            memsw_load_dict.setdefault('limit_memsw', limit_memsw)
-            memsw_load_dict.setdefault('memsw_load_rate', memsw_load_rate)
-        return memsw_load_dict    
-
-    def get_root_mnt_size(self):
-        return self.get_dir_size(self.root_mnt_path)
-
-    def get_volume_mnt_size(self):
-        volume_sum_dir = 0
-        _inspect = self.docker_opers.inspect_container(self.container_name)
-        con = Container_Model(_inspect)
-        volumes = con.inspect_volumes()
-        if volumes:
-            for _, server_dir in volumes.items():
-                volume_dir = int(self.get_dir_size(server_dir))
-                volume_sum_dir += volume_dir
-        return volume_sum_dir
-
-    def get_sum_disk_load(self):
-        result = {}
-        root_mnt_size = self.get_root_mnt_size()
-        volume_mnt_size = self.get_volume_mnt_size()
-        result.setdefault('root_mount', root_mnt_size)
-        result.setdefault('volumes_mount', volume_mnt_size)
-        return result
 
     def __extend_memsw(self, times):
         memsw_value = self.get_con_limit_memsw()

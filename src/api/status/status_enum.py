@@ -12,7 +12,3 @@ _status = ['creating', 'create_failed', 'starting', 'started', 'stopping', 'stop
            'destroyed', 'not_exist', 'alive', 'failed', 'crisis', 'danger', 'succeed']
 
 Status = Enum(_status)
-
-_flag = ['running', 'successful']
-
-Flag = Enum(_flag)

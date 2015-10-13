@@ -6,6 +6,7 @@ Created on Sep 8, 2014
 
 @author: root
 '''
+import re
 
 from containerClusterAction import *
 from common.abstractContainerOpers import Abstract_Container_Opers

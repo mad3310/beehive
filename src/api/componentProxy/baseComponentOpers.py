@@ -4,7 +4,6 @@ import os
 import logging
 
 from tornado.options import options
-from status.status_enum import Flag
 
 class BaseComponentManager(object):
 
@@ -30,7 +29,7 @@ class BaseComponentManager(object):
         ret = os.popen(curl_cmd)
         status = ret.read()
         
-        flag = self.validate_flag if self.validate_flag else Flag.successful
+        flag = self.validate_flag if self.validate_flag else 'successful'
         
         if not flag in status:
             result = False
