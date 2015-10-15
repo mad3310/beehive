@@ -18,9 +18,6 @@ handlers = [
     (r"/admin/ports", PortHandler),
     
     ##'''  --------------------serverCluster-------------------------------
-#     '''
-#     @todo: why many of under_oom link? what mean?
-#     '''
     (r"/serverCluster", ServerClusterHandler),
     (r"/serverCluster/containers/under_oom", SwitchServersUnderoomHandler),
     (r"/serverCluster/containers/memory/add", AddServersMemoryHandler),
@@ -36,7 +33,7 @@ handlers = [
     (r"/containerCluster", ContainerClusterHandler),
     (r"/containerCluster/start", ContainerClusterStartHandler),
     (r"/containerCluster/stop", ContainerClusterStopHandler),
-    (r"/containerCluster/sync", CheckClusterSyncHandler),
+    (r"/containerCluster/sync", CheckClusterSyncHandler),      #need to remove to container-monitor-agent
     (r"/containerCluster/status/(.*)", CheckContainerClusterStatusHandler),
     (r"/containerCluster/createResult/(.*)", CheckContainerClusterCreateResultHandler),
     (r"/containerCluster/node", ContainerClusterNodeHandler),
@@ -58,7 +55,7 @@ handlers = [
     
     ##'''  --------------------monitor--------------------------------------- '''
     
-    (r"/monitor/status", ContainerStatus),
+    (r"/monitor/status", ContainerStatus),     #need to remove to container-monitor-agent
     
     ##'''  --------------------resource--------------------------------------- '''
     (r"/resource/ip", FetchIpHandler),

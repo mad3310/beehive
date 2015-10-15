@@ -145,6 +145,9 @@ class StateOpers(object):
 
     @staticmethod
     def get_dev_number_by_mount_dir(mount_dir):
-        ivk_cmd = InvokeCommand()
-        cmd = "sh %s %s" % (options.disk_number_sh, mount_dir)
-        return ivk_cmd._runSysCmd(cmd)[0].strip()
+        device_cmd = """ls -l `df -P | grep %s | awk '{print $1}'` | awk -F"/" '{print $NF}'""" % mount_dir
+        device = commands.getoutput(device_cmd)
+        device_path = '/dev/%s' % device
+        dev_number_cmd = """ls -l %s | awk '{print $5$6}' | awk -F "," '{print $1":"$2}'""" % device_path
+        dev_num = commands.getoutput(dev_number_cmd)
+        return dev_num

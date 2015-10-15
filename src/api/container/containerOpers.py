@@ -21,7 +21,7 @@ from docker_letv.dockerOpers import Docker_Opers
 from container.container_model import Container_Model
 from utils.exceptions import CommonException, RetryException, UserVisiableException
 from utils.log import _log_docker_run_command
-from utils import _mask_to_num, get_current_time, getHostIp, has_property
+from utils import _mask_to_num, getHostIp, has_property
 from zk.zkOpers import Container_ZkOpers
 from docker import Client
 from status.status_enum import Status
