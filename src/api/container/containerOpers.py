@@ -21,7 +21,7 @@ from docker_letv.dockerOpers import Docker_Opers
 from container.container_model import Container_Model
 from utils.exceptions import CommonException, RetryException, UserVisiableException
 from utils.log import _log_docker_run_command
-from utils import _mask_to_num, get_current_time, getHostIp, has_property
+from utils import _mask_to_num, getHostIp, has_property
 from zk.zkOpers import Container_ZkOpers
 from docker import Client
 from status.status_enum import Status
@@ -210,8 +210,30 @@ class Container_Opers(Abstract_Container_Opers):
             conl = StateOpers(container)
             ret = conl.open_container_under_oom()
             if not ret:
-                logging.error('container %s under oom value open failed' % container)
+                raise UserVisiableException('container %s under oom value open failed' % container)
             result.setdefault(container, ret)
+        return result
+
+    def set_containers_disk_bps(self, container_name_list, container_type, method='write', data=0):
+        result={}
+        containers = self._get_containers(container_name_list)
+        for container in containers:
+            stat_op = StateOpers(container)
+            ret = stat_op.set_container_disk_bps(container_type, method, data)
+            if not ret:
+                raise UserVisiableException('container %s set disk bps failed' % container)
+            result.setdefault(container, {'bps':ret})
+        return result
+
+    def set_containers_disk_iops(self, container_name_list, container_type, method='write', times=0):
+        result={}
+        containers = self._get_containers(container_name_list)
+        for container in containers:
+            stat_op = StateOpers(container)
+            ret = stat_op.set_container_disk_iops(container_type, method,times)
+            if not ret:
+                raise UserVisiableException('container %s set disk iops failed' % container)
+            result.setdefault(container, {'iops':ret})
         return result
 
     def shut_containers_under_oom(self, container_name_list):
@@ -221,7 +243,7 @@ class Container_Opers(Abstract_Container_Opers):
             conl = StateOpers(container)
             ret = conl.shut_container_under_oom()
             if not ret:
-                logging.error('container %s under oom value shut down failed' % container)
+                raise UserVisiableException('container %s under oom value shut down failed' % container)
             result.setdefault(container, ret)
         return result
 
@@ -273,50 +295,6 @@ class Container_Opers(Abstract_Container_Opers):
         cpuset_value = state_opers.set_cpuset(cpus)
         add_ret.setdefault(container_name, cpuset_value)
         
-        return add_ret
-
-    def get_containers_disk_load(self, container_name_list):
-        result = {}
-        containers = self._get_containers(container_name_list)
-        for container in containers:
-            load = {}
-            conl = StateOpers(container)
-            #root_mnt_size, mysql_mnt_size = conl.get_sum_disk_load()
-            root_mnt_size, _ = conl.get_sum_disk_load()
-            load.setdefault('root_mount', root_mnt_size)
-            #load.setdefault('mysql_mount', mysql_mnt_size)
-            result.setdefault(container, load)
-        return result
-
-    def get_containers_resource(self, resource_type):
-        '''
-            resource_type: memory, networkio, cpuacct, disk and so on.
-        '''
-        
-        container_name_list = self.get_all_containers(False)
-        if not container_name_list:
-            return {}
-        
-        resource_func_dict = {'memory' : 'get_memory_stat_item',
-                              'cpuacct' : 'get_cpuacct_stat_item',
-                              'networkio' : 'get_network_io',
-                              'disk' : 'get_sum_disk_load', 
-                              'under_oom' : 'get_under_oom_value', 
-                              'oom_kill_disable' : 'get_oom_kill_disable_value',
-                              }
-        
-        resource_info, resource_item, container_resource = {}, {}, {}
-        current_time = get_current_time()
-        for container_name in container_name_list:
-            state_opers = StateOpers(container_name)
-            _method = resource_func_dict.get(resource_type)
-            resource_item = getattr(state_opers, _method)()
-            container_resource.setdefault(container_name, resource_item)
-            
-        resource_info.setdefault(str(resource_type), container_resource)
-        resource_info.setdefault('time', current_time)
-        return resource_info
-
     def write_containers_resource_to_zk(self, resource_type, resource_info):
         zkOper = Container_ZkOpers()
         host_ip = getHostIp()

@@ -260,6 +260,7 @@ class Container_Model(object):
             create_info.setdefault('netMask', self.netmask() )
             create_info.setdefault('mountDir', str(self.inspect_volumes()) )
             create_info.setdefault('containerName', self.name() )
+            create_info.setdefault('memory', self.memory())
             if isUseIp:
                 create_info.setdefault('ipAddr', self.ip() )
             else:

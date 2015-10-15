@@ -14,79 +14,11 @@ from tornado.web import asynchronous
 from tornado_letv.tornado_basic_auth import require_basic_auth
 from base import APIHandler
 from utils.exceptions import HTTPAPIError, UserVisiableException
-from container.containerOpers import Container_Opers
-from container.container_model import Container_Model
 from containerCluster.containerClusterOpers import ContainerCluster_Opers
 from zk.zkOpers import Requests_ZkOpers
 from tornado.gen import engine, Task
 from utils import _retrieve_userName_passwd
 from tornado.httpclient import HTTPRequest, AsyncHTTPClient
-
-
-class GatherClusterResourceHandler(APIHandler):
-    '''
-        the result is webportal need, return to webportal
-    '''
-    
-    container_opers = Container_Opers()
-    
-    def cluster_resoure(self, cluster, resource_type):
-        zkOper = Requests_ZkOpers()
-
-        exists = zkOper.check_containerCluster_exists(cluster)
-        if not exists:
-            error_message = 'container cluster %s not exist, please check your cluster name' % cluster
-            raise HTTPAPIError(status_code=417, error_detail=error_message,\
-                                notification = "direct", \
-                                log_message= error_message,\
-                                response =  error_message)
-        
-        container_node_list = zkOper.retrieve_container_list(cluster)
-        host_container_dict, result  = {}, []
-        for container_node in container_node_list:
-            container_name = self.container_opers.get_container_name_from_zk(cluster, container_node)
-            host_ip = self.container_opers.get_host_ip_from_zk(cluster, container_node)
-            host_container_dict.setdefault(host_ip, container_name)
-        
-        for host_ip, container_name in host_container_dict.items():
-            resource = {}
-            resource_info = zkOper.retrieveDataNodeContainersResource(host_ip, resource_type)
-            container_resource = resource_info.get(resource_type)
-            _resource = container_resource.get(container_name)
-            resource.setdefault('value', _resource)
-            resource.setdefault('hostIp', host_ip)
-            resource.setdefault('containerName', container_name)
-            result.append(resource)
-        
-        return result
-
-
-class GatherClusterMemeoyHandler(GatherClusterResourceHandler):
-    
-    def get(self, cluster):
-        result = self.cluster_resoure(cluster, 'memory')
-        self.finish({'data': result})
-
-
-class GatherClusterCpuacctHandler(GatherClusterResourceHandler):
-
-    def get(self, cluster):
-        result = self.cluster_resoure(cluster, 'cpuacct')
-        self.finish({'data': result})
-
-
-class GatherClusterNetworkioHandler(GatherClusterResourceHandler):
-        
-    def get(self, cluster):
-        result = self.cluster_resoure(cluster, 'networkio')
-        self.finish({'data': result})
-
-
-class GatherClusterDiskHandler(GatherClusterResourceHandler):
-        
-    def get(self, cluster):
-        result = self.cluster_resoure(cluster, 'disk')
-        self.finish({'data': result})
 
 
 @require_basic_auth

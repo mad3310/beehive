@@ -34,6 +34,7 @@ define("alarm_serious", default="tel:sms:email", help="alarm level is serious")
 define("alarm_general", default="sms:email", help="alarm level is general")
 define("alarm_nothing", default="nothing", help="no alarm")
 
-define("network_io_sh", default=join(base_dir, "shell", "network_io.sh"), help="get network io script")
 define("test_cluster_NIC", default='peth0', help="default test cluster network interface card")
 define("NEED_TO_CONFIG_ZK", default=('mcluster','zookeeper'), help="default test cluster network interface card")
+
+define("nsenter", default='nsenter --target `docker inspect -f "{{.State.Pid}}" %s` --mount --uts --ipc --net --pid -- ', help="default test cluster network interface card")

@@ -54,11 +54,11 @@ class Resource(object):
         '''
             elect servers by their scores
         '''
-        score_list = sorted(host_score_dict.values(), reverse=True)
-        logging.info('score list :%s' % str(score_list))
-        host_list = self.__host_list(score_list, host_score_dict)
+        host_score_list = sorted(host_score_dict.items(), key=lambda i: i[1], reverse=True)
+        logging.info('host score list:%s' % host_score_list)
+        host_list = [i[0] for i in host_score_list]
         logging.info('select host list :%s' % str(host_list))
-        
+
         '''
             servers available after validating
         '''
@@ -68,14 +68,6 @@ class Resource(object):
             raise CommonException('the number of usable servers are not enough!')
         
         return host_list[:node_count]
-
-    def __host_list(self, score_list, host_score_dict):
-        host_list = []
-        for score in score_list:
-            for host, _score in host_score_dict.items():
-                if score == _score and host not in host_list:
-                    host_list.append(host)
-        return host_list
 
     def retrieve_usable_host_resource(self, component_container_cluster_config):
         host_resource_dict = {}
