@@ -32,6 +32,7 @@ class ZkOpers(object):
         '''
         self.zkaddress, self.zkport = get_zk_address()
         if "" != self.zkaddress and "" != self.zkport:
+            
             self.DEFAULT_RETRY_POLICY = KazooRetry(
                 max_tries=None,
                 max_delay=10000,
