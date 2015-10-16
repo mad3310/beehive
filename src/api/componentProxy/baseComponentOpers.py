@@ -1,6 +1,7 @@
 #-*- coding: utf-8 -*-
 
 import os
+import time
 import logging
 
 from tornado.options import options
@@ -16,18 +17,20 @@ class BaseComponentManager(object):
         command = "docker ps | grep %s | awk '{print $1}'" % container_name 
         ret = os.popen(command)
         container_id = ret.read().strip()
+        logging.info('container id :%s, command:%s' % (container_id, command))
         return self.__check(container_id)
 
     def __check(self, container_id):
         
         result = True
-        
+        time.sleep(1)
         nsenter = options.nsenter % container_id
         cmd = self.validate_cmd if self.validate_cmd else "curl -d 'zkAddress=127.0.0.1' 'http://127.0.0.1:8888/admin/conf'"
         curl_cmd = nsenter + cmd
         logging.info('curl check:%s' % curl_cmd)
         ret = os.popen(curl_cmd)
         status = ret.read()
+        logging.info('ns check result :%s' % status)
         
         flag = self.validate_flag if self.validate_flag else 'successful'
         
