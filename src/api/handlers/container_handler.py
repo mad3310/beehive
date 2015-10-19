@@ -215,6 +215,9 @@ class ManagerStatusHandler(APIHandler):
     
     @asynchronous
     def post(self):
+        """
+            eg. curl --user root:root -d  "containerName=d-mcl-zz2-n-3&componentType=mcluster" /container/manager/status
+        """
         args = self.get_all_arguments()
         container_name = args.get('containerName')
         component_type = args.get('componentType')
