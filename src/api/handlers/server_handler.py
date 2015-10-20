@@ -10,6 +10,7 @@ from base import APIHandler
 from utils.exceptions import HTTPAPIError
 from tornado_letv.tornado_basic_auth import require_basic_auth
 from container.containerOpers import Container_Opers
+from server.serverOpers import Server_Opers
 
 
 class BaseServerHandler(APIHandler):
@@ -119,3 +120,17 @@ class AddServerMemoryHandler(BaseServerHandler):
         result = self.container_opers.add_containers_memory(container_name_list, int(times) )
         logging.info('add containers :%s memory on this server:%s, result:%s' % ( str(container_name_list), host_ip, str(result)) )
         self.finish(result)
+
+
+class UpdateServerHandler(APIHandler):
+    """
+    update server container 
+    """
+    
+    server_opers = Server_Opers()
+    
+    def get(self):
+        self.server_opers.update()
+        return_message = {}
+        return_message.setdefault("message", "update server successful")
+        self.finish(return_message)
