@@ -21,12 +21,14 @@ handlers = [
     (r"/serverCluster", ServerClusterHandler),
     (r"/serverCluster/containers/under_oom", SwitchServersUnderoomHandler),
     (r"/serverCluster/containers/memory/add", AddServersMemoryHandler),
+    (r"/serverCluster/update", UpdateServerClusterHandler),
     
     ##'''  --------------------server---------------------------------------'''
     (r"/server/containers/memory/add", AddServerMemoryHandler),
     (r"/server/containers/under_oom", SwitchServerUnderoomHandler),
     (r"/server/containers/disk/bps", SetServerContainersDiskBpsHandler),
     (r"/server/containers/disk/iops", SetServerContainersDiskIopsHandler),
+    (r"/inner/server/update", UpdateServerHandler),
     
     ##'''  --------------------containerCluster------------------------------'''
     

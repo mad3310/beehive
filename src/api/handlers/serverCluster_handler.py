@@ -15,12 +15,14 @@ from tornado.options import options
 from tornado.httpclient import HTTPRequest, AsyncHTTPClient
 from tornado.web import asynchronous
 from tornado.gen import engine, Task
-from utils.configFileOpers import ConfigFileOpers
 from tornado_letv.tornado_basic_auth import require_basic_auth
+
+from utils.configFileOpers import ConfigFileOpers
 from utils import _retrieve_userName_passwd, async_http_post
 from utils.exceptions import HTTPAPIError
 from base import APIHandler
 from zk.zkOpers import Requests_ZkOpers
+from serverCluster.serverClusterOpers import ServerCluster_Opers
 
 
 @require_basic_auth
@@ -157,3 +159,20 @@ class AddServersMemoryHandler(APIHandler):
         for con in except_cons:
             add_mem_result.setdefault(con, 'no such container or code exception')
         self.finish(add_mem_result)
+
+
+class UpdateServerClusterHandler(APIHandler):
+    """
+    update serverCluster 
+    """
+    
+    serverCluster_opers = ServerCluster_Opers()
+    
+    # eg. curl --user root:root -X GET http://localhost:8888/serverCluster/update
+    def get(self):
+        
+        self.serverCluster_opers.update()
+
+        return_message = {}
+        return_message.setdefault("message", "serverCluster update successful")
+        self.finish(return_message)
