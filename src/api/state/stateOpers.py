@@ -30,8 +30,6 @@ class StateOpers(object):
         self.used_memsw_path = '/cgroup/memory/lxc/%s/memory.memsw.usage_in_bytes' % self.container_id
         self.limit_memsw_path = '/cgroup/memory/lxc/%s/memory.memsw.limit_in_bytes' % self.container_id
         self.under_oom_path = '/cgroup/memory/lxc/%s/memory.oom_control' % self.container_id
-        self.root_mnt_path = '/srv/docker/devicemapper/mnt/%s' % self.container_id
-        self.memory_stat_path = '/cgroup/memory/lxc/%s/memory.stat' % self.container_id
         self.cpuacct_stat_path = '/cgroup/cpuacct/lxc/%s/cpuacct.stat' % self.container_id
         self.cpushares_path = '/cgroup/cpu/lxc/%s/cpu.shares' % self.container_id
         self.cpuset_path = '/cgroup/cpu/lxc/%s/cpuset.cpus' % self.container_id
