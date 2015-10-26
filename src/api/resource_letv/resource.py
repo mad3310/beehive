@@ -133,12 +133,15 @@ class Resource(object):
     def __get_usable_host_resource(self, host_ip, component_container_cluster_config):
         resource_result = {}
         zkOper = Common_ZkOpers()
-        server_res = zkOper.retrieveDataNodeServerResource(host_ip)
+        
+        
         '''
             get host usable memory and the condition to create containers
         '''
+        
+        host_memory = zkOper.retrieve_server_resource(host_ip, 'memory')
         host_mem_limit = component_container_cluster_config.mem_free_limit
-        host_mem_can_be_used = float(server_res["mem_res"]["free"]) - host_mem_limit/(1024*1024)
+        host_mem_can_be_used = float(host_memory["free"]) - host_mem_limit/(1024*1024)
         logging.info('memory: %s, host :%s' % (host_mem_can_be_used, host_ip) )
 
         _mem_limit = component_container_cluster_config.mem_limit
@@ -149,8 +152,9 @@ class Resource(object):
         '''
             get host usable disk and the condition to create containers
         '''
-        used_server_disk = server_res['server_disk']['used']
-        total_server_disk = server_res['server_disk']['total']
+        host_disk = zkOper.retrieve_server_resource(host_ip, 'disk')
+        used_server_disk = host_disk['used']
+        total_server_disk = host_disk['total']
         
         host_disk_usage_limit = component_container_cluster_config.disk_usage
         host_disk_can_be_used_limit = host_disk_usage_limit * total_server_disk
@@ -158,17 +162,21 @@ class Resource(object):
         logging.info('disk: %s, host :%s' % (host_disk_can_be_used, host_ip) )
         disk_condition = host_disk_can_be_used > 0
         
-        '''
-            port condition
-        '''
-        port_number = server_res['port_number']
-        port_condition = port_number > 10
+        quota_threshold =  zkOper.retrieve_monitor_server_value()
+        container_count = quota_threshold.get('container_count')
         
-        logging.info('mem_condition:%s , disk_condition:%s, port_condition:%s' % (mem_condition, disk_condition, port_condition))
-        if mem_condition and disk_condition and port_condition:
+        host_container_count = zkOper.retrieve_server_resource(host_ip, 'container_count')
+        container_count_condition = host_container_count < container_count
+        
+        """
+            need to add container threshold to our zookeeper node when update beehive
+        """
+        
+        logging.info('mem_condition:%s , disk_condition:%s, container count condition:%s ' % (mem_condition, disk_condition, container_count_condition))
+        if mem_condition and disk_condition and container_count_condition:
             resource_result.setdefault('memory', host_mem_can_be_used)
             resource_result.setdefault('disk', host_disk_can_be_used)
-            resource_result.setdefault('container_number', server_res['container_number'])
+            resource_result.setdefault('container_number', host_container_count)
         logging.info('resource result:%s' % str(resource_result))
         return resource_result
 
