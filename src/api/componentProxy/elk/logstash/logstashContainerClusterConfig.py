@@ -25,7 +25,7 @@ class LogstashContainerClusterConfig(BaseContainerClusterConfig):
         self.ports = eval(ports) if ports else [5043]
 
         logs_bind = '/var/log/%s' % self.container_cluster_name
-        default_mount_dir = [{'/var/log': logs_bind, 'ro' : False}, {'data': '/data', 'ro' : False}]
+        default_mount_dir = [{'/var/log': logs_bind, 'ro' : False}]
         
         mount_dir = params.get('mountDir')
         self.mount_dir = eval(mount_dir) if mount_dir else default_mount_dir
