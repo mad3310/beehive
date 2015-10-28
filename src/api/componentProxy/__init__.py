@@ -6,8 +6,10 @@ _path = {
     "jetty":"componentProxy.webcontainer",
     "gbalancerCluster":"componentProxy.loadbalance",
     "cbase":"componentProxy.store",
-    "logstash":"componentProxy.webcontainer",
     "zookeeper":"componentProxy.distribution",
+    "elasticsearch":"componentProxy.elk",
+    "logstash":"componentProxy.elk",
+    "kibana":"componentProxy.elk",
 }
 
 _name = {

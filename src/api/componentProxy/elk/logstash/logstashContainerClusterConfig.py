@@ -8,6 +8,7 @@ Created on 2015-3-9
 
 from componentProxy.baseClusterConfig import BaseContainerClusterConfig
 
+
 class LogstashContainerClusterConfig(BaseContainerClusterConfig):
     '''
     classdocs
@@ -19,12 +20,9 @@ class LogstashContainerClusterConfig(BaseContainerClusterConfig):
         nodeCount = params.get('nodeCount')                          
         self.nodeCount = int(nodeCount) if nodeCount else 1
         image = params.get('image')
-        self.image = image if image else '10.160.140.32:5000/letv/base-jetty:logstash-0.0.3'
+        self.image = image if image else '10.160.140.32:5000/logstash2:0.0.1'
         ports = params.get('ports')
-        self.ports = eval(ports) if ports else [5601, 9999]
-        
-#         data_bind = '/data/openssl_keys/%s' % self.container_cluster_name
-#         self.mount_dir = {'/data/openssl_keys':data_bind}
+        self.ports = eval(ports) if ports else [5043]
 
         logs_bind = '/var/log/%s' % self.container_cluster_name
         default_mount_dir = [{'/var/log': logs_bind, 'ro' : False}, {'data': '/data', 'ro' : False}]
