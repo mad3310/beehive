@@ -21,6 +21,8 @@ _name = {
     "cbase":"cbs",
     "logstash":"lgs",
     "zookeeper":"zkp",
+    "kibana":"kbn",
+    "elasticsearch":"esh",
 }
 
 _mount_dir = {
@@ -32,4 +34,6 @@ _mount_dir = {
     "cbase":"/opt/letv",
     "logstash":"/var/log",
     "zookeeper":"/var/log",
+    "kibana":"/var/log",
+    "elasticsearch":"/srv/docker/vfs",
 }

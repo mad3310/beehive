@@ -68,7 +68,7 @@ class BaseContainerModelCreator(object):
                         env.setdefault('N%s_HOSTNAME' % str(j+1), container_names[j])
                         env.setdefault('ZKID', i+1)
                         env.setdefault('NODE_COUNT', containerCount)
-                        
+
                 gateway = _get_gateway_from_ip(container_ip)
                 #env.setdefault('IFACE', options.test_cluster_NIC)
                 env.setdefault('NETMASK', '255.255.0.0')
@@ -87,7 +87,7 @@ class BaseContainerModelCreator(object):
             ro = _dir.pop('ro')
             for k,v in _dir.items():
                 volumes.setdefault(k, v)
-                if '/srv/mcluster' in k:
+                if not v:
                     binds = {}
                 else:
                     binds.setdefault(v, {'bind': k, 'ro' : ro})
