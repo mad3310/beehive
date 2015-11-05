@@ -1,13 +1,13 @@
-#-*- coding: utf-8 -*-
+__author__ = 'xsank'
 
 
 from componentProxy.baseComponentOpers import BaseComponentManager
 
 
-class LogstashManager(BaseComponentManager):
+class ElasticsearchManager(BaseComponentManager):
 
     def __init__(self):
-        super(LogstashManager, self).__init__('logstash-manager')
+        super(ElasticsearchManager, self).__init__('logs-manager')
 
     def manager_status(self, container_name = None):
         return True
