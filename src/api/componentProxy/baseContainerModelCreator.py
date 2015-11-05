@@ -87,7 +87,7 @@ class BaseContainerModelCreator(object):
             ro = _dir.pop('ro')
             for k,v in _dir.items():
                 volumes.setdefault(k, v)
-                if '/srv/mcluster' in k:
+                if not v:
                     binds = {}
                 else:
                     binds.setdefault(v, {'bind': k, 'ro' : ro})

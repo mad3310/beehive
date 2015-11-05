@@ -294,11 +294,6 @@ class Container_Opers(Abstract_Container_Opers):
         state_opers = StateOpers(container_name)
         cpuset_value = state_opers.set_cpuset(cpus)
         add_ret.setdefault(container_name, cpuset_value)
-        
-    def write_containers_resource_to_zk(self, resource_type, resource_info):
-        zkOper = Container_ZkOpers()
-        host_ip = getHostIp()
-        zkOper.writeDataNodeContainersResource(host_ip, resource_type, resource_info)
  
     def container_info(self, container_name, _type=None):
         """get container node info

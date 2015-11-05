@@ -8,6 +8,7 @@ Created on Sep 10, 2014
 '''
 import logging
 import sys
+import re
 
 from docker_letv.dockerOpers import Docker_Opers
 from zk.zkOpers import Common_ZkOpers
@@ -82,6 +83,9 @@ class ServerUpdateAction(Abstract_Async_Thread):
 
     def update_add_node(self, container_name):
         logging.info('update add node : %s' % container_name )
+        if not re.match('^d-\w+.*-n-\d', container_name):
+            return
+            
         create_info = self.container_opers.container_info(container_name)
         self.container_opers.write_container_node_value_by_containerName(container_name, create_info)
         container_stat = self.container_opers.get_container_stat(container_name)
