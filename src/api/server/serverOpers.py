@@ -83,7 +83,7 @@ class ServerUpdateAction(Abstract_Async_Thread):
 
     def update_add_node(self, container_name):
         logging.info('update add node : %s' % container_name )
-        if not re.match('^d-\w+.*-n-\d', container_name):
+        if not self.container_opers.container_legal(container_name):
             return
             
         create_info = self.container_opers.container_info(container_name)

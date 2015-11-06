@@ -163,7 +163,7 @@ class Resource(object):
         disk_condition = host_disk_can_be_used > 0
         
         quota_threshold =  zkOper.retrieve_monitor_server_value()
-        container_count = quota_threshold.get('container_count', 50)
+        container_count = quota_threshold.get('container_count', 40)
         
         host_container_count = zkOper.retrieve_server_resource(host_ip, 'container_count')
         container_count_condition = host_container_count < container_count
