@@ -145,7 +145,16 @@ class StateOpers(object):
     def get_dev_number_by_mount_dir(mount_dir):
         device_cmd = """ls -l `df -P | grep %s | awk '{print $1}'` | awk -F"/" '{print $NF}'""" % mount_dir
         device = commands.getoutput(device_cmd)
+        
+        #device mapper works well 
+        if not device.startswith('dm'): 
+            device = re.sub('\d+', '', device) 
+        
         device_path = '/dev/%s' % device
+        if not os.path.exists(device_path):
+            raise UserVisiableException('device :%s not exist! maybe get wrong path' % device_path)
         dev_number_cmd = """ls -l %s | awk '{print $5$6}' | awk -F "," '{print $1":"$2}'""" % device_path
         dev_num = commands.getoutput(dev_number_cmd)
+        if not re.match("\d+\:\d+", dev_num):
+            raise UserVisiableException('get device number wrong :%s' % dev_num)
         return dev_num
