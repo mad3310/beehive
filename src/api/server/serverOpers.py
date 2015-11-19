@@ -8,7 +8,6 @@ Created on Sep 10, 2014
 '''
 import logging
 import sys
-import re
 
 from docker_letv.dockerOpers import Docker_Opers
 from zk.zkOpers import Common_ZkOpers
@@ -24,45 +23,45 @@ class Server_Opers(object):
     classdocs
     '''
     
-    def update(self):
+    def sync(self):
         host_ip = getHostIp()
-        server_update_action = ServerUpdateAction(host_ip)
-        server_update_action.start()
+        server_sync_action = ServerSyncAction(host_ip)
+        server_sync_action.start()
 
 
-class ServerUpdateAction(Abstract_Async_Thread):
+class ServerSyncAction(Abstract_Async_Thread):
 
     docker_opers = Docker_Opers()
     container_opers = Container_Opers()
 
     def __init__(self, host_ip):
-        super(ServerUpdateAction, self).__init__()
+        super(ServerSyncAction, self).__init__()
         self.host_ip = host_ip
 
     def run(self):
         try:
-            logging.info('do update on server : %s' % self.host_ip)
-            self.__update()
+            logging.info('do sync on server : %s' % self.host_ip)
+            self.__sync()
         except:
             self.threading_exception_queue.put(sys.exc_info())
 
-    def __update(self):
+    def __sync(self):
         host_containers = self._get_containers_from_host()
         zk_containers = self._get_containers_from_zookeeper()
         add, delete, both = self._compare(host_containers, zk_containers)
         
         logging.info('delete item: %s' % str(delete) )
         for item in add:
-            self.update_add_node(item)
+            self.sync_add_node(item)
         for item in delete:
-            self.update_del_node(item)
+            self.sync_del_node(item)
         for item in both:
-            self.update_both_node(item)
+            self.sync_both_node(item)
 
-    def update_both_node(self, container_name):
+    def sync_both_node(self, container_name):
         
         '''
-            container node info in zookeeper (not status) will not be changed, no need to update.
+            container node info in zookeeper (not status) will not be changed, no need to sync.
         '''
         status = {}
 
@@ -71,7 +70,7 @@ class ServerUpdateAction(Abstract_Async_Thread):
         con_info = self.container_opers.container_info(container_name, _type)
         
         if con_info != zk_con_info:
-            logging.info('update both node zookeeper info, container name :%s' % container_name)
+            logging.info('sync both node zookeeper info, container name :%s' % container_name)
             self.container_opers.write_container_node_value_by_containerName(container_name, con_info)
         
         server_con_stat = self.container_opers.get_container_stat(container_name)
@@ -81,9 +80,9 @@ class ServerUpdateAction(Abstract_Async_Thread):
             status.setdefault('message',  '')
             self.container_opers.write_container_status_by_containerName(container_name, status)
 
-    def update_add_node(self, container_name):
-        logging.info('update add node : %s' % container_name )
-        if not self.container_opers.container_legal(container_name):
+    def sync_add_node(self, container_name):
+        logging.info('sync add node : %s' % container_name )
+        if not self.container_opers.check_container_name_legal(container_name):
             return
             
         create_info = self.container_opers.container_info(container_name)
@@ -92,7 +91,7 @@ class ServerUpdateAction(Abstract_Async_Thread):
         status = {'status': container_stat, 'message': ''}
         self.container_opers.write_container_status_by_containerName(container_name, status)
 
-    def update_del_node(self, container_name):
+    def sync_del_node(self, container_name):
         status = {'status': Status.destroyed, 'message': ''}
         logging.info('container :%s are not existed, the infomation remains in zookeeper still' % container_name)
         self.container_opers.write_container_status_by_containerName(container_name, status)

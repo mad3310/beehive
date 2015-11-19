@@ -35,7 +35,7 @@ class Sync_Server_Zk_Worker(Abstract_Async_Thread):
             if not cluster_list:
                 logging.info('no cluster is created, no need to update such infomation!')
                 return
-            self.serverCluster_opers.update()
+            self.serverCluster_opers.sync()
         except Exception:
             self.threading_exception_queue.put(sys.exc_info())
         finally:

@@ -278,3 +278,24 @@ def get_containerClusterName_from_containerName(container_name):
     else:
         containerClusterName = container_name
     return containerClusterName
+
+
+def get_file_data(file_path, mode='r'):
+    with open(file_path, mode) as f:
+        data = f.read()
+        f.close()
+    return data
+
+
+def get_dev_number_by_mount_dir(mount_dir):
+    content = get_file_data('/etc/fstab')
+    device_path = re.findall('(\/dev.*?)\s+%s' % mount_dir, content)[0]
+    device_path = os.path.realpath(device_path)
+    
+    parent_device = device_path.split('/')[-1]
+    
+    if not parent_device.startswith('dm'):
+        parent_device = re.sub('\d+', '', parent_device)
+    
+    dev_num_path = r'/sys/class/block/%s/dev'  % parent_device
+    return get_file_data(dev_num_path)

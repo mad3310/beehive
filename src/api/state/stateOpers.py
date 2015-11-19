@@ -8,10 +8,9 @@ import commands
 import re
 import logging
 
-from utils.invokeCommand import InvokeCommand
+from utils import get_dev_number_by_mount_dir
 from docker_letv.dockerOpers import Docker_Opers
 from container.container_model import Container_Model
-from tornado.options import options
 from utils.exceptions import UserVisiableException
 from componentProxy import _mount_dir
 
@@ -127,7 +126,7 @@ class StateOpers(object):
 
     def set_container_disk_bps(self, _type, method='write', data=0):
         mount_dir = _mount_dir.get(_type, '/srv')
-        dev_number = self.get_dev_number_by_mount_dir(mount_dir)
+        dev_number = get_dev_number_by_mount_dir(mount_dir)
         value = '%s\t%d' % (dev_number, data)
         path = self.disk_bps % method
         self.echo_value_to_file(value, path)
@@ -135,26 +134,8 @@ class StateOpers(object):
 
     def set_container_disk_iops(self, _type, method='write', times=0):
         mount_dir = _mount_dir.get(_type, '/srv')
-        dev_number = self.get_dev_number_by_mount_dir(mount_dir)
+        dev_number = get_dev_number_by_mount_dir(mount_dir)
         value = '%s\t%d' % (dev_number, times)
         path = self.disk_iops % method
         self.echo_value_to_file(value, path)
         return value
-
-    @staticmethod
-    def get_dev_number_by_mount_dir(mount_dir):
-        device_cmd = """ls -l `df -P | grep %s | awk '{print $1}'` | awk -F"/" '{print $NF}'""" % mount_dir
-        device = commands.getoutput(device_cmd)
-        
-        #device mapper works well 
-        if not device.startswith('dm'): 
-            device = re.sub('\d+', '', device) 
-        
-        device_path = '/dev/%s' % device
-        if not os.path.exists(device_path):
-            raise UserVisiableException('device :%s not exist! maybe get wrong path' % device_path)
-        dev_number_cmd = """ls -l %s | awk '{print $5$6}' | awk -F "," '{print $1":"$2}'""" % device_path
-        dev_num = commands.getoutput(dev_number_cmd)
-        if not re.match("\d+\:\d+", dev_num):
-            raise UserVisiableException('get device number wrong :%s' % dev_num)
-        return dev_num

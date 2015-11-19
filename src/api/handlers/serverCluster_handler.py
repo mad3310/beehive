@@ -171,7 +171,7 @@ class UpdateServerClusterHandler(APIHandler):
     # eg. curl --user root:root -X GET http://localhost:8888/serverCluster/update
     def get(self):
         
-        self.serverCluster_opers.update()
+        self.serverCluster_opers.sync()
 
         return_message = {}
         return_message.setdefault("message", "serverCluster update successful")

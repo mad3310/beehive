@@ -338,7 +338,7 @@ class Container_Opers(Abstract_Container_Opers):
                 names.append(add_container_name)
         return names
 
-    def container_legal(self, container_name):
+    def check_container_name_legal(self, container_name):
         matched = re.match('^d-\w+.*-n-\d', container_name)
         return matched is not None
 

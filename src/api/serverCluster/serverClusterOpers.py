@@ -21,7 +21,7 @@ class ServerCluster_Opers(object):
         '''
     
     @engine
-    def update(self):
+    def sync(self):
 
         http_client = AsyncHTTPClient()
           

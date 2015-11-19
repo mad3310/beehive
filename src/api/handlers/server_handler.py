@@ -130,7 +130,7 @@ class UpdateServerHandler(APIHandler):
     server_opers = Server_Opers()
     
     def get(self):
-        self.server_opers.update()
+        self.server_opers.sync()
         return_message = {}
         return_message.setdefault("message", "update server successful")
         self.finish(return_message)
