@@ -298,4 +298,5 @@ def get_dev_number_by_mount_dir(mount_dir):
         parent_device = re.sub('\d+', '', parent_device)
     
     dev_num_path = r'/sys/class/block/%s/dev'  % parent_device
-    return get_file_data(dev_num_path)
+    dev_num = get_file_data(dev_num_path)
+    return dev_num.strip()

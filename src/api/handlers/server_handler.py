@@ -87,7 +87,7 @@ class SetServerContainersDiskIopsHandler(BaseServerHandler):
     method :  write or read
     date : times per second limit
     
-    eg. curl --user root:root -d "containerNameList=d-mcl-zz-n-3&containerType=mcluster&method=write&data=50" http://localhost:8888/server/containers/disk/iops
+    eg. curl --user root:root -d "containerNameList=d-mcl-zz-n-3&containerType=mcluster&method=write&times=50" http://localhost:8888/server/containers/disk/iops
     """
     
     def post(self):
@@ -122,7 +122,7 @@ class AddServerMemoryHandler(BaseServerHandler):
         self.finish(result)
 
 
-class UpdateServerHandler(APIHandler):
+class SyncServerHandler(APIHandler):
     """
     update server container 
     """

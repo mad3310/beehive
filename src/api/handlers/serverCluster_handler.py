@@ -161,7 +161,7 @@ class AddServersMemoryHandler(APIHandler):
         self.finish(add_mem_result)
 
 
-class UpdateServerClusterHandler(APIHandler):
+class SyncServerClusterHandler(APIHandler):
     """
     update serverCluster 
     """
