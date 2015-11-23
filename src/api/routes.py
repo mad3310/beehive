@@ -29,6 +29,7 @@ handlers = [
     (r"/server/containers/disk/bps", SetServerContainersDiskBpsHandler),
     (r"/server/containers/disk/iops", SetServerContainersDiskIopsHandler),
     (r"/inner/server/sync", SyncServerHandler),
+    #(r"/server/image/pull", PullImageToServerHandler),
     
     ##'''  --------------------containerCluster------------------------------'''
     

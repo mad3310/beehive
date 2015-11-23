@@ -134,3 +134,23 @@ class SyncServerHandler(APIHandler):
         return_message = {}
         return_message.setdefault("message", "update server successful")
         self.finish(return_message)
+
+
+class PullImageToServerHandler(APIHandler):
+    
+    @asynchronous
+    def post(self):
+        """
+            eg. curl --user root:root -d "image=xxx" http://127.0.0.1:8888/server/image/pull
+        """
+        
+        args = self.get_all_arguments()
+        image = args.get('image')
+        logging.info('create container image :%s' % image)
+        exist = self.docker_opers.image_exist(image)
+        if not exist:
+            if not self.docker_opers.pull(image):
+        
+        result = self.container_opers.add_containers_memory(container_name_list, int(times) )
+        logging.info('add containers :%s memory on this server:%s, result:%s' % ( str(container_name_list), host_ip, str(result)) )
+        self.finish(result)
