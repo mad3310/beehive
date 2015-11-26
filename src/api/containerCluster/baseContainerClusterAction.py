@@ -9,8 +9,7 @@ import sys
 from tornado.options import options
 from tornado.httpclient import AsyncHTTPClient
 from common.abstractAsyncThread import Abstract_Async_Thread
-from utils import _retrieve_userName_passwd
-from utils import async_http_post
+from utils import async_http_post, _retrieve_userName_passwd, getNIC
 from zk.zkOpers import Container_ZkOpers
 from resource_letv.resource import Resource
 from utils import handleTimeout, _get_property_dict, dispatch_mutil_task
@@ -119,7 +118,9 @@ class Base_ContainerCluster_create_Action(Abstract_Async_Thread):
         logging.info('args:%s' % str(args))
         
         _component_type = args.get('componentType')
+        cluster = _component_type = args.get('containerClusterName')
         logging.info('component_type : %s' % str(_component_type))
+        logging.info('containerClusterName : %s' % cluster)
         
         _component_container_cluster_config = args.get('component_config')
         
@@ -135,6 +136,9 @@ class Base_ContainerCluster_create_Action(Abstract_Async_Thread):
         
         logging.info('host_ip_list:%s' % str(host_ip_list))
         args.setdefault('host_ip_list', host_ip_list)
+        
+        NIC = self.retrieve_cluster_NIC(cluster)
+        args.setdefault('NIC', NIC)
         
         ip_port_resource_list = self.resource.retrieve_ip_port_resource(host_ip_list, _component_container_cluster_config)
         args.setdefault('ip_port_resource_list', ip_port_resource_list)
@@ -163,6 +167,15 @@ class Base_ContainerCluster_create_Action(Abstract_Async_Thread):
         logging.info('validator manager status result:%s' % str(_action_flag))
         _action_result = Status.failed if not _action_flag else Status.succeed
         return _action_result
+
+    def retrieve_cluster_NIC(self, cluster):
+        zkOper = Container_ZkOpers()
+        cluster_info = zkOper.retrieve_container_cluster_info(cluster)
+        NIC = cluster_info.get('NIC')
+        if not NIC:
+            NIC = getNIC()
+            zkOper.write_container_cluster_info({'NIC':NIC})
+        return NIC
 
     def __dispatch_create_container_task(self, container_model_list):
         

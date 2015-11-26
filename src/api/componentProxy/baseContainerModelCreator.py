@@ -27,6 +27,7 @@ class BaseContainerModelCreator(object):
         cluster = args.get('containerClusterName')
         ip_port_resource = args.get('ip_port_resource_list')
         host_ip_list = args.get('host_ip_list')
+        _NIC = args.get('NIC')
         
         volumes, binds = {}, {}
         if hasattr(_component_container_cluster_config, 'mount_dir'):
@@ -70,7 +71,7 @@ class BaseContainerModelCreator(object):
                         env.setdefault('NODE_COUNT', containerCount)
 
                 gateway = _get_gateway_from_ip(container_ip)
-                #env.setdefault('IFACE', options.test_cluster_NIC)
+                env.setdefault('IFACE', _NIC)
                 env.setdefault('NETMASK', '255.255.0.0')
                 env.setdefault('GATEWAY', gateway)
                 env.setdefault('HOSTNAME', container_name)

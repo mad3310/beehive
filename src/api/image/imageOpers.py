@@ -3,7 +3,7 @@
 
 import re
 
-from docker_letv import dockerOpers
+from docker_letv.dockerOpers import Docker_Opers 
 
 class ImageOpers(object):
     
@@ -12,7 +12,7 @@ class ImageOpers(object):
         constructor
         '''
     
-    docker_opers = dockerOpers()
+    docker_opers = Docker_Opers()
     
     def pull(self, image):
         self.docker_opers.pull(image)

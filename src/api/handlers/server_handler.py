@@ -156,7 +156,7 @@ class PullImageToServerHandler(APIHandler):
         logging.info('create container image :%s' % image)
         
         if not self.image_opers.check_image_name_legal(image):
-            raise UserVisiableException('image name is not legal, please check the image name~')
+            raise UserVisiableException('image name %s is not legal, please check the image name~' % image)
 
         ret = yield self.do(image)
         self.finish({'result':ret})

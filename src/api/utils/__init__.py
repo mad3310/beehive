@@ -168,9 +168,9 @@ def handleTimeout(func, timeout, *params, **kwargs):
     return rst
 
 def getNIC():
-    cmd = "route -n|grep UG|awk '{print $NF}'"
-    _nic = os.popen(cmd).read()
-    return _nic.split('\n')[0]
+    content = os.popen('route -n').read()
+    matched_items = re.findall('.*UG(\s+\d+){3}\s+(\w+)', content)
+    return matched_items[-1][-1]
 
 def getHostIp():
     NIC = getNIC()
