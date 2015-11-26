@@ -29,11 +29,13 @@ from componentProxy.componentManagerValidator import ComponentManagerStatusValid
 from utils import get_containerClusterName_from_containerName
 from state.stateOpers import StateOpers
 from componentProxy import _name
+from image.imageOpers import ImageOpers
 
 
 class Container_Opers(Abstract_Container_Opers):
     
     docker_opers = Docker_Opers()
+    image_opers = ImageOpers()
     component_manager_status_validator = ComponentManagerStatusValidator()
     
     def __init__(self):
@@ -421,9 +423,9 @@ class Container_create_action(Abstract_Async_Thread):
     def issue_image(self):
         image = self.docker_model.image
         logging.info('create container image :%s' % image)
-        exist = self.docker_opers.image_exist(image)
+        exist = self.image_opers.image_exist(image)
         if not exist:
-            if not self.docker_opers.pull(image):
+            if not self.image_opers.pull(image):
                 raise CommonException('pull image %s failed, please check reason' % image)
 
     def __try_makedirs(self, _dir, n=0):

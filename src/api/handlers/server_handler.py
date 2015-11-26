@@ -6,11 +6,15 @@ Created on Sep 8, 2014
 import logging
 
 from tornado.web import asynchronous
+from tornado.gen import engine
 from base import APIHandler
-from utils.exceptions import HTTPAPIError
+from utils.exceptions import HTTPAPIError, UserVisiableException
 from tornado_letv.tornado_basic_auth import require_basic_auth
 from container.containerOpers import Container_Opers
 from server.serverOpers import Server_Opers
+from image.imageOpers import ImageOpers
+from utils.decorators import run_callback, run_on_executor
+
 
 
 class BaseServerHandler(APIHandler):
@@ -138,7 +142,10 @@ class SyncServerHandler(APIHandler):
 
 class PullImageToServerHandler(APIHandler):
     
+    image_opers = ImageOpers()
+    
     @asynchronous
+    @engine
     def post(self):
         """
             eg. curl --user root:root -d "image=xxx" http://127.0.0.1:8888/server/image/pull
@@ -147,10 +154,14 @@ class PullImageToServerHandler(APIHandler):
         args = self.get_all_arguments()
         image = args.get('image')
         logging.info('create container image :%s' % image)
-        exist = self.docker_opers.image_exist(image)
-        if not exist:
-            if not self.docker_opers.pull(image):
         
-        result = self.container_opers.add_containers_memory(container_name_list, int(times) )
-        logging.info('add containers :%s memory on this server:%s, result:%s' % ( str(container_name_list), host_ip, str(result)) )
-        self.finish(result)
+        if not self.image_opers.check_image_name_legal(image):
+            raise UserVisiableException('image name is not legal, please check the image name~')
+
+        ret = yield self.do(image)
+        self.finish({'result':ret})
+
+    @run_on_executor()
+    @run_callback
+    def do(self, image):
+        return self.image_opers.pull(image)

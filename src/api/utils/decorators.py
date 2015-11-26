@@ -1,9 +1,17 @@
 #!/usr/bin/env python 2.6.6
 #coding:utf-8
+
+import sys
 import logging
+import functools
 
 from utils import get_zk_address
 from exceptions import CommonException
+from futures import ThreadPoolExecutor
+from tornado.gen import Task
+from tornado.ioloop import IOLoop
+from tornado import stack_context
+
 
 def singleton(cls):
     
@@ -35,3 +43,32 @@ def zk_singleton(cls):
         
         return instances[cls]
     return _zk_singleton
+
+
+default_executor =  ThreadPoolExecutor(10)
+
+
+def run_on_executor(executor=default_executor):
+
+    def run_on_executor_decorator(func):
+
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            task = Task(executor.submit, func, *args, **kwargs)
+            return task
+        return wrapper
+    return run_on_executor_decorator
+
+
+def run_callback(func):
+    @functools.wraps(func)
+    def wrapper(self, *args, **kwargs):
+        callback = kwargs.pop('callback', None)
+        assert callback
+        try:
+            res = func(self, *args, **kwargs)
+            callback = stack_context.wrap(callback)
+            IOLoop.instance().add_callback(lambda: callback(res))
+        except:
+            self.write_error(500, exc_info=sys.exc_info())
+    return wrapper
