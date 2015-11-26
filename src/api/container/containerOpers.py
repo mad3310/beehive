@@ -35,7 +35,6 @@ from image.imageOpers import ImageOpers
 class Container_Opers(Abstract_Container_Opers):
     
     docker_opers = Docker_Opers()
-    image_opers = ImageOpers()
     component_manager_status_validator = ComponentManagerStatusValidator()
     
     def __init__(self):
@@ -349,6 +348,7 @@ class Container_create_action(Abstract_Async_Thread):
     
     docker_opers = Docker_Opers()
     container_opers = Container_Opers()
+    image_opers = ImageOpers()
     
     def __init__(self, docker_model):
         super(Container_create_action, self).__init__()
