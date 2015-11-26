@@ -118,7 +118,7 @@ class Base_ContainerCluster_create_Action(Abstract_Async_Thread):
         logging.info('args:%s' % str(args))
         
         _component_type = args.get('componentType')
-        cluster = _component_type = args.get('containerClusterName')
+        cluster = args.get('containerClusterName')
         logging.info('component_type : %s' % str(_component_type))
         logging.info('containerClusterName : %s' % cluster)
         
