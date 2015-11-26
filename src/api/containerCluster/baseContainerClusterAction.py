@@ -174,7 +174,8 @@ class Base_ContainerCluster_create_Action(Abstract_Async_Thread):
         NIC = cluster_info.get('NIC')
         if not NIC:
             NIC = getNIC()
-            zkOper.write_container_cluster_info({'NIC':NIC})
+            cluster_info.setdefault('NIC', NIC)
+            zkOper.write_container_cluster_info(cluster_info)
         return NIC
 
     def __dispatch_create_container_task(self, container_model_list):
