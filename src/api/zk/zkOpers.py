@@ -98,10 +98,12 @@ class ZkOpers(object):
             
         return resultValue
     
+    def retrieve_uuid_info(self, uuid):
+        data, _ = self.retrieveClusterProp(uuid)
+        return eval(data)
     
     
-    
-    
+
     
     '''
     *****************************************************data node*****************************************
