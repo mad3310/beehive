@@ -170,12 +170,13 @@ class Base_ContainerCluster_create_Action(Abstract_Async_Thread):
 
     def retrieve_cluster_NIC(self, cluster):
         zkOper = Container_ZkOpers()
-        cluster_info = zkOper.retrieve_container_cluster_info(cluster)
-        NIC = cluster_info.get('NIC')
+        uuid = zkOper.getClusterUUID()
+        uuid_info = zkOper.retrieve_uuid_info(uuid)
+        NIC = uuid_info.get('NIC')
         if not NIC:
             NIC = getNIC()
-            cluster_info.setdefault('NIC', NIC)
-            zkOper.write_container_cluster_info(cluster_info)
+            uuid_info.setdefault('NIC', NIC)
+            zkOper.writeClusterInfo(uuid, uuid_info)
         return NIC
 
     def __dispatch_create_container_task(self, container_model_list):
