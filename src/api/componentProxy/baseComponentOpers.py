@@ -23,7 +23,7 @@ class BaseComponentManager(object):
     def __check(self, container_id):
         
         result = True
-        time.sleep(2)
+        time.sleep(4)
         nsenter = options.nsenter % container_id
         cmd = self.validate_cmd if self.validate_cmd else "curl -d 'zkAddress=127.0.0.1' 'http://127.0.0.1:8888/admin/conf'"
         curl_cmd = nsenter + cmd
