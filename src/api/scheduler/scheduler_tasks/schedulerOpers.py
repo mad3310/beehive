@@ -26,7 +26,7 @@ class SchedulerOpers(object):
         self.thread_exception_hanlder(5)
 
         """ sync """
-        self.sync_server_zk_handler(240)
+        self.sync_server_zk_handler(3600)
 
     def thread_exception_hanlder(self, action_timeout = 5):
 

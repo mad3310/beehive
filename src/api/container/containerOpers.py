@@ -596,7 +596,7 @@ class Container_start_action(Abstract_Async_Thread):
         start_flag = {'status': Status.starting, 'message':''}
         self.container_opers.write_container_status_by_containerName(self.container_name, start_flag)
         client = Client()
-        client.start(self.container_name)
+        client.start(self.container_name, privileged=True)
         stat = self.container_opers.get_container_stat(self.container_name)
         if stat == Status.stopped:
             message = 'start container %s failed' % self.container_name
