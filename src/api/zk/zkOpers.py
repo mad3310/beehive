@@ -414,13 +414,6 @@ class ZkOpers(object):
     
     def unLock_aysnc_monitor_action(self, lock):
         self._unLock_base_action(lock)
-        
-    def lock_sync_server_zk_action(self):
-        lock_name = "sync_server_zk"
-        return self._lock_base_action(lock_name)
-    
-    def unLock_sync_server_zk_action(self, lock):
-        self._unLock_base_action(lock)
 
     def lock_check_ip_usable_action(self):
         lock_name = "ip_usable"

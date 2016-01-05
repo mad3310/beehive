@@ -263,9 +263,3 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
             message_list.append(create_info)
         result.setdefault('containers', message_list)
         return result
-
-    @staticmethod
-    def is_cluster_created(cluster):
-        zkOper = Requests_ZkOpers()
-        cluster_info = zkOper.retrieve_container_cluster_info(cluster)
-        return cluster_info.get('start_flag', 'failed') == 'succeed'
