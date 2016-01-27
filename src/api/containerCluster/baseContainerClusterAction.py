@@ -137,7 +137,7 @@ class Base_ContainerCluster_create_Action(Abstract_Async_Thread):
         logging.info('host_ip_list:%s' % str(host_ip_list))
         args.setdefault('host_ip_list', host_ip_list)
         
-        NIC = self.retrieve_cluster_NIC(cluster)
+        NIC = self.retrieve_cluster_NIC()
         args.setdefault('NIC', NIC)
         
         ip_port_resource_list = self.resource.retrieve_ip_port_resource(host_ip_list, _component_container_cluster_config)
@@ -168,14 +168,14 @@ class Base_ContainerCluster_create_Action(Abstract_Async_Thread):
         _action_result = Status.failed if not _action_flag else Status.succeed
         return _action_result
 
-    def retrieve_cluster_NIC(self, cluster):
+    def retrieve_cluster_NIC(self):
         zkOper = Container_ZkOpers()
         uuid = zkOper.getClusterUUID()
         uuid_info = zkOper.retrieve_uuid_info(uuid)
         NIC = uuid_info.get('NIC')
         if not NIC:
             NIC = getNIC()
-            uuid_info.setdefault('NIC', NIC)
+            uuid_info.update({'NIC': NIC})
             zkOper.writeClusterInfo(uuid, uuid_info)
         return NIC
 
