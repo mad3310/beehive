@@ -71,7 +71,7 @@ class BaseContainerModelCreator(object):
                         env.setdefault('NODE_COUNT', containerCount)
 
                 gateway = _get_gateway_from_ip(container_ip)
-                env.setdefault('IFACE', _NIC)
+                env.setdefault('IFACE', 'p%s' % _NIC)
                 env.setdefault('NETMASK', '255.255.0.0')
                 env.setdefault('GATEWAY', gateway)
                 env.setdefault('HOSTNAME', container_name)
