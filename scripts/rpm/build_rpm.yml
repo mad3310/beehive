@@ -51,4 +51,4 @@ maintainor: zhoubingzheng@letv.com
 vendor: LeCloud
 
 # 软件包保存位置
-packout: /tmp/rpm
+packout: /srv/rpms
