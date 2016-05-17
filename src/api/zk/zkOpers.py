@@ -244,9 +244,14 @@ class ZkOpers(object):
     
     def write_container_status(self, cluster, container_node, record):
         clusterUUID = self.getClusterUUID()
-        path = self.rootPath + "/" + clusterUUID + "/container/cluster/" + cluster + "/" + container_node +"/status"
-        self.zk.ensure_path(path)
-        self.DEFAULT_RETRY_POLICY(self.zk.set, path, str(record))
+        container_node_path = (self.rootPath + "/" + clusterUUID + \
+                               "/container/cluster/" + cluster + "/" \
+                               + container_node)
+        container_status_path = container_node_path + "/status"
+        if self.zk.exists(container_node_path):
+            self.zk.ensure_path(container_status_path)
+            self.DEFAULT_RETRY_POLICY(self.zk.set, container_status_path, 
+                                      str(record))
 
     def delete_container_node(self, cluster, container_node):
         clusterUUID = self.getClusterUUID()
