@@ -16,13 +16,13 @@ handlers = [
     (r"/admin/reset", AdminReset),
     (r"/admin/ips", IPHandler),
     (r"/admin/ports", PortHandler),
-    
+
     ##'''  --------------------serverCluster-------------------------------
     (r"/serverCluster", ServerClusterHandler),
     (r"/serverCluster/containers/under_oom", SwitchServersUnderoomHandler),
     (r"/serverCluster/containers/memory/add", AddServersMemoryHandler),
     (r"/serverCluster/sync", SyncServerClusterHandler),
-    
+
     ##'''  --------------------server---------------------------------------'''
     (r"/server/containers/memory/add", AddServerMemoryHandler),
     (r"/server/containers/under_oom", SwitchServerUnderoomHandler),
@@ -30,9 +30,9 @@ handlers = [
     (r"/server/containers/disk/iops", SetServerContainersDiskIopsHandler),
     (r"/inner/server/sync", SyncServerHandler),
     (r"/server/image/pull", PullImageToServerHandler),
-    
+
     ##'''  --------------------containerCluster------------------------------'''
-    
+
     (r"/containerCluster", ContainerClusterHandler),
     (r"/containerCluster/start", ContainerClusterStartHandler),
     (r"/containerCluster/stop", ContainerClusterStopHandler),
@@ -44,9 +44,9 @@ handlers = [
     (r"/containerCluster/node/remove", ContainerClusterRemoveNodeHandler),
     (r"/containerCluster/conf", ClusterConfigHandler),
     (r"/containerCluster/cpushares", SetContainerClusterCpusharesHandler),
-    
+
     ##'''  --------------------container---------------------------------------'''
-    
+
     (r"/inner/container", ContainerHandler),
     (r"/container/start", StartContainerHandler),
     (r"/container/stop", StopContainerHandler),
@@ -55,11 +55,11 @@ handlers = [
     #(r"/container/cpuset", SetContainerCpusetHandler),
     (r"/container/status/(.*)", CheckContainerStatusHandler),
     (r"/container/manager/status", ManagerStatusHandler),
-    
+
     ##'''  --------------------monitor--------------------------------------- '''
-    
+
     (r"/monitor/status", ContainerStatus),     #need to remove to container-monitor-agent
-    
+
     ##'''  --------------------resource--------------------------------------- '''
     (r"/resource/ip", FetchIpHandler),
 ]
