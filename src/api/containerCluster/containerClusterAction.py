@@ -21,13 +21,13 @@ class ContainerCluster_stop_Action(Base_ContainerCluster_Action):
 
 
 class ContainerCluster_start_Action(Base_ContainerCluster_Action):
-    
+
     def __init__(self, containerClusterName):
         super(ContainerCluster_start_Action, self).__init__(containerClusterName, 'start')
 
 
 class ContainerCluster_destroy_Action(Base_ContainerCluster_Action):
-    
+
     def __init__(self, containerClusterName):
         super(ContainerCluster_destroy_Action, self).__init__(containerClusterName, 'remove')
 
@@ -65,22 +65,21 @@ class ContainerCluster_create_Action(Base_ContainerCluster_create_Action):
         container_names = self.container_opers.generate_container_names(_component_type, node_count, _cluster)
         _component_container_cluster_config.container_names = container_names
         args.setdefault('component_config', _component_container_cluster_config)
-        
+
         self.__create_cluser_info_to_zk(_network_mode, _component_type, _component_container_cluster_config)
         return super(ContainerCluster_create_Action, self).create(args)
 
     def __create_cluser_info_to_zk(self, network_mode, component_type, component_container_cluster_config):
         containerCount = component_container_cluster_config.nodeCount
         containerClusterName = component_container_cluster_config.container_cluster_name
-        
-        _container_cluster_info = {}
-        _container_cluster_info.setdefault('containerCount', containerCount)
-        _container_cluster_info.setdefault('containerClusterName', containerClusterName)
-        _container_cluster_info.setdefault('type', component_type)
-        use_ip = True
-        if 'bridge' == network_mode:
-            use_ip = False
-        _container_cluster_info.setdefault('isUseIp', use_ip)
+        use_ip = 'bridge' == network_mode
+
+        _container_cluster_info = {
+            'containerCount': containerCount,
+            'containerClusterName': containerClusterName,
+            'type': component_type,
+            'isUseIp': use_ip
+        }
         zkOper = Container_ZkOpers()
         zkOper.write_container_cluster_info(_container_cluster_info)
 
@@ -109,17 +108,17 @@ class ContainerCluster_Add_Action(Base_ContainerCluster_create_Action):
         _component_type = args.get('componentType')
         _network_mode = args.get('networkMode')
         container_names = args.get('container_names')
-        
+
         node_count = args.get('nodeCount')
         _component_container_cluster_config = self.component_container_cluster_config_factory.retrieve_config(args)
         _component_container_cluster_config.sum_count = self.__sum_count(cluster, node_count)
-        
+
         exclude_servers = self.__exclude_servers(cluster)
         _component_container_cluster_config.exclude_servers = exclude_servers
-        
+
         _component_container_cluster_config.container_names = container_names
         args.setdefault('component_config', _component_container_cluster_config)
-        
+
         self.__update_cluser_info_to_zk(cluster, _network_mode, _component_type, _component_container_cluster_config)
         return super(ContainerCluster_Add_Action, self).create(args)
 
@@ -127,7 +126,7 @@ class ContainerCluster_Add_Action(Base_ContainerCluster_create_Action):
         zk_oper = Container_ZkOpers()
         cluster_info = zk_oper.retrieve_container_cluster_info(cluster)
         container_count = cluster_info.get('containerCount')
-        return int(node_count) + int(container_count)        
+        return int(node_count) + int(container_count)
 
     def __exclude_servers(self, cluster):
         host_ip_list = []
@@ -141,12 +140,12 @@ class ContainerCluster_Add_Action(Base_ContainerCluster_create_Action):
 
     def __update_cluser_info_to_zk(self, cluster, network_mode, component_type, component_container_cluster_config):
         sum_count = component_container_cluster_config.sum_count
-        
+
         _container_cluster_info = {}
         _container_cluster_info.setdefault('containerClusterName', cluster)
         _container_cluster_info.setdefault('containerCount', sum_count)
         _container_cluster_info.setdefault('start_flag', Status.failed)
-        
+
         zkOper = Container_ZkOpers()
         zkOper.write_container_cluster_info(_container_cluster_info)
 
@@ -157,14 +156,14 @@ class ContainerCluster_RemoveNode_Action(Base_ContainerCluster_Action):
         super(ContainerCluster_RemoveNode_Action, self).__init__(cluster, 'remove' , containers)
 
     def do_when_remove_cluster(self):
-        
+
         def check():
             for container_node in self.container_nodes:
                 container_status = zk_opers.retrieve_container_status_value(self.cluster, container_node)
                 if container_status.get('status') != Status.destroyed:
                     return
             return True
-            
+
         zk_opers = Container_ZkOpers()
         ret = handleTimeout(check, (50, 4))
         if not ret:
@@ -172,7 +171,7 @@ class ContainerCluster_RemoveNode_Action(Base_ContainerCluster_Action):
         for container_node in self.container_nodes:
             logging.info('do delete container node :%s info in zookeeper' % container_node)
             zk_opers.delete_container_node(self.cluster, container_node)
-        
+
         cluster_info = zk_opers.retrieve_container_cluster_info(self.cluster)
         node_count = cluster_info.get('containerCount')
         _node_count = int(node_count) - len(self.containers)
