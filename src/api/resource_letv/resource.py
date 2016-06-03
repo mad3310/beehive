@@ -160,7 +160,7 @@ class Resource(object):
         '''
             get host usable disk and the condition to create containers
         '''
-        host_disk = zkOper.retrieve_server_resource(host_ip, 'disk')
+        host_disk = zkOper.retrieve_server_resource(host_ip, 'diskusage')
         used_server_disk = host_disk['used']
         total_server_disk = host_disk['total']
 
@@ -176,6 +176,7 @@ class Resource(object):
         host_container_count = zkOper.retrieve_server_resource(host_ip, 'container_count')
         container_count_condition = host_container_count < container_count
 
+        host_disk_iops = zkOper.retrieve_server_resource(host_ip, 'diskiops')
         """
             need to add container threshold to our zookeeper node when update beehive
         """
@@ -185,6 +186,7 @@ class Resource(object):
             resource_result.setdefault('memory', host_mem_can_be_used)
             resource_result.setdefault('disk', host_disk_can_be_used)
             resource_result.setdefault('container_number', host_container_count)
+            resource_result.setdefault('diskiops', host_disk_iops)
         logging.info('resource result:%s' % str(resource_result))
         return resource_result
 
