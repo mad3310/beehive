@@ -72,7 +72,7 @@ class ContainerCluster_create_Action(Base_ContainerCluster_create_Action):
     def __create_cluser_info_to_zk(self, network_mode, component_type, component_container_cluster_config):
         containerCount = component_container_cluster_config.nodeCount
         containerClusterName = component_container_cluster_config.container_cluster_name
-        use_ip = 'bridge' == network_mode
+        use_ip = 'bridge' != network_mode
 
         _container_cluster_info = {
             'containerCount': containerCount,
