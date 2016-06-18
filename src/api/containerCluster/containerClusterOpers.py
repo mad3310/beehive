@@ -18,28 +18,27 @@ from utils.threading_exception_queue import Threading_Exception_Queue
 
 
 class ContainerCluster_Opers(Abstract_Container_Opers):
-    
+
     component_container_cluster_validator = ComponentContainerClusterValidator()
     threading_exception_queue = Threading_Exception_Queue()
     container_opers = Container_Opers()
-        
+
     def __init__(self):
         super(ContainerCluster_Opers, self).__init__()
-    
+
     def create(self, args):
-        cluster = args.get('containerClusterName', None)
-        if not cluster:
-            raise UserVisiableException('params containerClusterName not be given, please check the params!')
-        if not args.has_key('networkMode'):
-            raise UserVisiableException('params networkMode not be given, please check the params!')
-        if not args.has_key('componentType'):
-            raise UserVisiableException('params componentType not be given, please check the params!')
-        
+        require_args = ('containerClusterName', 'networkMode', 'componentType')
+        for arg in require_args:
+            if not args.get(arg):
+                raise UserVisiableException('Params %s invalid or not be given!' % arg)
+
+        cluster_name = args.get('containerClusterName', None)
         zkOper = Container_ZkOpers()
-        exists = zkOper.check_containerCluster_exists(cluster)
+        exists = zkOper.check_containerCluster_exists(cluster_name)
         if exists:
-            raise UserVisiableException('containerCluster %s has existed, choose another containerCluster name' % cluster)
-        
+            raise UserVisiableException(
+                'containerCluster %s has existed, choose another containerCluster name' % cluster_name)
+
         containerCluster_create_action = ContainerCluster_create_Action(args)
         containerCluster_create_action.start()
 
@@ -47,20 +46,20 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         cluster = args.get('containerClusterName', None)
         if not cluster:
             raise UserVisiableException('params containerClusterName not be given, please check the params!')
-        node_count = args.get('nodeCount') 
+        node_count = args.get('nodeCount')
         if not node_count:
-            raise UserVisiableException('params nodeCount not be given, please check the params!')        
+            raise UserVisiableException('params nodeCount not be given, please check the params!')
         if not args.has_key('networkMode'):
             raise UserVisiableException('params networkMode not be given, please check the params!')
         component_type = args.get('componentType', None)
         if not component_type:
             raise UserVisiableException('params componentType not be given, please check the params!')
-        
+
         zkOper = Container_ZkOpers()
         exists = zkOper.check_containerCluster_exists(cluster)
         if not exists:
             raise UserVisiableException('cluster %s not exist, you should give a existed cluster when add node to it!' % cluster)
-        
+
         container_names = self.container_opers.generate_container_names(component_type, node_count, cluster)
         args.setdefault('container_names', container_names)
         containerCluster_create_action = ContainerCluster_Add_Action(args)
@@ -71,7 +70,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         """
             remove node in some cluster
         """
-        
+
         cluster = args.get('containerClusterName')
         if not cluster:
             raise UserVisiableException('params containerClusterName not be given, please check the params!')
@@ -80,12 +79,12 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
             raise UserVisiableException('params containerNameList not be given, please check the params!')
 
         _containers = containers.split(',')
-        
+
         zkOper = Container_ZkOpers()
         exists = zkOper.check_containerCluster_exists(cluster)
         if not exists:
             raise UserVisiableException('containerCluster %s not existed, no need to remove' % cluster)
-        
+
         containerCluster_remove_node_action = ContainerCluster_RemoveNode_Action(cluster, _containers)
         containerCluster_remove_node_action.start()
 
@@ -94,7 +93,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         exists = zkOper.check_containerCluster_exists(containerClusterName)
         if not exists:
             raise UserVisiableException('containerCluster %s not exist, choose another containerCluster name' % containerClusterName)
-        
+
         containerCluster_start_action = ContainerCluster_start_Action(containerClusterName)
         containerCluster_start_action.start()
 
@@ -103,19 +102,19 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         exists = zkOper.check_containerCluster_exists(containerClusterName)
         if not exists:
             raise UserVisiableException('containerCluster %s not existed, choose another containerCluster name' % containerClusterName)
-        
+
         containerCluster_stop_action = ContainerCluster_stop_Action(containerClusterName)
         containerCluster_stop_action.start()
 
     def destory(self, containerClusterName):
         if not containerClusterName:
             raise UserVisiableException('no containerClusterName param')
-        
+
         zkOper = Container_ZkOpers()
         exists = zkOper.check_containerCluster_exists(containerClusterName)
         if not exists:
             raise UserVisiableException('containerCluster %s not existed, no need to remove' % containerClusterName)
-        
+
         containerCluster_destroy_action = ContainerCluster_destroy_Action(containerClusterName)
         containerCluster_destroy_action.start()
 
@@ -124,13 +123,13 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         exists = zkOper.check_containerCluster_exists(containerClusterName)
         if not exists:
             raise UserVisiableException('containerCluster %s not existed' % containerClusterName)
-        
+
         cluster_status = self.component_container_cluster_validator.container_cluster_status_validator(containerClusterName)
         return cluster_status
 
     def sync(self):
         clusters_zk_info = self.get_clusters_zk()
-        
+
         clusters = []
         for cluster_name, nodes in clusters_zk_info.items():
             try:
@@ -139,12 +138,12 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
                 cluster_status = self.component_container_cluster_validator.container_cluster_status_validator(cluster_name)
                 cluster.update(cluster_status)
                 cluster.setdefault('clusterName', cluster_name)
-                
+
                 zkOper = Requests_ZkOpers()
                 cluster_info = zkOper.retrieve_container_cluster_info(cluster_name)
                 _type = cluster_info.get('type')
                 cluster.setdefault('type', _type)
-                
+
                 for _,node_value in nodes.items():
                     container_info = node_value.get('container_info')
                     con = Container_Model()
@@ -152,17 +151,17 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
                     nodeInfo.append(create_info)
                 cluster.setdefault('nodeInfo', nodeInfo)
                 clusters.append(cluster)
-                
+
             except:
                 self.threading_exception_queue.put(sys.exc_info())
                 continue
-            
+
         return clusters
 
     def config(self, conf_dict={}):
         error_msg = ''
         logging.info('config args: %s' % conf_dict)
-        
+
         if 'servers' in conf_dict:
             error_msg = self.__update_white_list(conf_dict)
         else:
@@ -177,7 +176,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
             error_msg = 'the values of the params is not correct'
             logging.error(error_msg)
             return error_msg
-        
+
         zkOper = Requests_ZkOpers()
         conf_white_list = conf_white_str.split(',')
         privs_white_list = zkOper.retrieve_servers_white_list()
@@ -186,7 +185,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         both = list( set(privs_white_list) & set(conf_white_list) )
         for item in add:
             zkOper.add_server_into_white_list(item)
-            
+
         for item in delete:
             zkOper.del_server_from_white_list(item)
         return error_msg
@@ -200,7 +199,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
             if not cluster_info_dict:
                 continue
             clusters_zk_info.setdefault(cluster_name, cluster_info_dict)
-            
+
         return clusters_zk_info
 
     def get_cluster_zk(self, cluster_name):
@@ -225,7 +224,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         exists = zkOper.check_containerCluster_exists(containerClusterName)
         if not exists:
             raise UserVisiableException('containerCluster %s not existed' % containerClusterName)
-        
+
         result = {}
 
         container_cluster_info = zkOper.retrieve_container_cluster_info(containerClusterName)
@@ -234,7 +233,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
         if start_flag == Status.failed:
             result.update(create_failed)
             result.setdefault('error_msg', 'create containers failed!')
-        
+
         elif start_flag == Status.succeed:
             create_info = self.__created_info(containerClusterName, container_names)
             result.update(create_successful)
@@ -254,7 +253,7 @@ class ContainerCluster_Opers(Abstract_Container_Opers):
                 container_nodes.append(container_node)
         else:
             container_nodes = zkOper.retrieve_container_list(cluster)
-        
+
         result = {}
         for container_node in container_nodes:
             container_node_value = zkOper.retrieve_container_node_value(cluster, container_node)
