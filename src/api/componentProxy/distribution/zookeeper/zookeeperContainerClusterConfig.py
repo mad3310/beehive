@@ -14,4 +14,6 @@ class ZookeeperContainerClusterConfig(BaseContainerClusterConfig):
         self.image = image if image else '10.160.140.32:5000/letv-zookeeper:0.0.3'
         self.ports = [2181, 2888, 3888, 4567, 4568, 4569]
 
-        self.resource_weight__score = { 'memory': 20, 'disk': 20, 'load5': 20, 'load10': 10, 'load15': 5, 'container_number': 15 }
+        self.resource_weight__score.update({'memory': 20, 'disk': 20,
+                                            'load5': 20, 'load10': 10,
+                                            'load15': 5, 'container_number': 15 })
