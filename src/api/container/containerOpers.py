@@ -397,14 +397,6 @@ class Container_create_action(Abstract_Async_Thread):
             set route if use ip to create containers
         '''
         container_name = self.docker_model.name
-        if self.docker_model.use_ip:
-            init_con_ret = self.set_ip_add_route_retry(3)
-            if not init_con_ret:
-                error_message = 'set container route failed'
-                logging.error(error_message)
-                failed_flag = {'status':Status.failed, 'message':error_message}
-                self.container_opers.write_container_status_by_containerName(container_name, failed_flag)
-                raise CommonException(error_message)
 
         '''
             check if create successful
@@ -452,24 +444,6 @@ class Container_create_action(Abstract_Async_Thread):
             return True
         else:
             return False
-
-    def set_ip_add_route_retry(self, retryCount):
-
-        container_name = self.docker_model.name
-
-        ret = False
-
-        while retryCount:
-            try:
-                self.__set_ip_add_route(container_name)
-            except:
-                err_msg = str(traceback.format_exc())
-                logging.info(err_msg)
-                raise RetryException(err_msg)
-            ret = True
-            break
-            retryCount -= 1
-        return ret
 
     def __set_ip_add_route(self, container_name=None):
         timeout = 5

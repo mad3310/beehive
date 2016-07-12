@@ -193,7 +193,7 @@ class Base_ContainerCluster_create_Action(Abstract_Async_Thread):
 
         container_cluster_name = component_container_cluster_config.container_cluster_name
         sum_count = component_container_cluster_config.sum_count
-        return handleTimeout(self.__is_containers_started, (250, 4), container_cluster_name, sum_count)
+        return handleTimeout(self.__is_containers_started, (3600, 30), container_cluster_name, sum_count)
 
     def __is_containers_started(self, container_cluster_name, sum_count):
 
