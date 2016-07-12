@@ -13,10 +13,10 @@ target_type: rpm
 # 软件包名
 name: container-manager
 # 软件包版本号
-version: 0.1.2a1
+version: 0.1.2a5
 
 # 软件包发型序号，即相同版本号（version）的代码这是第几次打包发型
-release: 2
+release: 1
 
 # 软件包安装及运行时依赖
 dependencies:
