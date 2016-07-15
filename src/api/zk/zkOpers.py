@@ -159,12 +159,6 @@ class ZkOpers(object):
         resultValue = self._retrieveSpecialPathProp(_path)
         return resultValue
 
-    def retrieve_server_resource(self, host_ip, resource_type):
-        cluster_uuid = self.getClusterUUID()
-        path = "%s/%s/dataNode/%s/resource/%s" % (self.rootPath, cluster_uuid, host_ip, resource_type)
-        resultValue = self._retrieveSpecialPathProp(path)
-        return resultValue
-
     '''
     *************************************container cluster****************************************
     '''

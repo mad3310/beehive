@@ -12,7 +12,7 @@ from zk.zkOpers import Common_ZkOpers
 from utils.exceptions import CommonException
 from resource_letv.ipOpers import IpOpers
 from resource_letv.portOpers import PortOpers
-
+from es.serverRes import ServerRes
 
 class Resource(object):
 
@@ -147,7 +147,7 @@ class Resource(object):
             get host usable memory and the condition to create containers
         '''
 
-        host_memory = zkOper.retrieve_server_resource(host_ip, 'memory')
+        host_memory = ServerRes.retireve_server_memory(host_ip)
         host_mem_limit = component_container_cluster_config.mem_free_limit
         host_mem_can_be_used = float(host_memory["free"]) - host_mem_limit/(1024*1024)
         logging.info('memory: %s, host :%s' % (host_mem_can_be_used, host_ip) )
@@ -160,7 +160,7 @@ class Resource(object):
         '''
             get host usable disk and the condition to create containers
         '''
-        host_disk = zkOper.retrieve_server_resource(host_ip, 'diskusage')
+        host_disk = ServerRes.retireve_server_diskusage(host_ip)
         used_server_disk = host_disk['used']
         total_server_disk = host_disk['total']
 
@@ -173,10 +173,10 @@ class Resource(object):
         quota_threshold =  zkOper.retrieve_monitor_server_value()
         container_count = quota_threshold.get('container_count', 30)
 
-        host_container_count = zkOper.retrieve_server_resource(host_ip, 'container_count')
+        host_container_count = ServerRes.retireve_server_container_number(host_ip)
         container_count_condition = host_container_count < container_count
 
-        host_disk_iops = zkOper.retrieve_server_resource(host_ip, 'diskiops')
+        host_disk_iops = ServerRes.retireve_server_diskiops(host_ip)
         """
             need to add container threshold to our zookeeper node when update beehive
         """

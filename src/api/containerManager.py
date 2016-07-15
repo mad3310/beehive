@@ -15,7 +15,7 @@ from tornado.options import options
 from appdefine import appDefine
 from scheduler.scheduler_tasks.schedulerOpers import SchedulerOpers
 from check_sync import CheckSync
-
+from es.serverRes import ServerRes
 
 class Application(tornado.web.Application):
     def __init__(self):
@@ -29,7 +29,7 @@ class Application(tornado.web.Application):
 def main():
     config_path = os.path.join(options.base_dir, "config")
     logging.config.fileConfig(config_path + '/logging.conf')
-
+    ServerRes.connect(options.es_host)
     cs = CheckSync()
     cs.sync()
 
