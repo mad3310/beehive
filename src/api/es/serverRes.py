@@ -88,7 +88,9 @@ class ServerRes(object):
         return self.retireve_server_resource(ip, 'diskusage')
 
     def retireve_server_container_number(self, ip):
-        return self.retireve_server_resource(ip, 'container_count')
+        containers = self.retireve_server_resource(ip,
+                        'container_count')
+        return containers['container_count']
 
     def retireve_server_diskiops(self, ip):
         return self.retireve_server_resource(ip, 'diskiops')
@@ -98,7 +100,7 @@ ServerRes = ServerRes()
 if __name__  == "__main__":
     es_hosts = '10.140.65.12:9200,10.140.65.13:9200,10.140.65.14:9200'
     ServerRes.connect(es_hosts)
-    ip = '10.185.31.10'
+    ip = '10.185.30.252'
     print ServerRes.retireve_server_memory(ip)
     print ServerRes.retireve_server_diskusage(ip)
     print ServerRes.retireve_server_container_number(ip)
