@@ -18,8 +18,8 @@ class esOpers(object):
                             hosts,
                             sniff_on_start=False,
                             sniff_on_connection_fail=True,
-                            sniffer_timeout=60,
-                            sniff_timeout=1
+                            sniffer_timeout=300,
+                            sniff_timeout=10,
                             )
 
     def get_all_source(self, index, ip, time_from, 
