@@ -49,7 +49,7 @@ class ServerRes(object):
         today = now.strftime('%Y-%m-%d')
         before = now-datetime.timedelta(seconds=time_interval)
         if today != before.strftime('%Y-%m-%d'):
-            mid = datetime.strptime(today, '%Y-%m-%d')
+            mid = datetime.datetime.strptime(today, '%Y-%m-%d')
             yield before, mid
             yield mid, now 
         else:
