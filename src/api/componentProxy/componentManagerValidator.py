@@ -6,6 +6,7 @@ Created on 2015-2-4
 
 import importlib
 import logging
+import time
 
 from componentProxy import _path
 from concurrent import futures
@@ -62,6 +63,7 @@ class ComponentManagerStatusValidator(object):
                 return True
             
             retry_num -= 1
+            time.sleep(10)
             
         return False
 
