@@ -23,19 +23,22 @@ class esOpers(object):
                             )
 
     def get_all_source(self, index, ip, time_from, 
-                        time_to, doc_type, size):
+                       time_to, doc_type, size,
+                       source_fields = []):
         res = self._get_all_values(index, ip, time_from, 
-                             time_to, doc_type, size)
+                             time_to, doc_type, size, source_fields)
         ret = []
         for _res in res:
             if _res.has_key('_source'):
                 ret.append(_res['_source'])
         return ret
 
-    def _query_body(self, ip, time_from, time_to, doc_type):
+    def _query_body(self, ip, time_from, time_to, doc_type,
+                    source_fields):
         range_field = '%s.timestamp' % doc_type
         ip_field = '%s.ip' % doc_type
         body = {
+                   '_source': source_fields,
                    'query': 
                    {
                       'bool': 
@@ -63,15 +66,16 @@ class esOpers(object):
                 }
         return body
 
-    def _get_all_values(self, index, ip, time_from, time_to, doc_type, size): 
+    def _get_all_values(self, index, ip, time_from, time_to,
+            doc_type, size, source_fields): 
         ret = []
         try:
             res = self.es.search(index = index, doc_type = doc_type, 
                   size = size, 
-                  body = self._query_body(ip, time_from, time_to, doc_type))
+                  body = self._query_body(ip, time_from, time_to,
+                            doc_type, source_fields))
             ret = res['hits']['hits']
         except Exception as e:
-            logging.error("query in es fail")
-            logging.error(e, exc_info=True)
+            logging.error("query in es fail\n%s" %e, exc_info=True)
         return ret
 

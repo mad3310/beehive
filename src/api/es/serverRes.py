@@ -9,28 +9,28 @@ class ServerRes(object):
                              'time_interval' : 600,
                              'doc_type' : 'memory',
                              'size' : 200,
-                             'field': 'free'
+                             'field': ['free']
                            },
                 'diskusage' : {
                                  'index_prefix':'monitor_server_resource_diskusage',
                                  'time_interval' : 600,
                                  'doc_type' : 'diskusage',
                                  'size' : 200,
-                                 'field': 'used,total'
+                                 'field': ['used', 'total']
                                },
                 'container_count' : {
                              'index_prefix':'monitor_server_resource_container_count',
                              'time_interval' : 600,
                              'doc_type' : 'container_count',
                              'size' : 200,
-                             'field': 'container_count'
+                             'field': ['container_count']
                         },
                 'diskiops' : {
                                  'index_prefix':'monitor_server_resource_diskiops',
                                  'time_interval' : 600,
                                  'doc_type' : 'diskiops',
                                  'size' : 200,
-                                 'field': 'read_iops,write_iops'
+                                 'field': ['read_iops', 'write_iops']
                             },
              }
 
@@ -60,18 +60,19 @@ class ServerRes(object):
         prefix = self.ALL_RES[res_type]['index_prefix']
         doc_type = self.ALL_RES[res_type]['doc_type'] 
         size = self.ALL_RES[res_type]['size']
+        fields = self.ALL_RES[res_type]['field']
         res = []
         for start, end in self._retrieve_time_range(time_interval):
             index = self._get_index_name(prefix, start)
             _res = self.esOper.get_all_source(index, ip, start, end,
-                                              doc_type, size)
+                                              doc_type, size, fields)
             res.extend(_res)
         return res
    
     def retireve_server_resource(self, ip, res_type):
         resources = self._retireve_server_resoure_list(ip, res_type)
         length = len(resources)
-        fields = self.ALL_RES[res_type]['field'].split(',')
+        fields = self.ALL_RES[res_type]['field']
         ret = {}
         map(lambda x:ret.update({x:0}), fields)
         if not length:
@@ -100,9 +101,13 @@ ServerRes = ServerRes()
 if __name__  == "__main__":
     es_hosts = '10.140.65.12:9200,10.140.65.13:9200,10.140.65.14:9200'
     ServerRes.connect(es_hosts)
-    ip = '10.185.30.252'
+    #ip = '10.185.30.252'
+    ip = '10.150.170.124'
+    print datetime.datetime.now()
     print ServerRes.retireve_server_memory(ip)
+    print datetime.datetime.now()
     print ServerRes.retireve_server_diskusage(ip)
     print ServerRes.retireve_server_container_number(ip)
     print ServerRes.retireve_server_diskiops(ip)
+    print datetime.datetime.now()
 
