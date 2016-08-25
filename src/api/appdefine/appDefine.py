@@ -38,3 +38,5 @@ define("test_cluster_NIC", default='peth0', help="default test cluster network i
 define("NEED_TO_CONFIG_ZK", default=('mcluster','zookeeper'), help="default test cluster network interface card")
 
 define("nsenter", default='nsenter --target `docker inspect -f "{{.State.Pid}}" %s` --mount --uts --ipc --net --pid -- ', help="default test cluster network interface card")
+define('es_host', default = '10.140.65.12:9200,10.140.65.13:9200,10.140.65.14:9200', help = 'es host')
+
