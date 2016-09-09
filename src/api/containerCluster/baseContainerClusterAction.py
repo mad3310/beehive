@@ -5,7 +5,7 @@ Created on 2015-2-2
 '''
 import logging
 import sys
-
+import time
 from tornado.options import options
 from tornado.httpclient import AsyncHTTPClient
 from common.abstractAsyncThread import Abstract_Async_Thread
@@ -17,6 +17,7 @@ from utils.exceptions import CommonException
 from componentProxy.componentManagerValidator import ComponentManagerStatusValidator
 from componentProxy.componentContainerClusterValidator import ComponentContainerClusterValidator
 from status.status_enum import Status
+import os
 from componentProxy.baseContainerModelCreator import BaseContainerModelCreator
 from container.containerOpers import Container_Opers
 
@@ -58,8 +59,26 @@ class Base_ContainerCluster_Action(Abstract_Async_Thread):
         finally:
             async_client.close()
 
-        if self.action == 'remove':
+        if self.action == 'remove' and self._check_is_cluster_destroyed(container_name_list):
             self.do_when_remove_cluster()
+
+    def _check_is_cluster_destroyed(self, container_name_list):
+        for i in range(30):
+            for container_name in container_name_list:
+                stats = self.container_opers.retrieve_container_status_from_containerName(
+                        container_name)
+                if stats and stats.get('status') != Status.destroyed:
+                    break
+                return True
+            time.sleep(2)
+        return False
+
+    def _del_arp_info(self, ip_list):
+        try:
+            for _ip in container_ip_list:
+                os.system('arp -d %s' %_ip)
+        except Exception as e:
+            logging.error(e, exc_info=True)
 
     def do_when_remove_cluster(self):
         zkOper = Container_ZkOpers()
@@ -68,7 +87,8 @@ class Base_ContainerCluster_Action(Abstract_Async_Thread):
         if use_ip:
             container_ip_list = zkOper.retrieve_container_list(self.cluster)
             logging.info('container_ip_list:%s' % str(container_ip_list) )
-            zkOper.recover_ips_to_pool(container_ip_list)
+            zkOper.recover_ips_to_pool(container_ip_list) 
+            self._del_arp_info(container_ip_list)
 
     def __get_params(self):
         """
