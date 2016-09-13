@@ -64,21 +64,19 @@ class Base_ContainerCluster_Action(Abstract_Async_Thread):
 
     def _check_is_cluster_destroyed(self, container_name_list):
         for i in range(30):
+            _destroyed_sum = 0
             for container_name in container_name_list:
                 stats = self.container_opers.retrieve_container_status_from_containerName(
                         container_name)
                 if stats and stats.get('status') != Status.destroyed:
                     break
+                else:
+                    _destroyed_sum += 1
+            if _destroyed_sum == len(container_name_list):
                 return True
             time.sleep(2)
         return False
 
-    def _del_arp_info(self, ip_list):
-        try:
-            for _ip in container_ip_list:
-                os.system('arp -d %s' %_ip)
-        except Exception as e:
-            logging.error(e, exc_info=True)
 
     def do_when_remove_cluster(self):
         zkOper = Container_ZkOpers()
@@ -88,7 +86,6 @@ class Base_ContainerCluster_Action(Abstract_Async_Thread):
             container_ip_list = zkOper.retrieve_container_list(self.cluster)
             logging.info('container_ip_list:%s' % str(container_ip_list) )
             zkOper.recover_ips_to_pool(container_ip_list) 
-            self._del_arp_info(container_ip_list)
 
     def __get_params(self):
         """
