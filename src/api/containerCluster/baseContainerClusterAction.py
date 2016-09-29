@@ -63,7 +63,8 @@ class Base_ContainerCluster_Action(Abstract_Async_Thread):
             self.do_when_remove_cluster()
 
     def _check_is_cluster_destroyed(self, container_name_list):
-        for i in range(30):
+        timeout = 30
+        for i in range(timeout):
             _destroyed_sum = 0
             for container_name in container_name_list:
                 stats = self.container_opers.retrieve_container_status_from_containerName(
