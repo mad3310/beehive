@@ -19,8 +19,6 @@ handlers = [
 
     ##'''  --------------------serverCluster-------------------------------
     (r"/serverCluster", ServerClusterHandler),
-    (r"/serverCluster/containers/under_oom", SwitchServersUnderoomHandler),
-    (r"/serverCluster/containers/memory/add", AddServersMemoryHandler),
     (r"/serverCluster/sync", SyncServerClusterHandler),
 
     ##'''  --------------------server---------------------------------------'''
@@ -44,7 +42,8 @@ handlers = [
     (r"/containerCluster/node/remove", ContainerClusterRemoveNodeHandler),
     (r"/containerCluster/conf", ClusterConfigHandler),
     (r"/containerCluster/cpushares", SetContainerClusterCpusharesHandler),
-
+    (r"/containerCluster/containers/under_oom", SwitchServersUnderoomHandler),
+    (r"/containerCluster/containers/memory/add", AddServersMemoryHandler),
     ##'''  --------------------container---------------------------------------'''
 
     (r"/inner/container", ContainerHandler),

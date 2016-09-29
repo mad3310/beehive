@@ -635,12 +635,21 @@ class Container_destroy_action(Abstract_Async_Thread):
         except:
             self.threading_exception_queue.put(sys.exc_info())
 
+    def _del_arp_info(self, ip):
+        try: 
+            os.system('arp -d %s' %ip)
+        except Exception as e:
+            logging.error(e, exc_info=True)
+
     def __issue_destroy_action(self):
         """
             destroy container and remove docker mount dir data
         """
 
         destroy_rst = {}
+        _inspect = self.docker_opers.inspect_container(self.container_name)
+        con = Container_Model(_inspect)
+        _ip = con.ip()
         logging.info('write destroy flag')
         destroy_flag = {'status':Status.destroying, 'message':''}
         self.container_opers.write_container_status_by_containerName(self.container_name, destroy_flag)
@@ -667,6 +676,7 @@ class Container_destroy_action(Abstract_Async_Thread):
             destroy_rst.setdefault('message', '')
 
         self.container_opers.write_container_status_by_containerName(self.container_name, destroy_rst)
+        self._del_arp_info(_ip)
 
     def __remove_mount_dir(self, mount_dir_list):
         for mount_dir in mount_dir_list:
