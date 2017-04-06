@@ -35,8 +35,6 @@ class esOpers(object):
 
     def _query_body(self, ip, time_from, time_to, doc_type,
                     source_fields):
-        range_field = '%s.timestamp' % doc_type
-        ip_field = '%s.ip' % doc_type
         body = {
                    '_source': source_fields,
                    'query': 
@@ -47,7 +45,7 @@ class esOpers(object):
                            {
                              'range': 
                              {
-                                 range_field: 
+                                 'timestamp': 
                                  {
                                      'from':time_from,
                                      'to':  time_to 
@@ -57,7 +55,7 @@ class esOpers(object):
                            {
                              'term':
                              {
-                                 ip_field : ip 
+                                 'ip' : ip 
                              }
                            }
                         ]
