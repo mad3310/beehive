@@ -1,7 +1,7 @@
 #!/bin/bash
 
-rm -rf /opt/letv/container-manager
-rm -rf /etc/init.d/container-manager
-rm -rf /etc/sysconfig/container-manager
+rm -rf /opt/beehive
+rm -rf /etc/init.d/beehive
+rm -rf /etc/sysconfig/beehive
 
 exit 0
