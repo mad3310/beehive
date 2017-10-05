@@ -4,7 +4,7 @@
 '''
 Created on 2013-7-21
 
-@author: root
+@author: mad3310
 '''
 
 from tornado.ioloop import PeriodicCallback

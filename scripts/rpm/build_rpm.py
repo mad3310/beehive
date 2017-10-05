@@ -18,10 +18,10 @@ def download_source():
 def build_source():
     print(yellow("Start building the source code..."))
     with lcd(project_root):
-        code_path = "/opt/letv/{0}".format(y['name'])
+        code_path = "/opt/{0}".format(y['name'])
         local("mkdir -p build{0}".format(code_path))
         with lcd('src'):
-            local("python2.6 -m compileall .")
+            local("python2.7 -m compileall .")
             local('find . -name "*.py"  | xargs rm -f')
             local("cp -R * ../build/{0}".format(code_path))
         local("mv etc build")

@@ -1,6 +1,6 @@
 ---
 # 源码git仓库地址
-git_repo: git@git.letv.cn:mcluster/container-manager.git
+git_repo: https://github.com/mad3310/beehive.git
 
 # 源类型，支持："dir" "rpm" "gem" "python" "empty" "tar" "deb" "cpan" "npm"
 # "osxpkg" "pear" "pkgin" "virtualenv" "zip"
@@ -11,9 +11,9 @@ source_type: dir
 target_type: rpm
 
 # 软件包名
-name: container-manager
+name: beehive
 # 软件包版本号
-version: 0.1.5
+version: 0.1.0
 
 # 软件包发型序号，即相同版本号（version）的代码这是第几次打包发型
 release: 1
@@ -30,8 +30,8 @@ dependencies:
     - python-websockify
     - zope.interface
 
-# 安装位置，无需再写软件包名. 已默认安装至 /opt/letv
-# prefix: /opt/letv
+# 安装位置，无需再写软件包名. 已默认安装至 /opt/
+# prefix: /opt/
 # 安装前执行的脚本，以项目主目录为起始路径
 before_install: scripts/rpm/before_install.sh
 # 安装后执行的脚本
@@ -39,16 +39,16 @@ after_install: scripts/rpm/after_install.sh
 # 卸载后执行的脚本
 after_remove: scripts/rpm/after_remove.sh
 # 软件包所属分类，供软件仓库分类使用
-category: GCP
+category: mad3310
 # 软件包描述
 description: |
-    container-manager is a manager program for docker cluster.
+    Beehive is a manager program for docker cluster.
 # 软件包项目主页
-url: http://git.letv.cn/mcluster/container-manager
+url: https://github.com/mad3310/beehive
 # 软件包维护人员
-maintainor: zhoubingzheng@letv.com
+maintainor: zhoubingzheng@sina.com
 # 软件包供应商名称
-vendor: LeCloud
+vendor: Mad3310
 
 # 软件包保存位置
 packout: /srv/rpms
