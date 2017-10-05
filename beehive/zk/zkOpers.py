@@ -4,7 +4,7 @@
 '''
 Created on 2013-7-11
 
-@author: asus
+@author: mad3310
 '''
 
 import logging
@@ -21,7 +21,7 @@ class ZkOpers(object):
 
     zk = None
 
-    rootPath = "/letv/docker"
+    rootPath = "/mad3310/docker"
 
     '''
     classdocs
