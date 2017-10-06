@@ -54,7 +54,7 @@ class Thread_Exception_Handler_Worker(threading.Thread):
             # send email
             host_ip = getHostIp()
             invokeCommand = InvokeCommand()
-            cmd_str = "rpm -qa container-manager"
+            cmd_str = "rpm -qa beehive"
             version_str = invokeCommand._runSysCmd(cmd_str)
             subject = "[%s]Internal Server Error" % options.sitename
             
