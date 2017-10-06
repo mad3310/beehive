@@ -1,21 +1,21 @@
 #!/bin/sh
 #
-# container-manager
-# Author: 	zhoubingzheng <zhoubingzheng@letv.com>
+# beehive
+# Author: 	zhoubingzheng <zhoubingzheng@sina.com>
 #
 # chkconfig: 2345 09 92
-# description: container manager
+# description: beehive
 
 ### BEGIN INIT INFO
-# Provides:          letv
+# Provides:          mad3310
 # Required-Start:
 # Required-Stop:
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: container manager
+# Short-Description: beehive
 ### END INIT INFO
 
-NAME=container-manager
+NAME=beehive
 
 # source function library
 . /etc/rc.d/init.d/functions
@@ -39,7 +39,7 @@ start () {
 	touch $PIDFILE
 	chown $USER:$GROUP $PIDFILE
 
-	MMCMD="python2.6 /opt/letv/container-manager/api/containerManager.pyc >>$CONSOLELOG 2>&1 & 	\
+	MMCMD="python2.7 /opt/beehive/containerManager.pyc >>$CONSOLELOG 2>&1 & 	\
 		echo "'$! >'"$PIDFILE"
 
         echo -n $"Starting ${NAME}:"

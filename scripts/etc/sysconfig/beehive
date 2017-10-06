@@ -1,4 +1,4 @@
-NAME=container-manager
+NAME=beehive
 
 MM_LOG_DIR=/var/log/$NAME
 USER=root
