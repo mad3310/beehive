@@ -11,7 +11,7 @@ from tornado.httpclient import AsyncHTTPClient
 from common.abstractAsyncThread import Abstract_Async_Thread
 from utils import async_http_post, _retrieve_userName_passwd, getNIC
 from zk.zkOpers import Container_ZkOpers
-from resource_letv.resource import Resource
+from resourceForBeehive.resource import Resource
 from utils import handleTimeout, _get_property_dict, dispatch_mutil_task
 from utils.exceptions import CommonException
 from componentProxy.componentManagerValidator import ComponentManagerStatusValidator
