@@ -7,7 +7,7 @@ import functools
 
 from utils import get_zk_address
 from exceptions import CommonException
-from futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor
 from tornado.gen import Task
 from tornado.ioloop import IOLoop
 from tornado import stack_context
