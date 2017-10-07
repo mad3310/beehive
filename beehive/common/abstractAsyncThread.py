@@ -23,7 +23,7 @@ class Abstract_Async_Thread(threading.Thread):
             # send email
             host_ip = getHostIp()
             invokeCommand = InvokeCommand()
-            cmd_str = "rpm -qa container-manager"
+            cmd_str = "rpm -qa beehive"
             version_str = invokeCommand._runSysCmd(cmd_str)
             subject = "[%s] %s" % (data_node_ip, text)
 
