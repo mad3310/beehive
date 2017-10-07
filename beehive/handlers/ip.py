@@ -1,6 +1,6 @@
 #-*- coding: utf-8 -*-
 from handlers.base import APIHandler
-from resource_letv.ipOpers import IpOpers
+from resourceForBeehive.ipOpers import IpOpers
 from zk.zkOpers import Requests_ZkOpers
 from tornado_letv.tornado_basic_auth import require_basic_auth
 

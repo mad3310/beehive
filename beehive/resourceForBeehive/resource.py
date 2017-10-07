@@ -10,8 +10,8 @@ import logging
 
 from zk.zkOpers import Common_ZkOpers
 from utils.exceptions import CommonException
-from resource_letv.ipOpers import IpOpers
-from resource_letv.portOpers import PortOpers
+from resourceForBeehive.ipOpers import IpOpers
+from resourceForBeehive.portOpers import PortOpers
 from es.serverRes import ServerRes
 
 class Resource(object):
