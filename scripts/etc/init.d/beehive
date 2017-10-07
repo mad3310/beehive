@@ -39,7 +39,7 @@ start () {
 	touch $PIDFILE
 	chown $USER:$GROUP $PIDFILE
 
-	MMCMD="python2.7 /opt/beehive/containerManager.pyc >>$CONSOLELOG 2>&1 & 	\
+	MMCMD="python2.7 /opt/beehive/run.pyc >>$CONSOLELOG 2>&1 & 	\
 		echo "'$! >'"$PIDFILE"
 
         echo -n $"Starting ${NAME}:"
