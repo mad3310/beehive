@@ -4,7 +4,7 @@ import logging
 from handlers.base import APIHandler
 from resourceForBeehive.portOpers import PortOpers
 from zk.zkOpers import Requests_ZkOpers
-from tornado_letv.tornado_basic_auth import require_basic_auth
+from tornadoForBeehive.tornado_basic_auth import require_basic_auth
 
 
 @require_basic_auth

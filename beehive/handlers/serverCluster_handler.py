@@ -15,7 +15,7 @@ from tornado.options import options
 from tornado.httpclient import HTTPRequest, AsyncHTTPClient
 from tornado.web import asynchronous
 from tornado.gen import engine, Task
-from tornado_letv.tornado_basic_auth import require_basic_auth
+from tornadoForBeehive.tornado_basic_auth import require_basic_auth
 
 from utils.configFileOpers import ConfigFileOpers
 from utils import _retrieve_userName_passwd, async_http_post
