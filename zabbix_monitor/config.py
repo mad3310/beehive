@@ -1,7 +1,7 @@
 import os
 from kazoo.client import KazooClient
 
-rootPath = r"/letv/docker"
+rootPath = r"/mad3310/docker"
 
 zk = KazooClient('127.0.0.1:2181')
 zk.start()
@@ -24,7 +24,7 @@ def return_children_to_list(path):
 
 def retrieve_cluster_list():
     clusterUUID = get_cluster_uuid()
-    path = "/letv/docker/" + clusterUUID + "/container/cluster/"
+    path = "/mad3310/docker/" + clusterUUID + "/container/cluster/"
     return return_children_to_list(path)
 
 def retrieve_container_list(cluster):

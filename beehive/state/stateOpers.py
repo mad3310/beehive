@@ -9,7 +9,7 @@ import re
 import logging
 
 from utils import get_dev_number_by_mount_dir
-from docker_letv.dockerOpers import Docker_Opers
+from dockerForBeehive.dockerOpers import Docker_Opers
 from container.container_model import Container_Model
 from utils.exceptions import UserVisiableException
 from componentProxy import _mount_dir
