@@ -14,7 +14,7 @@ from kazoo.client import KazooClient, KazooState
 from utils import ping_ip_available, nc_ip_port_available, get_zk_address
 from kazoo.retry import KazooRetry
 from utils.decorators import zk_singleton
-from docker_letv.dockerOpers import Docker_Opers
+from dockerForBeehive.dockerOpers import Docker_Opers
 
 
 class ZkOpers(object):

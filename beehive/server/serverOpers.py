@@ -9,7 +9,7 @@ Created on Sep 10, 2014
 import logging
 import sys
 
-from docker_letv.dockerOpers import Docker_Opers
+from dockerForBeehive.dockerOpers import Docker_Opers
 from zk.zkOpers import Common_ZkOpers
 from container.container_model import Container_Model
 from container.containerOpers import Container_Opers

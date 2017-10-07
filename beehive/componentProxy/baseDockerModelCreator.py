@@ -5,7 +5,7 @@ Created on 2015-2-1
 '''
 #-*- coding: utf-8 -*-
 
-from docker_letv.docker_model import Docker_Model
+from dockerForBeehive.docker_model import Docker_Model
 
 class BaseDockerModelCreator(object):
     '''
