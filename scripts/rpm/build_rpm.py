@@ -20,11 +20,11 @@ def build_source():
     with lcd(project_root):
         code_path = "/opt/{0}".format(y['name'])
         local("mkdir -p build{0}".format(code_path))
-        with lcd('src'):
+        with lcd('beehive'):
             local("python2.7 -m compileall .")
             local('find . -name "*.py"  | xargs rm -f')
             local("cp -R * ../build/{0}".format(code_path))
-        local("mv etc build")
+        local("mv scripts/etc build")
     print(green("Building completed!"))
 
 
