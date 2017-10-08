@@ -177,8 +177,9 @@ def getHostIp():
     cmd = "ifconfig %s|grep 'inet addr'|awk '{print $2}'" % NIC
     out_ip = os.popen(cmd).read()
     ip = out_ip.split('\n')[0]
-    ip = re.findall('.*:(.*)', ip)[0]
-    return ip
+    if _is_ip(ip):
+        return ip
+    return None
 
 def ping_ip_available(ip):
     cmd = 'ping -w 1 %s' % str(ip)
