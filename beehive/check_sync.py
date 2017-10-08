@@ -29,12 +29,12 @@ class CheckSync():
 
         existed = zkOper.existCluster()
         if existed:
-            self.sync_server_cluster()
-            self.sync_data_node()
+            self._sync_server_cluster()
+            self._sync_data_node()
         else:
             logging.info("cluster does not exist, may be the first time to sync in a new server cluster")
 
-    def sync_server_cluster(self):
+    def _sync_server_cluster(self):
         zkOper = Common_ZkOpers()
         cluster_uuid = zkOper.getClusterUUID() 
         uuid_value, _ = zkOper.retrieveClusterProp(cluster_uuid) 
@@ -43,7 +43,7 @@ class CheckSync():
         uuid_value = json.loads(uuid_value)
         self.config_file_obj.setValue(options.server_cluster_property, uuid_value) 
 
-    def sync_data_node(self):
+    def _sync_data_node(self):
         server_ip = getHostIp()
         
         zkOper = Common_ZkOpers()
